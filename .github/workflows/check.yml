@@ -34,6 +34,11 @@ jobs:
 
       - run: flutter pub get
 
+      - name: Generate app icon and splash screen
+        run: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+
       - run: flutter analyze --no-fatal-infos
 
       - run: flutter test

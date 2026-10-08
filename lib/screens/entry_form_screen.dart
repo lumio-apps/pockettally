@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 
 import '../app_state.dart';
 import '../models.dart';
-import 'home_screen.dart' show kIncomeColor, kExpenseColor;
+import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
+import 'categories_screen.dart';
 
 /// Add a new entry, or edit an existing one when [entry] is given.
 class EntryFormScreen extends StatefulWidget {
@@ -29,8 +30,11 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
 
   bool get _isEditing => widget.entry != null;
 
-  List<String> get _categories =>
-      _type == EntryType.income ? kIncomeCategories : kExpenseCategories;
+  List<String> get _categories {
+    final names =
+        widget.state.categoriesFor(_type).map((c) => c.name).toList();
+    return names.isEmpty ? [kOtherCategory] : names;
+  }
 
   @override
   void initState() {
@@ -39,10 +43,6 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     _type = e?.type ?? EntryType.expense;
     _date = e?.date ?? DateTime.now();
     _category = e?.category ?? _categories.first;
-    if (!_categories.contains(_category)) {
-      // Entry saved with a category that is not in the default list.
-      _category = _categories.first;
-    }
     _period = e?.period ?? IncomePeriod.monthly;
     _amountController = TextEditingController(
       text: e == null ? '' : (e.amountMinor / 100).toStringAsFixed(2),
@@ -90,6 +90,13 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   @override
   Widget build(BuildContext context) {
     final color = _type == EntryType.income ? kIncomeColor : kExpenseColor;
+    final categoryNames = _categories;
+    if (!categoryNames.contains(_category)) {
+      // The category was renamed or deleted in the meantime.
+      _category = categoryNames.contains(kOtherCategory)
+          ? kOtherCategory
+          : categoryNames.first;
+    }
     return Scaffold(
       appBar: AppBar(title: Text(_isEditing ? 'Edit entry' : 'New entry')),
       body: Form(
@@ -142,19 +149,47 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              // The key rebuilds the field when Income/Expense is switched,
-              // because initialValue is only read once.
-              key: ValueKey(_type),
+              // The key rebuilds the field when Income/Expense is switched or
+              // the category list changes, because initialValue is read once.
+              key: ValueKey('$_type|${categoryNames.join('|')}'),
               initialValue: _category,
               decoration: const InputDecoration(
                 labelText: 'Category',
                 border: OutlineInputBorder(),
               ),
               items: [
-                for (final c in _categories)
-                  DropdownMenuItem(value: c, child: Text(c)),
+                for (final c in categoryNames)
+                  DropdownMenuItem(
+                    value: c,
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 6,
+                          backgroundColor: widget.state.colorFor(c, _type),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(c),
+                      ],
+                    ),
+                  ),
               ],
               onChanged: (c) => setState(() => _category = c ?? _category),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                icon: const Icon(Icons.tune, size: 18),
+                label: const Text('Manage categories'),
+                onPressed: () async {
+                  await Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => CategoriesScreen(
+                      state: widget.state,
+                      initialType: _type,
+                    ),
+                  ));
+                  if (mounted) setState(() {});
+                },
+              ),
             ),
             if (_type == EntryType.income) ...[
               const SizedBox(height: 16),

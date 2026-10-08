@@ -1,3 +1,5 @@
+import 'dart:ui' show Color;
+
 enum EntryType { income, expense }
 
 enum IncomePeriod { daily, weekly, monthly }
@@ -43,24 +45,78 @@ const List<Currency> kCurrencies = [
 Currency currencyByCode(String code) =>
     kCurrencies.firstWhere((c) => c.code == code, orElse: () => kCurrencies.first);
 
-const List<String> kExpenseCategories = [
-  'Food',
-  'Rent',
-  'Travel',
-  'Shopping',
-  'Bills',
-  'Health',
-  'Entertainment',
-  'Education',
-  'Other',
+/// Colors a category can have (ARGB). Also used for the pie chart.
+const List<int> kCategoryPalette = [
+  0xFFE57373, // red
+  0xFFF06292, // pink
+  0xFFBA68C8, // purple
+  0xFF7986CB, // indigo
+  0xFF64B5F6, // blue
+  0xFF4DD0E1, // cyan
+  0xFF4DB6AC, // teal
+  0xFF81C784, // green
+  0xFFDCE775, // lime
+  0xFFFFD54F, // amber
+  0xFFFFB74D, // orange
+  0xFFA1887F, // brown
+  0xFF90A4AE, // blue grey
 ];
 
-const List<String> kIncomeCategories = [
-  'Salary',
-  'Business',
-  'Gift',
-  'Other',
+/// Every type always has this category. It cannot be deleted, and entries of
+/// a deleted category are moved here.
+const String kOtherCategory = 'Other';
+
+/// Categories created on first launch: (name, color).
+const List<(String, int)> kDefaultExpenseCategories = [
+  ('Food', 0xFFFFB74D),
+  ('Rent', 0xFF7986CB),
+  ('Travel', 0xFF64B5F6),
+  ('Shopping', 0xFFF06292),
+  ('Bills', 0xFFE57373),
+  ('Health', 0xFF4DB6AC),
+  ('Entertainment', 0xFFBA68C8),
+  ('Education', 0xFF4DD0E1),
+  (kOtherCategory, 0xFF90A4AE),
 ];
+
+const List<(String, int)> kDefaultIncomeCategories = [
+  ('Salary', 0xFF81C784),
+  ('Business', 0xFF4DB6AC),
+  ('Gift', 0xFFFFD54F),
+  (kOtherCategory, 0xFF90A4AE),
+];
+
+class EntryCategory {
+  const EntryCategory({
+    this.id,
+    required this.name,
+    required this.type,
+    required this.colorValue,
+  });
+
+  final int? id;
+  final String name;
+  final EntryType type;
+  final int colorValue;
+
+  Color get color => Color(colorValue);
+
+  bool get isOther => name == kOtherCategory;
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'id': id,
+        'name': name,
+        'type': type.name,
+        'color': colorValue,
+      };
+
+  static EntryCategory fromMap(Map<String, Object?> m) => EntryCategory(
+        id: m['id'] as int?,
+        name: m['name'] as String,
+        type: EntryType.values.byName(m['type'] as String),
+        colorValue: m['color'] as int,
+      );
+}
 
 /// One income or expense. Amounts are stored in minor units (cents/paise)
 /// so there are no floating point rounding errors.
@@ -86,16 +142,6 @@ class Entry {
   final IncomePeriod? period;
 
   bool get isIncome => type == EntryType.income;
-
-  Entry copyWith({int? id}) => Entry(
-        id: id ?? this.id,
-        type: type,
-        amountMinor: amountMinor,
-        category: category,
-        date: date,
-        note: note,
-        period: period,
-      );
 
   Map<String, Object?> toMap() => {
         if (id != null) 'id': id,

@@ -1,7 +1,7 @@
 name: pockettally
 description: Simple offline daily income and expense tracker.
 publish_to: "none"
-version: 0.1.0+1
+version: 0.2.0+2
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -22,6 +22,35 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.1
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icon/logo.png
+
+# App icon. Generated in CI with: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#1F7A63"
+  adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  min_sdk_android: 21
+
+# Launch screen. Generated in CI with: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#1F7A63"
+  image: assets/splash/splash.png
+  color_dark: "#10352C"
+  image_dark: assets/splash/splash.png
+  android_12:
+    color: "#1F7A63"
+    image: assets/splash/splash_android12.png
+    icon_background_color: "#1F7A63"
+    color_dark: "#10352C"
+    image_dark: assets/splash/splash_android12.png
+    icon_background_color_dark: "#10352C"
+  ios: false
+  web: false

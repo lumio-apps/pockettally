@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../app_state.dart';
 import '../models.dart';
 import '../update_checker.dart';
+import 'categories_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, required this.state});
@@ -50,6 +51,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     '${state.currency.code} ${state.currency.symbol} · ${state.currency.name}'),
                 onTap: _pickCurrency,
               ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(72, 0, 16, 8),
+                child: Text(
+                  'Changing currency only changes the symbol. '
+                  'Amounts you already entered are not converted.',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.brightness_6_outlined),
                 title: const Text('Theme'),
@@ -69,13 +78,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(72, 0, 16, 8),
-                child: Text(
-                  'Changing currency only changes the symbol. '
-                  'Amounts you already entered are not converted.',
-                  style: TextStyle(fontSize: 12),
-                ),
+              ListTile(
+                leading: const Icon(Icons.category_outlined),
+                title: const Text('Categories'),
+                subtitle: const Text('Add, rename, recolor or delete'),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => CategoriesScreen(state: state),
+                )),
               ),
               const Divider(),
               if (kUpdaterEnabled)

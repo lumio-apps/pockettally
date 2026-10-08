@@ -36,8 +36,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-              Icon(Icons.account_balance_wallet_rounded,
-                  size: 56, color: theme.colorScheme.primary),
+              Image.asset('assets/icon/logo.png', width: 72, height: 72),
               const SizedBox(height: 16),
               Text('Welcome to PocketTally', style: theme.textTheme.headlineMedium),
               const SizedBox(height: 8),

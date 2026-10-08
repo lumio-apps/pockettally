@@ -3,16 +3,20 @@ import 'package:intl/intl.dart';
 
 import '../app_state.dart';
 import '../models.dart';
+import '../widgets/entry_tile.dart';
 import 'entry_form_screen.dart';
+import 'search_screen.dart';
 import 'settings_screen.dart';
-
-const Color kIncomeColor = Color(0xFF2E9E5B);
-const Color kExpenseColor = Color(0xFFD64545);
+import 'stats_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.state});
 
   final AppState state;
+
+  void _push(BuildContext context, Widget screen) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,12 +33,19 @@ class HomeScreen extends StatelessWidget {
             title: const Text('PocketTally'),
             actions: [
               IconButton(
+                tooltip: 'Search',
+                icon: const Icon(Icons.search),
+                onPressed: () => _push(context, SearchScreen(state: state)),
+              ),
+              IconButton(
+                tooltip: 'Stats',
+                icon: const Icon(Icons.pie_chart_outline),
+                onPressed: () => _push(context, StatsScreen(state: state)),
+              ),
+              IconButton(
                 tooltip: 'Settings',
                 icon: const Icon(Icons.settings_outlined),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (_) => SettingsScreen(state: state)),
-                ),
+                onPressed: () => _push(context, SettingsScreen(state: state)),
               ),
             ],
           ),
@@ -58,6 +69,7 @@ class HomeScreen extends StatelessWidget {
                 month: now,
                 income: income,
                 expense: expense,
+                onTap: () => _push(context, StatsScreen(state: state)),
               ),
               if (entries.isEmpty)
                 const Padding(
@@ -93,7 +105,7 @@ class HomeScreen extends StatelessWidget {
         ));
         lastDay = day;
       }
-      widgets.add(_EntryTile(
+      widgets.add(EntryTile(
         entry: e,
         state: state,
         onTap: () => _openForm(context, entry: e),
@@ -106,16 +118,12 @@ class HomeScreen extends StatelessWidget {
     final today = DateTime.now();
     final t = DateTime(today.year, today.month, today.day);
     if (day == t) return 'Today';
-    if (day == t.subtract(const Duration(days: 1))) return 'Yesterday';
+    if (day == DateTime(t.year, t.month, t.day - 1)) return 'Yesterday';
     return DateFormat('EEE, d MMM y').format(day);
   }
 
   void _openForm(BuildContext context, {Entry? entry}) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => EntryFormScreen(state: state, entry: entry),
-      ),
-    );
+    _push(context, EntryFormScreen(state: state, entry: entry));
   }
 }
 
@@ -125,12 +133,14 @@ class _SummaryCard extends StatelessWidget {
     required this.month,
     required this.income,
     required this.expense,
+    required this.onTap,
   });
 
   final AppState state;
   final DateTime month;
   final int income;
   final int expense;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -138,42 +148,53 @@ class _SummaryCard extends StatelessWidget {
     final balance = income - expense;
     return Card(
       margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(DateFormat('MMMM y').format(month),
-                style: theme.textTheme.labelLarge),
-            const SizedBox(height: 4),
-            Text('Balance', style: theme.textTheme.bodySmall),
-            Text(
-              state.formatMoney(balance),
-              style: theme.textTheme.headlineMedium?.copyWith(
-                color: balance < 0 ? kExpenseColor : null,
-                fontWeight: FontWeight.w600,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(DateFormat('MMMM y').format(month),
+                      style: theme.textTheme.labelLarge),
+                  const Spacer(),
+                  Icon(Icons.chevron_right,
+                      size: 18, color: theme.colorScheme.outline),
+                ],
               ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _Stat(
-                    label: 'Income',
-                    value: state.formatMoney(income),
-                    color: kIncomeColor,
-                  ),
+              const SizedBox(height: 4),
+              Text('Balance', style: theme.textTheme.bodySmall),
+              Text(
+                state.formatMoney(balance),
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  color: balance < 0 ? kExpenseColor : null,
+                  fontWeight: FontWeight.w600,
                 ),
-                Expanded(
-                  child: _Stat(
-                    label: 'Expenses',
-                    value: state.formatMoney(expense),
-                    color: kExpenseColor,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _Stat(
+                      label: 'Income',
+                      value: state.formatMoney(income),
+                      color: kIncomeColor,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  Expanded(
+                    child: _Stat(
+                      label: 'Expenses',
+                      value: state.formatMoney(expense),
+                      color: kExpenseColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -201,87 +222,5 @@ class _Stat extends StatelessWidget {
         ),
       ],
     );
-  }
-}
-
-class _EntryTile extends StatelessWidget {
-  const _EntryTile({
-    required this.entry,
-    required this.state,
-    required this.onTap,
-  });
-
-  final Entry entry;
-  final AppState state;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = entry.isIncome ? kIncomeColor : kExpenseColor;
-    final sign = entry.isIncome ? '+' : '-';
-
-    final subtitleParts = <String>[
-      if (entry.isIncome && entry.period != null)
-        '${_periodLabel(entry.period!)} income',
-      if (entry.note.isNotEmpty) entry.note,
-    ];
-
-    return Dismissible(
-      key: ValueKey('entry_${entry.id}'),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        color: kExpenseColor,
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 24),
-        child: const Icon(Icons.delete_outline, color: Colors.white),
-      ),
-      onDismissed: (_) async {
-        final messenger = ScaffoldMessenger.of(context);
-        await state.deleteEntry(entry);
-        messenger
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: const Text('Entry deleted'),
-              action: SnackBarAction(
-                label: 'Undo',
-                onPressed: () => state.restoreEntry(entry),
-              ),
-            ),
-          );
-      },
-      child: ListTile(
-        onTap: onTap,
-        leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.15),
-          child: Icon(
-            entry.isIncome ? Icons.south_west : Icons.north_east,
-            color: color,
-            size: 20,
-          ),
-        ),
-        title: Text(entry.category),
-        subtitle: subtitleParts.isEmpty ? null : Text(subtitleParts.join(' · ')),
-        trailing: Text(
-          '$sign ${state.formatMoney(entry.amountMinor)}',
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w600,
-            fontSize: 15,
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _periodLabel(IncomePeriod p) {
-    switch (p) {
-      case IncomePeriod.daily:
-        return 'Daily';
-      case IncomePeriod.weekly:
-        return 'Weekly';
-      case IncomePeriod.monthly:
-        return 'Monthly';
-    }
   }
 }
