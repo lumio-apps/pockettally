@@ -142,7 +142,10 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _category,
+              // The key rebuilds the field when Income/Expense is switched,
+              // because initialValue is only read once.
+              key: ValueKey(_type),
+              initialValue: _category,
               decoration: const InputDecoration(
                 labelText: 'Category',
                 border: OutlineInputBorder(),

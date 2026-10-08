@@ -29,6 +29,9 @@ jobs:
             flutter create --org com.lumio --project-name pockettally --platforms android .
           fi
 
+      - name: Add permissions and app label
+        run: python3 tool/prepare_android.py manifest
+
       - run: flutter pub get
 
       - run: flutter analyze --no-fatal-infos
