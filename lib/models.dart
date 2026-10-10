@@ -139,6 +139,7 @@ class Entry {
     required this.date,
     this.note = '',
     this.period,
+    this.photo,
   });
 
   final int? id;
@@ -147,6 +148,9 @@ class Entry {
   final String category;
   final DateTime date;
   final String note;
+
+  /// File name of the bill photo in the app's private folder, if any.
+  final String? photo;
 
   /// Only used for income: daily, weekly or monthly salary.
   final IncomePeriod? period;
@@ -161,6 +165,7 @@ class Entry {
         'date': DateTime(date.year, date.month, date.day).millisecondsSinceEpoch,
         'note': note,
         'period': period?.name,
+        'photo': photo,
       };
 
   static Entry fromMap(Map<String, Object?> m) => Entry(
@@ -173,5 +178,124 @@ class Entry {
         period: m['period'] == null
             ? null
             : IncomePeriod.values.byName(m['period'] as String),
+        photo: m['photo'] as String?,
+      );
+}
+
+enum DebtType { lent, borrowed }
+
+/// Money lent to someone or borrowed from someone.
+class Debt {
+  const Debt({
+    this.id,
+    required this.person,
+    required this.type,
+    required this.amountMinor,
+    this.paidMinor = 0,
+    required this.date,
+    this.note = '',
+  });
+
+  final int? id;
+  final String person;
+  final DebtType type;
+  final int amountMinor;
+
+  /// How much of it has been paid back so far.
+  final int paidMinor;
+  final DateTime date;
+  final String note;
+
+  int get remainingMinor => amountMinor - paidMinor > 0 ? amountMinor - paidMinor : 0;
+  bool get isSettled => paidMinor >= amountMinor;
+
+  Debt copyWith({
+    String? person,
+    DebtType? type,
+    int? amountMinor,
+    int? paidMinor,
+    DateTime? date,
+    String? note,
+  }) =>
+      Debt(
+        id: id,
+        person: person ?? this.person,
+        type: type ?? this.type,
+        amountMinor: amountMinor ?? this.amountMinor,
+        paidMinor: paidMinor ?? this.paidMinor,
+        date: date ?? this.date,
+        note: note ?? this.note,
+      );
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'id': id,
+        'person': person,
+        'type': type.name,
+        'amount_minor': amountMinor,
+        'paid_minor': paidMinor,
+        'date': DateTime(date.year, date.month, date.day).millisecondsSinceEpoch,
+        'note': note,
+      };
+
+  static Debt fromMap(Map<String, Object?> m) => Debt(
+        id: m['id'] as int?,
+        person: m['person'] as String,
+        type: DebtType.values.byName(m['type'] as String),
+        amountMinor: m['amount_minor'] as int,
+        paidMinor: (m['paid_minor'] as int?) ?? 0,
+        date: DateTime.fromMillisecondsSinceEpoch(m['date'] as int),
+        note: (m['note'] as String?) ?? '',
+      );
+}
+
+/// A savings goal, e.g. "New phone" with a target of 20,000.
+class SavingsGoal {
+  const SavingsGoal({
+    this.id,
+    required this.name,
+    required this.targetMinor,
+    this.savedMinor = 0,
+    required this.colorValue,
+  });
+
+  final int? id;
+  final String name;
+  final int targetMinor;
+  final int savedMinor;
+  final int colorValue;
+
+  Color get color => Color(colorValue);
+  double get progress =>
+      targetMinor <= 0 ? 0 : (savedMinor / targetMinor).clamp(0.0, 1.0);
+  bool get isReached => savedMinor >= targetMinor;
+
+  SavingsGoal copyWith({
+    String? name,
+    int? targetMinor,
+    int? savedMinor,
+    int? colorValue,
+  }) =>
+      SavingsGoal(
+        id: id,
+        name: name ?? this.name,
+        targetMinor: targetMinor ?? this.targetMinor,
+        savedMinor: savedMinor ?? this.savedMinor,
+        colorValue: colorValue ?? this.colorValue,
+      );
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'id': id,
+        'name': name,
+        'target_minor': targetMinor,
+        'saved_minor': savedMinor,
+        'color': colorValue,
+      };
+
+  static SavingsGoal fromMap(Map<String, Object?> m) => SavingsGoal(
+        id: m['id'] as int?,
+        name: m['name'] as String,
+        targetMinor: m['target_minor'] as int,
+        savedMinor: (m['saved_minor'] as int?) ?? 0,
+        colorValue: m['color'] as int,
       );
 }

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.0
+
+- New logo ("Pocket In/Out") and splash screen
+- New look: bottom navigation (Home, Insights, Budgets, Settings) with a big + button
+- New Home: balance card, budget bar, quick actions and grouped recent entries
+- New Add entry screen with its own calculator keypad and category chips
+- Insights: last 6 months bar chart in the month view
+- Lend & Borrow: track money you lent or borrowed, part payments and what is still open
+- Savings goals: set a target, add or take out money, see progress
+- Bill photos: attach a photo of the receipt to any entry (camera or gallery)
+- Backups now include lend/borrow records and savings goals (bill photos are not included)
+
 ## 0.4.0
 
 - Stats: new Year view with a month-by-month bar chart of income and expenses

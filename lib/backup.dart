@@ -14,11 +14,15 @@ class BackupData {
     required this.monthlyBudgetMinor,
     required this.categories,
     required this.entries,
+    this.debts = const [],
+    this.goals = const [],
     DateTime? exportedAt,
   }) : exportedAt = exportedAt ?? DateTime.now();
 
   static const String appId = 'PocketTally';
-  static const int formatVersion = 1;
+
+  /// 1 = app 0.3.0, 2 = app 0.5.0 (adds debts and goals).
+  static const int formatVersion = 2;
 
   final String userName;
   final String currencyCode;
@@ -26,6 +30,8 @@ class BackupData {
   final int monthlyBudgetMinor;
   final List<EntryCategory> categories;
   final List<Entry> entries;
+  final List<Debt> debts;
+  final List<SavingsGoal> goals;
   final DateTime exportedAt;
 
   String toJsonString() => const JsonEncoder.withIndent(' ').convert({
@@ -56,6 +62,26 @@ class BackupData {
               'date': _dateString(e.date),
               'note': e.note,
               'period': e.period?.name,
+            },
+        ],
+        'debts': [
+          for (final d in debts)
+            {
+              'person': d.person,
+              'type': d.type.name,
+              'amountMinor': d.amountMinor,
+              'paidMinor': d.paidMinor,
+              'date': _dateString(d.date),
+              'note': d.note,
+            },
+        ],
+        'goals': [
+          for (final g in goals)
+            {
+              'name': g.name,
+              'targetMinor': g.targetMinor,
+              'savedMinor': g.savedMinor,
+              'color': g.colorValue,
             },
         ],
       });
@@ -102,7 +128,29 @@ class BackupData {
                 : IncomePeriod.values.byName(e['period'] as String),
           ),
       ];
+      final debts = [
+        for (final d in (decoded['debts'] as List<dynamic>? ?? []))
+          Debt(
+            person: (d as Map<String, dynamic>)['person'] as String,
+            type: DebtType.values.byName(d['type'] as String),
+            amountMinor: d['amountMinor'] as int,
+            paidMinor: (d['paidMinor'] as int?) ?? 0,
+            date: DateTime.parse(d['date'] as String),
+            note: (d['note'] as String?) ?? '',
+          ),
+      ];
+      final goals = [
+        for (final g in (decoded['goals'] as List<dynamic>? ?? []))
+          SavingsGoal(
+            name: (g as Map<String, dynamic>)['name'] as String,
+            targetMinor: g['targetMinor'] as int,
+            savedMinor: (g['savedMinor'] as int?) ?? 0,
+            colorValue: g['color'] as int,
+          ),
+      ];
       return BackupData(
+        debts: debts,
+        goals: goals,
         userName: (settings['userName'] as String?) ?? '',
         currencyCode: (settings['currency'] as String?) ?? 'INR',
         weekStartsOnSunday: settings['weekStart'] == 'sunday',

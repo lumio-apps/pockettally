@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../app_state.dart';
 import '../models.dart';
 import '../report_pdf.dart';
+import '../theme.dart';
 import '../widgets/bar_chart.dart';
 import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
 import '../widgets/pie_chart.dart';
@@ -110,6 +111,39 @@ class _StatsScreenState extends State<StatsScreen> {
     }
   }
 
+  /// Bar chart of the selected month and the five before it.
+  Widget _lastSixMonths(ThemeData theme, DateTime monthStart) {
+    final groups = <BarGroup>[];
+    for (var i = 5; i >= 0; i--) {
+      final m = DateTime(monthStart.year, monthStart.month - i, 1);
+      final list =
+          state.entriesBetween(m, DateTime(m.year, m.month + 1, 1));
+      groups.add(BarGroup(DateFormat('MMM').format(m),
+          AppState.sumIncome(list), AppState.sumExpense(list)));
+    }
+    final compact = NumberFormat.compact(locale: state.currency.locale);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 24),
+        Text('Last 6 months', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 16, 16, 12),
+            child: IncomeExpenseBarChart(
+              groups: groups,
+              incomeColor: kChartIncome,
+              expenseColor: kChartExpense,
+              height: 160,
+              axisLabel: (minor) => compact.format(minor / 100),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _yearSection(ThemeData theme, int year) {
     final now = DateTime.now();
     final lastMonth = year == now.year ? now.month : 12;
@@ -157,8 +191,8 @@ class _StatsScreenState extends State<StatsScreen> {
             padding: const EdgeInsets.fromLTRB(8, 16, 16, 12),
             child: IncomeExpenseBarChart(
               groups: groups,
-              incomeColor: kIncomeColor,
-              expenseColor: kExpenseColor,
+              incomeColor: kChartIncome,
+              expenseColor: kChartExpense,
               axisLabel: (minor) => compact.format(minor / 100),
             ),
           ),
@@ -195,7 +229,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Stats'),
+            title: const Text('Insights'),
             actions: [
               IconButton(
                 tooltip: 'Save as PDF',
@@ -272,6 +306,7 @@ class _StatsScreenState extends State<StatsScreen> {
                 ),
               ),
               if (_period == StatsPeriod.year) _yearSection(theme, start.year),
+              if (_period == StatsPeriod.month) _lastSixMonths(theme, start),
               const SizedBox(height: 24),
               Text('By category', style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),

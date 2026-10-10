@@ -14,6 +14,8 @@ class AppState extends ChangeNotifier {
 
   List<Entry> entries = [];
   List<EntryCategory> categories = [];
+  List<Debt> debts = [];
+  List<SavingsGoal> goals = [];
 
   String get userName => _prefs.getString('user_name') ?? '';
   bool get onboarded => userName.isNotEmpty;
@@ -41,6 +43,8 @@ class AppState extends ChangeNotifier {
   Future<void> load() async {
     entries = await AppDatabase.instance.allEntries();
     categories = await AppDatabase.instance.allCategories();
+    debts = await AppDatabase.instance.allDebts();
+    goals = await AppDatabase.instance.allGoals();
     notifyListeners();
   }
 
@@ -228,11 +232,14 @@ class AppState extends ChangeNotifier {
         monthlyBudgetMinor: monthlyBudgetMinor,
         categories: categories,
         entries: entries,
+        debts: debts,
+        goals: goals,
       );
 
   /// Replaces all data and settings with the backup.
   Future<void> restoreBackup(BackupData b) async {
-    await AppDatabase.instance.replaceAll(b.categories, b.entries);
+    await AppDatabase.instance
+        .replaceAll(b.categories, b.entries, b.debts, b.goals);
     if (b.userName.trim().isNotEmpty) {
       await _prefs.setString('user_name', b.userName.trim());
     }
@@ -244,6 +251,40 @@ class AppState extends ChangeNotifier {
     } else {
       await _prefs.remove('monthly_budget');
     }
+    await load();
+  }
+
+  // ---- lend & borrow ----
+
+  /// Total still to get back from people.
+  int get toReceiveMinor => debts
+      .where((d) => d.type == DebtType.lent)
+      .fold(0, (s, d) => s + d.remainingMinor);
+
+  /// Total still to pay back to people.
+  int get toPayMinor => debts
+      .where((d) => d.type == DebtType.borrowed)
+      .fold(0, (s, d) => s + d.remainingMinor);
+
+  Future<void> saveDebt(Debt d) async {
+    await AppDatabase.instance.saveDebt(d);
+    await load();
+  }
+
+  Future<void> deleteDebt(Debt d) async {
+    await AppDatabase.instance.deleteDebt(d.id!);
+    await load();
+  }
+
+  // ---- savings goals ----
+
+  Future<void> saveGoal(SavingsGoal g) async {
+    await AppDatabase.instance.saveGoal(g);
+    await load();
+  }
+
+  Future<void> deleteGoal(SavingsGoal g) async {
+    await AppDatabase.instance.deleteGoal(g.id!);
     await load();
   }
 

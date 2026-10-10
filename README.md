@@ -20,6 +20,9 @@
 - **Search and filter:** by text, type, category, date range and amount
 - **Budgets:** a monthly limit and a limit per category, with warnings
 - **Calculator** in the amount field (120+45)
+- **Lend & Borrow:** who owes you, whom you owe, part payments
+- **Savings goals** with progress
+- **Bill photos** attached to entries, stored only in the app
 - **Backup and restore** to a file you choose, nothing is uploaded
 - Week starts on Monday or Sunday
 - Edit entries, swipe to delete with Undo
@@ -27,7 +30,6 @@
 - Light, dark or system theme
 - In-app "Check for updates" that downloads new releases from GitHub
 
-Coming next: lend/borrow, savings goals, bill photos.
 
 ## Privacy
 

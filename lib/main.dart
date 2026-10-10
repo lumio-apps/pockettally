@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_state.dart';
-import 'screens/home_screen.dart';
+import 'photo_store.dart';
+import 'screens/root_shell.dart';
 import 'screens/welcome_screen.dart';
+import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final state = AppState(prefs);
   await state.load();
+  await PhotoStore.init();
   runApp(PocketTallyApp(state: state));
 }
 
@@ -27,18 +30,10 @@ class PocketTallyApp extends StatelessWidget {
           title: 'PocketTally',
           debugShowCheckedModeBanner: false,
           themeMode: state.themeMode,
-          theme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: const Color(0xFF2E7D6B),
-            brightness: Brightness.light,
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: const Color(0xFF2E7D6B),
-            brightness: Brightness.dark,
-          ),
+          theme: buildTheme(Brightness.light),
+          darkTheme: buildTheme(Brightness.dark),
           home: state.onboarded
-              ? HomeScreen(state: state)
+              ? RootShell(state: state)
               : WelcomeScreen(state: state),
         );
       },

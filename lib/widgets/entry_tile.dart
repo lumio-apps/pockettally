@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models.dart';
 
-const Color kIncomeColor = Color(0xFF2E9E5B);
-const Color kExpenseColor = Color(0xFFD64545);
+const Color kIncomeColor = Color(0xFF1B7A4C);
+const Color kExpenseColor = Color(0xFFC0392B);
 
-/// One income/expense row. Swipe left to delete (with Undo), tap to edit.
+/// One income/expense row. Tap to edit, long-press for Edit/Delete,
+/// swipe left to delete (with Undo).
 class EntryTile extends StatelessWidget {
   const EntryTile({
     super.key,
@@ -25,9 +26,14 @@ class EntryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final color = entry.isIncome ? kIncomeColor : kExpenseColor;
     final sign = entry.isIncome ? '+' : '-';
     final categoryColor = state.colorFor(entry.category, entry.type);
+    final dark = theme.brightness == Brightness.dark;
+    final letterColor = HSLColor.fromColor(categoryColor)
+        .withLightness(dark ? 0.75 : 0.28)
+        .toColor();
 
     final subtitleParts = <String>[
       if (showDate) MaterialLocalizations.of(context).formatMediumDate(entry.date),
@@ -40,7 +46,10 @@ class EntryTile extends StatelessWidget {
       key: ValueKey('entry_${entry.id}'),
       direction: DismissDirection.endToStart,
       background: Container(
-        color: kExpenseColor,
+        decoration: BoxDecoration(
+          color: kExpenseColor,
+          borderRadius: BorderRadius.circular(16),
+        ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
         child: const Icon(Icons.delete_outline, color: Colors.white),
@@ -50,22 +59,54 @@ class EntryTile extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         onLongPress: () => _showActions(context),
-        leading: CircleAvatar(
-          backgroundColor: categoryColor.withValues(alpha: 0.25),
-          child: Icon(
-            entry.isIncome ? Icons.south_west : Icons.north_east,
-            color: color,
-            size: 20,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+        leading: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: categoryColor.withValues(alpha: dark ? 0.28 : 0.22),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            entry.category.isEmpty ? '?' : entry.category[0].toUpperCase(),
+            style: TextStyle(
+              color: letterColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 17,
+            ),
           ),
         ),
-        title: Text(entry.category),
-        subtitle:
-            subtitleParts.isEmpty ? null : Text(subtitleParts.join(' · ')),
+        title: Row(
+          children: [
+            Flexible(
+              child: Text(
+                entry.category,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+            if (entry.photo != null) ...[
+              const SizedBox(width: 6),
+              Icon(Icons.receipt_long_outlined,
+                  size: 16, color: theme.colorScheme.onSurfaceVariant),
+            ],
+          ],
+        ),
+        subtitle: subtitleParts.isEmpty
+            ? null
+            : Text(
+                subtitleParts.join(' · '),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
         trailing: Text(
           '$sign ${state.formatMoney(entry.amountMinor)}',
           style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w600,
+            color: dark
+                ? (entry.isIncome ? const Color(0xFF7BE0B5) : const Color(0xFFFFB4A8))
+                : color,
+            fontWeight: FontWeight.w800,
             fontSize: 15,
           ),
         ),

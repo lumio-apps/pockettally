@@ -9,6 +9,7 @@ import 'models.dart';
 ///   v1 (app 0.1.0): entries
 ///   v2 (app 0.2.0): categories
 ///   v3 (app 0.3.0): categories.budget
+///   v4 (app 0.5.0): entries.photo, debts, goals
 class AppDatabase {
   AppDatabase._();
   static final AppDatabase instance = AppDatabase._();
@@ -20,10 +21,11 @@ class AppDatabase {
     final dir = await getDatabasesPath();
     _db = await openDatabase(
       p.join(dir, 'pockettally.db'),
-      version: 3,
+      version: 4,
       onCreate: (db, version) async {
         await _createEntries(db);
         await _createCategories(db);
+        await _createDebtsAndGoals(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -31,6 +33,10 @@ class AppDatabase {
           await _createCategories(db);
         } else if (oldVersion < 3) {
           await db.execute('ALTER TABLE categories ADD COLUMN budget INTEGER');
+        }
+        if (oldVersion < 4) {
+          await db.execute('ALTER TABLE entries ADD COLUMN photo TEXT');
+          await _createDebtsAndGoals(db);
         }
       },
     );
@@ -46,10 +52,34 @@ class AppDatabase {
         category TEXT NOT NULL,
         date INTEGER NOT NULL,
         note TEXT NOT NULL DEFAULT '',
-        period TEXT
+        period TEXT,
+        photo TEXT
       )
     ''');
     await db.execute('CREATE INDEX idx_entries_date ON entries(date)');
+  }
+
+  static Future<void> _createDebtsAndGoals(Database db) async {
+    await db.execute('''
+      CREATE TABLE debts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        person TEXT NOT NULL,
+        type TEXT NOT NULL,
+        amount_minor INTEGER NOT NULL,
+        paid_minor INTEGER NOT NULL DEFAULT 0,
+        date INTEGER NOT NULL,
+        note TEXT NOT NULL DEFAULT ''
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE goals (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        target_minor INTEGER NOT NULL,
+        saved_minor INTEGER NOT NULL DEFAULT 0,
+        color INTEGER NOT NULL
+      )
+    ''');
   }
 
   /// Creates the categories table, adds the defaults, and adds any category
@@ -167,16 +197,72 @@ class AppDatabase {
     });
   }
 
+  // ---- debts ----
+
+  Future<List<Debt>> allDebts() async {
+    final db = await _database;
+    final rows = await db.query('debts', orderBy: 'date DESC, id DESC');
+    return rows.map(Debt.fromMap).toList();
+  }
+
+  Future<void> saveDebt(Debt d) async {
+    final db = await _database;
+    if (d.id == null) {
+      await db.insert('debts', d.toMap());
+    } else {
+      await db.update('debts', d.toMap(), where: 'id = ?', whereArgs: [d.id]);
+    }
+  }
+
+  Future<void> deleteDebt(int id) async {
+    final db = await _database;
+    await db.delete('debts', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ---- savings goals ----
+
+  Future<List<SavingsGoal>> allGoals() async {
+    final db = await _database;
+    final rows = await db.query('goals', orderBy: 'id');
+    return rows.map(SavingsGoal.fromMap).toList();
+  }
+
+  Future<void> saveGoal(SavingsGoal g) async {
+    final db = await _database;
+    if (g.id == null) {
+      await db.insert('goals', g.toMap());
+    } else {
+      await db.update('goals', g.toMap(), where: 'id = ?', whereArgs: [g.id]);
+    }
+  }
+
+  Future<void> deleteGoal(int id) async {
+    final db = await _database;
+    await db.delete('goals', where: 'id = ?', whereArgs: [id]);
+  }
+
   // ---- backup / restore ----
 
-  /// Replaces ALL categories and entries in one transaction.
+  /// Replaces ALL data in one transaction.
   /// "Other" is added back for both types if the backup lacks it.
   Future<void> replaceAll(
-      List<EntryCategory> categories, List<Entry> entries) async {
+    List<EntryCategory> categories,
+    List<Entry> entries,
+    List<Debt> debts,
+    List<SavingsGoal> goals,
+  ) async {
     final db = await _database;
     await db.transaction((txn) async {
       await txn.delete('entries');
       await txn.delete('categories');
+      await txn.delete('debts');
+      await txn.delete('goals');
+      for (final d in debts) {
+        await txn.insert('debts', d.toMap()..remove('id'));
+      }
+      for (final g in goals) {
+        await txn.insert('goals', g.toMap()..remove('id'));
+      }
       for (final c in categories) {
         await txn.insert(
           'categories',
