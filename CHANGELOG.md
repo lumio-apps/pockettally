@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0
+
+- Stats: new Year view with a month-by-month bar chart of income and expenses
+- Year view lists every month; tap one to open it
+- Save any day, week, month or year as a PDF report (Stats > PDF button)
+- Delete button on the edit screen, and long-press an entry for Edit / Delete
+
 ## 0.3.0
 
 - Monthly budget with progress bar and a warning when it is exceeded

@@ -15,7 +15,8 @@
 - Income and expenses in one list, each entry separate (income green, expense red)
 - Monthly balance, income and expenses on the home screen
 - **Categories:** create your own, rename, recolor or delete them
-- **Stats:** totals for any day, week or month, with a pie chart by category
+- **Stats:** totals for any day, week, month or year, a pie chart by category and a month-by-month bar chart
+- **PDF report** of any period, made on the phone
 - **Search and filter:** by text, type, category, date range and amount
 - **Budgets:** a monthly limit and a limit per category, with warnings
 - **Calculator** in the amount field (120+45)
@@ -26,7 +27,7 @@
 - Light, dark or system theme
 - In-app "Check for updates" that downloads new releases from GitHub
 
-Coming next: bar chart, year view, PDF report, lend/borrow, savings goals, bill photos.
+Coming next: lend/borrow, savings goals, bill photos.
 
 ## Privacy
 
@@ -53,4 +54,4 @@ flutter build apk --dart-define=UPDATER=false
 
 ## License
 
-[GPL-3.0](LICENSE)
+[GPL-3.0](LICENSE). The bundled DejaVu fonts use their own free license, see `assets/fonts/DejaVu-LICENSE.txt`.

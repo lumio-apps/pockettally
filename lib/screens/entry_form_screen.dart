@@ -5,7 +5,8 @@ import 'package:intl/intl.dart';
 import '../app_state.dart';
 import '../models.dart';
 import '../utils/amount_parser.dart';
-import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
+import '../widgets/entry_tile.dart'
+    show kIncomeColor, kExpenseColor, deleteEntryWithUndo;
 import 'categories_screen.dart';
 
 /// Add a new entry, or edit an existing one when [entry] is given.
@@ -94,6 +95,27 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     setState(() {});
   }
 
+  Future<void> _delete() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete this entry?'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Delete')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    Navigator.of(context).pop();
+    await deleteEntryWithUndo(messenger, widget.state, widget.entry!);
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     final amount = evaluateAmount(_amountController.text)!;
@@ -139,7 +161,17 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
           : categoryNames.first;
     }
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit entry' : 'New entry')),
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Edit entry' : 'New entry'),
+        actions: [
+          if (_isEditing)
+            IconButton(
+              tooltip: 'Delete',
+              icon: const Icon(Icons.delete_outline),
+              onPressed: _delete,
+            ),
+        ],
+      ),
       body: Form(
         key: _formKey,
         child: ListView(

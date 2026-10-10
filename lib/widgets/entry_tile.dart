@@ -45,23 +45,11 @@ class EntryTile extends StatelessWidget {
         padding: const EdgeInsets.only(right: 24),
         child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
-      onDismissed: (_) async {
-        final messenger = ScaffoldMessenger.of(context);
-        await state.deleteEntry(entry);
-        messenger
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: const Text('Entry deleted'),
-              action: SnackBarAction(
-                label: 'Undo',
-                onPressed: () => state.restoreEntry(entry),
-              ),
-            ),
-          );
-      },
+      onDismissed: (_) =>
+          deleteEntryWithUndo(ScaffoldMessenger.of(context), state, entry),
       child: ListTile(
         onTap: onTap,
+        onLongPress: () => _showActions(context),
         leading: CircleAvatar(
           backgroundColor: categoryColor.withValues(alpha: 0.25),
           child: Icon(
@@ -84,6 +72,34 @@ class EntryTile extends StatelessWidget {
       ),
     );
   }
+
+  /// Long press: Edit or Delete.
+  Future<void> _showActions(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Edit'),
+              onTap: () => Navigator.pop(ctx, 'edit'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: kExpenseColor),
+              title: const Text('Delete',
+                  style: TextStyle(color: kExpenseColor)),
+              onTap: () => Navigator.pop(ctx, 'delete'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action == 'edit') onTap();
+    if (action == 'delete') await deleteEntryWithUndo(messenger, state, entry);
+  }
 }
 
 String periodLabel(IncomePeriod p) {
@@ -95,4 +111,21 @@ String periodLabel(IncomePeriod p) {
     case IncomePeriod.monthly:
       return 'Monthly';
   }
+}
+
+/// Deletes [entry] and shows "Entry deleted" with an Undo button.
+Future<void> deleteEntryWithUndo(
+    ScaffoldMessengerState messenger, AppState state, Entry entry) async {
+  await state.deleteEntry(entry);
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: const Text('Entry deleted'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () => state.restoreEntry(entry),
+        ),
+      ),
+    );
 }

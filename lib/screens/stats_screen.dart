@@ -3,12 +3,15 @@ import 'package:intl/intl.dart';
 
 import '../app_state.dart';
 import '../models.dart';
+import '../report_pdf.dart';
+import '../widgets/bar_chart.dart';
 import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
 import '../widgets/pie_chart.dart';
 
-enum StatsPeriod { day, week, month }
+enum StatsPeriod { day, week, month, year }
 
-/// Totals for a day, week or month, and a pie chart by category.
+/// Totals for a day, week, month or year, a bar chart by month (year view)
+/// and a pie chart by category.
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key, required this.state});
 
@@ -22,6 +25,7 @@ class _StatsScreenState extends State<StatsScreen> {
   StatsPeriod _period = StatsPeriod.month;
   DateTime _anchor = DateTime.now();
   EntryType _pieType = EntryType.expense;
+  bool _exporting = false;
 
   AppState get state => widget.state;
 
@@ -40,6 +44,8 @@ class _StatsScreenState extends State<StatsScreen> {
           DateTime(d.year, d.month, 1),
           DateTime(d.year, d.month + 1, 1),
         );
+      case StatsPeriod.year:
+        return (DateTime(d.year, 1, 1), DateTime(d.year + 1, 1, 1));
     }
   }
 
@@ -54,6 +60,8 @@ class _StatsScreenState extends State<StatsScreen> {
         case StatsPeriod.month:
           // Day 1 avoids skipping a month (e.g. 31 Jan + 1 month).
           _anchor = DateTime(a.year, a.month + direction, 1);
+        case StatsPeriod.year:
+          _anchor = DateTime(a.year + direction, 1, 1);
       }
     });
   }
@@ -67,7 +75,98 @@ class _StatsScreenState extends State<StatsScreen> {
         return '${DateFormat('d MMM').format(start)} – ${DateFormat('d MMM y').format(last)}';
       case StatsPeriod.month:
         return DateFormat('MMMM y').format(start);
+      case StatsPeriod.year:
+        return '${start.year}';
     }
+  }
+
+  /// Opens one month of the year view.
+  void _openMonth(int year, int month) {
+    setState(() {
+      _period = StatsPeriod.month;
+      _anchor = DateTime(year, month, 1);
+    });
+  }
+
+  Future<void> _exportPdf(DateTime start, DateTime end, String label) async {
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _exporting = true);
+    try {
+      final saved = await ReportPdf.saveReport(
+        state: state,
+        start: start,
+        end: end,
+        periodLabel: label,
+      );
+      if (saved) {
+        messenger.showSnackBar(
+            const SnackBar(content: Text('PDF report saved')));
+      }
+    } catch (_) {
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Could not create the PDF report.')));
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  Widget _yearSection(ThemeData theme, int year) {
+    final now = DateTime.now();
+    final lastMonth = year == now.year ? now.month : 12;
+    final groups = <BarGroup>[];
+    final rows = <Widget>[];
+    for (var m = 1; m <= 12; m++) {
+      final list = state.entriesBetween(DateTime(year, m, 1), DateTime(year, m + 1, 1));
+      final inc = AppState.sumIncome(list);
+      final exp = AppState.sumExpense(list);
+      groups.add(BarGroup(DateFormat('MMMMM').format(DateTime(year, m, 1)), inc, exp));
+      if (m <= lastMonth && year <= now.year) {
+        final bal = inc - exp;
+        rows.add(ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(DateFormat('MMMM').format(DateTime(year, m, 1))),
+          subtitle: Text.rich(TextSpan(children: [
+            TextSpan(
+                text: '+ ${state.formatMoney(inc)}',
+                style: const TextStyle(color: kIncomeColor)),
+            const TextSpan(text: '   '),
+            TextSpan(
+                text: '- ${state.formatMoney(exp)}',
+                style: const TextStyle(color: kExpenseColor)),
+          ])),
+          trailing: Text(
+            state.formatMoney(bal),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: bal < 0 ? kExpenseColor : null,
+            ),
+          ),
+          onTap: () => _openMonth(year, m),
+        ));
+      }
+    }
+    final compact = NumberFormat.compact(locale: state.currency.locale);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 24),
+        Text('Month by month', style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 16, 16, 12),
+            child: IncomeExpenseBarChart(
+              groups: groups,
+              incomeColor: kIncomeColor,
+              expenseColor: kExpenseColor,
+              axisLabel: (minor) => compact.format(minor / 100),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        ...rows.reversed,
+      ],
+    );
   }
 
   @override
@@ -95,7 +194,24 @@ class _StatsScreenState extends State<StatsScreen> {
         final pieTotal = rows.fold<int>(0, (s, r) => s + r.value);
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Stats')),
+          appBar: AppBar(
+            title: const Text('Stats'),
+            actions: [
+              IconButton(
+                tooltip: 'Save as PDF',
+                icon: _exporting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.picture_as_pdf_outlined),
+                onPressed: _exporting || list.isEmpty
+                    ? null
+                    : () => _exportPdf(start, end, _rangeLabel(start, end)),
+              ),
+            ],
+          ),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
@@ -104,7 +220,9 @@ class _StatsScreenState extends State<StatsScreen> {
                   ButtonSegment(value: StatsPeriod.day, label: Text('Day')),
                   ButtonSegment(value: StatsPeriod.week, label: Text('Week')),
                   ButtonSegment(value: StatsPeriod.month, label: Text('Month')),
+                  ButtonSegment(value: StatsPeriod.year, label: Text('Year')),
                 ],
+                showSelectedIcon: false,
                 selected: {_period},
                 onSelectionChanged: (s) => setState(() {
                   _period = s.first;
@@ -153,6 +271,7 @@ class _StatsScreenState extends State<StatsScreen> {
                   ),
                 ),
               ),
+              if (_period == StatsPeriod.year) _yearSection(theme, start.year),
               const SizedBox(height: 24),
               Text('By category', style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
