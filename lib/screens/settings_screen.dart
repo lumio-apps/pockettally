@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../app_state.dart';
+import '../backup.dart';
+import '../backup_service.dart';
 import '../models.dart';
 import '../update_checker.dart';
+import 'budgets_screen.dart';
 import 'categories_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -18,6 +21,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   String _version = '';
   bool _checking = false;
+  bool _busy = false;
 
   AppState get state => widget.state;
 
@@ -79,12 +83,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               ListTile(
+                leading: const Icon(Icons.calendar_view_week_outlined),
+                title: const Text('Week starts on'),
+                trailing: DropdownButton<bool>(
+                  value: state.weekStartsOnSunday,
+                  underline: const SizedBox.shrink(),
+                  items: const [
+                    DropdownMenuItem(value: false, child: Text('Monday')),
+                    DropdownMenuItem(value: true, child: Text('Sunday')),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) state.setWeekStartsOnSunday(v);
+                  },
+                ),
+              ),
+              ListTile(
                 leading: const Icon(Icons.category_outlined),
                 title: const Text('Categories'),
                 subtitle: const Text('Add, rename, recolor or delete'),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => CategoriesScreen(state: state),
                 )),
+              ),
+              ListTile(
+                leading: const Icon(Icons.savings_outlined),
+                title: const Text('Budgets'),
+                subtitle: Text(state.monthlyBudgetMinor > 0
+                    ? 'Monthly limit ${state.formatMoney(state.monthlyBudgetMinor)}'
+                    : 'Monthly and category limits'),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => BudgetsScreen(state: state),
+                )),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.upload_file_outlined),
+                title: const Text('Back up data'),
+                subtitle: const Text('Save everything to a file you choose'),
+                onTap: _busy ? null : _backup,
+              ),
+              ListTile(
+                leading: const Icon(Icons.restore_outlined),
+                title: const Text('Restore from backup'),
+                subtitle: const Text('Replace all data with a backup file'),
+                onTap: _busy ? null : _restore,
               ),
               const Divider(),
               if (kUpdaterEnabled)
@@ -170,6 +212,75 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
     if (picked != null) await state.setCurrency(picked);
+  }
+
+  Future<void> _backup() async {
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      final saved = await BackupService.export(state);
+      if (saved) {
+        messenger.showSnackBar(SnackBar(
+          content: Text('Backup saved (${state.entries.length} entries). '
+              'Keep this file safe.'),
+        ));
+      }
+    } catch (_) {
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Could not save the backup.')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _restore() async {
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      final BackupData? backup;
+      try {
+        backup = await BackupService.pick();
+      } on FormatException catch (e) {
+        messenger.showSnackBar(SnackBar(content: Text(e.message)));
+        return;
+      }
+      if (backup == null || !mounted) return;
+      // A non-nullable copy, so the dialog builder below can use it.
+      final BackupData data = backup;
+
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Restore this backup?'),
+          content: Text(
+            'The backup has ${data.entries.length} entries and '
+            '${data.categories.length} categories.\n\n'
+            'All ${state.entries.length} entries now on this phone will be '
+            'replaced. This cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Restore'),
+            ),
+          ],
+        ),
+      );
+      if (ok != true) return;
+
+      await state.restoreBackup(data);
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Backup restored')));
+    } catch (_) {
+      messenger.showSnackBar(
+          const SnackBar(content: Text('Could not restore the backup.')));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   Future<void> _checkForUpdates() async {

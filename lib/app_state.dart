@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'backup.dart';
 import 'db.dart';
 import 'models.dart';
 
@@ -19,6 +20,12 @@ class AppState extends ChangeNotifier {
 
   Currency get currency =>
       currencyByCode(_prefs.getString('currency') ?? 'INR');
+
+  /// Weeks start on Monday unless the user picks Sunday.
+  bool get weekStartsOnSunday => _prefs.getString('week_start') == 'sunday';
+
+  /// Overall monthly spending limit in minor units, 0 = not set.
+  int get monthlyBudgetMinor => _prefs.getInt('monthly_budget') ?? 0;
 
   ThemeMode get themeMode {
     switch (_prefs.getString('theme')) {
@@ -52,6 +59,20 @@ class AppState extends ChangeNotifier {
 
   Future<void> setCurrency(Currency c) async {
     await _prefs.setString('currency', c.code);
+    notifyListeners();
+  }
+
+  Future<void> setWeekStartsOnSunday(bool sunday) async {
+    await _prefs.setString('week_start', sunday ? 'sunday' : 'monday');
+    notifyListeners();
+  }
+
+  Future<void> setMonthlyBudget(int minor) async {
+    if (minor <= 0) {
+      await _prefs.remove('monthly_budget');
+    } else {
+      await _prefs.setInt('monthly_budget', minor);
+    }
     notifyListeners();
   }
 
@@ -151,6 +172,80 @@ class AppState extends ChangeNotifier {
   static int sumExpense(Iterable<Entry> list) => list
       .where((e) => !e.isIncome)
       .fold(0, (sum, e) => sum + e.amountMinor);
+
+  /// First day of the week containing [day], using the week-start setting.
+  DateTime startOfWeek(DateTime day) {
+    final d = DateTime(day.year, day.month, day.day);
+    final back = weekStartsOnSunday ? d.weekday % 7 : d.weekday - 1;
+    return DateTime(d.year, d.month, d.day - back);
+  }
+
+  // ---- budgets ----
+
+  /// Expenses of one category in the month of [month].
+  int expenseForCategory(String name, DateTime month) => entriesInMonth(month)
+      .where((e) => !e.isIncome && e.category == name)
+      .fold(0, (sum, e) => sum + e.amountMinor);
+
+  /// Expense categories with a limit, in display order.
+  List<EntryCategory> get budgetedCategories =>
+      categoriesFor(EntryType.expense).where((c) => c.hasBudget).toList();
+
+  /// Categories whose spending in [month] is over their limit.
+  List<EntryCategory> overBudgetCategories(DateTime month) => budgetedCategories
+      .where((c) => expenseForCategory(c.name, month) > c.budgetMinor!)
+      .toList();
+
+  /// A short warning when [e] (just saved) pushed a budget over its limit.
+  String? budgetWarningFor(Entry e) {
+    if (e.isIncome) return null;
+    final warnings = <String>[];
+    for (final c in budgetedCategories) {
+      if (c.name != e.category) continue;
+      final spent = expenseForCategory(c.name, e.date);
+      if (spent > c.budgetMinor!) {
+        warnings.add('${c.name} is over its limit '
+            '(${formatMoney(spent)} of ${formatMoney(c.budgetMinor!)})');
+      }
+    }
+    final limit = monthlyBudgetMinor;
+    if (limit > 0) {
+      final spent = expenseIn(e.date);
+      if (spent > limit) {
+        warnings.add('Monthly budget exceeded '
+            '(${formatMoney(spent)} of ${formatMoney(limit)})');
+      }
+    }
+    return warnings.isEmpty ? null : warnings.join('\n');
+  }
+
+  // ---- backup / restore ----
+
+  BackupData createBackup() => BackupData(
+        userName: userName,
+        currencyCode: currency.code,
+        weekStartsOnSunday: weekStartsOnSunday,
+        monthlyBudgetMinor: monthlyBudgetMinor,
+        categories: categories,
+        entries: entries,
+      );
+
+  /// Replaces all data and settings with the backup.
+  Future<void> restoreBackup(BackupData b) async {
+    await AppDatabase.instance.replaceAll(b.categories, b.entries);
+    if (b.userName.trim().isNotEmpty) {
+      await _prefs.setString('user_name', b.userName.trim());
+    }
+    await _prefs.setString('currency', currencyByCode(b.currencyCode).code);
+    await _prefs.setString(
+        'week_start', b.weekStartsOnSunday ? 'sunday' : 'monday');
+    if (b.monthlyBudgetMinor > 0) {
+      await _prefs.setInt('monthly_budget', b.monthlyBudgetMinor);
+    } else {
+      await _prefs.remove('monthly_budget');
+    }
+    await load();
+  }
 
   // ---- formatting ----
 

@@ -32,8 +32,8 @@ class _StatsScreenState extends State<StatsScreen> {
       case StatsPeriod.day:
         return (d, DateTime(d.year, d.month, d.day + 1));
       case StatsPeriod.week:
-        // Weeks start on Monday.
-        final start = DateTime(d.year, d.month, d.day - (d.weekday - 1));
+        // Monday or Sunday, as chosen in Settings.
+        final start = state.startOfWeek(d);
         return (start, DateTime(start.year, start.month, start.day + 7));
       case StatsPeriod.month:
         return (

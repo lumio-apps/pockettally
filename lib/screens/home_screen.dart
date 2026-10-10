@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 
 import '../app_state.dart';
 import '../models.dart';
+import '../widgets/budget_bar.dart';
 import '../widgets/entry_tile.dart';
+import 'budgets_screen.dart';
 import 'entry_form_screen.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
@@ -70,6 +72,7 @@ class HomeScreen extends StatelessWidget {
                 income: income,
                 expense: expense,
                 onTap: () => _push(context, StatsScreen(state: state)),
+                onBudgetTap: () => _push(context, BudgetsScreen(state: state)),
               ),
               if (entries.isEmpty)
                 const Padding(
@@ -134,6 +137,7 @@ class _SummaryCard extends StatelessWidget {
     required this.income,
     required this.expense,
     required this.onTap,
+    required this.onBudgetTap,
   });
 
   final AppState state;
@@ -141,11 +145,14 @@ class _SummaryCard extends StatelessWidget {
   final int income;
   final int expense;
   final VoidCallback onTap;
+  final VoidCallback onBudgetTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final balance = income - expense;
+    final limit = state.monthlyBudgetMinor;
+    final over = state.overBudgetCategories(month);
     return Card(
       margin: const EdgeInsets.all(16),
       clipBehavior: Clip.antiAlias,
@@ -193,6 +200,48 @@ class _SummaryCard extends StatelessWidget {
                   ),
                 ],
               ),
+              if (limit > 0 || over.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                InkWell(
+                  onTap: onBudgetTap,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (limit > 0)
+                          BudgetBar(
+                            state: state,
+                            spent: expense,
+                            limit: limit,
+                            label: 'Monthly budget',
+                          ),
+                        if (over.isNotEmpty) ...[
+                          if (limit > 0) const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.warning_amber_rounded,
+                                  size: 18, color: kWarningColor),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  over.length == 1
+                                      ? '${over.first.name} is over its limit'
+                                      : '${over.length} categories are over their limit',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                      color: kWarningColor,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

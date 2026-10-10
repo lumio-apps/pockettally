@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../app_state.dart';
 import '../models.dart';
+import '../utils/amount_parser.dart';
 import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
 import 'categories_screen.dart';
 
@@ -67,9 +68,36 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     if (picked != null) setState(() => _date = picked);
   }
 
+  /// Inserts an operator (or bracket) at the cursor in the amount field.
+  void _insert(String text) {
+    final c = _amountController;
+    final sel = c.selection;
+    final start = sel.isValid ? sel.start : c.text.length;
+    final end = sel.isValid ? sel.end : c.text.length;
+    final newText = c.text.replaceRange(start, end, text);
+    c.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: start + text.length),
+    );
+    setState(() {});
+  }
+
+  /// Replaces a calculation like "120+45" with its result "165.00".
+  void _applyResult() {
+    final v = evaluateAmount(_amountController.text);
+    if (v == null) return;
+    final text = v.toStringAsFixed(2);
+    _amountController.value = TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+    setState(() {});
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
-    final amount = double.parse(_amountController.text.replaceAll(',', '.'));
+    final amount = evaluateAmount(_amountController.text)!;
+    final messenger = ScaffoldMessenger.of(context);
     final entry = Entry(
       id: widget.entry?.id,
       type: _type,
@@ -84,7 +112,20 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     } else {
       await widget.state.addEntry(entry);
     }
+    final warning = widget.state.budgetWarningFor(entry);
     if (mounted) Navigator.of(context).pop();
+    if (warning != null) {
+      messenger.showSnackBar(SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.amber),
+            const SizedBox(width: 12),
+            Expanded(child: Text(warning)),
+          ],
+        ),
+        duration: const Duration(seconds: 5),
+      ));
+    }
   }
 
   @override
@@ -130,7 +171,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,+\-*/×÷()]')),
               ],
               style: TextStyle(
                   color: color, fontSize: 24, fontWeight: FontWeight.w600),
@@ -139,13 +180,26 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                 prefixText: '${widget.state.currency.symbol} ',
                 border: const OutlineInputBorder(),
               ),
+              onChanged: (_) => setState(() {}),
               validator: (v) {
-                final parsed = double.tryParse((v ?? '').replaceAll(',', '.'));
+                final parsed = evaluateAmount(v ?? '');
                 if (parsed == null || parsed <= 0) {
                   return 'Enter an amount greater than 0';
                 }
+                if ((parsed * 100).round() <= 0) {
+                  return 'Amount is too small';
+                }
                 return null;
               },
+            ),
+            const SizedBox(height: 8),
+            _CalculatorRow(
+              onInsert: _insert,
+              onEquals: _applyResult,
+              result: isCalculation(_amountController.text)
+                  ? evaluateAmount(_amountController.text)
+                  : null,
+              currencySymbol: widget.state.currency.symbol,
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
@@ -240,6 +294,65 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Operator buttons under the amount field, and the live result.
+class _CalculatorRow extends StatelessWidget {
+  const _CalculatorRow({
+    required this.onInsert,
+    required this.onEquals,
+    required this.result,
+    required this.currencySymbol,
+  });
+
+  final ValueChanged<String> onInsert;
+  final VoidCallback onEquals;
+  final double? result;
+  final String currencySymbol;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    Widget op(String label, String insert, String tooltip) => Tooltip(
+          message: tooltip,
+          child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(48, 44),
+              padding: EdgeInsets.zero,
+            ),
+            onPressed: () => onInsert(insert),
+            child: Text(label, style: const TextStyle(fontSize: 18)),
+          ),
+        );
+    return Row(
+      children: [
+        op('+', '+', 'Add'),
+        const SizedBox(width: 6),
+        op('−', '-', 'Subtract'),
+        const SizedBox(width: 6),
+        op('×', '×', 'Multiply'),
+        const SizedBox(width: 6),
+        op('÷', '÷', 'Divide'),
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: result == null
+                ? const SizedBox.shrink()
+                : FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: TextButton(
+                      onPressed: onEquals,
+                      child: Text(
+                        '= $currencySymbol ${result!.toStringAsFixed(2)}',
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
+          ),
+        ),
+      ],
     );
   }
 }

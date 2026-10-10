@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../app_state.dart';
 import '../models.dart';
+import '../utils/amount_parser.dart';
 
 /// Create, rename, recolor and delete categories.
 class CategoriesScreen extends StatelessWidget {
@@ -69,7 +71,10 @@ class _CategoryList extends StatelessWidget {
         return ListTile(
           leading: CircleAvatar(backgroundColor: c.color, radius: 14),
           title: Text(c.name),
-          subtitle: Text(count == 1 ? '1 entry' : '$count entries'),
+          subtitle: Text([
+            count == 1 ? '1 entry' : '$count entries',
+            if (c.hasBudget) 'Limit ${state.formatMoney(c.budgetMinor!)}',
+          ].join(' · ')),
           onTap: () => showCategoryDialog(context, state, type: type, existing: c),
           trailing: c.isOther
               ? null
@@ -131,8 +136,12 @@ class _CategoryDialog extends StatefulWidget {
 
 class _CategoryDialogState extends State<_CategoryDialog> {
   late final TextEditingController _name;
+  late final TextEditingController _budget;
   late int _color;
   String? _error;
+  String? _budgetError;
+
+  bool get _isExpense => widget.type == EntryType.expense;
 
   bool get _isEditing => widget.existing != null;
   bool get _isOther => widget.existing?.isOther ?? false;
@@ -141,6 +150,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   void initState() {
     super.initState();
     _name = TextEditingController(text: widget.existing?.name ?? '');
+    final budget = widget.existing?.budgetMinor;
+    _budget = TextEditingController(
+        text: budget != null && budget > 0 ? (budget / 100).toStringAsFixed(2) : '');
     _color = widget.existing?.colorValue ??
         kCategoryPalette[widget.state.categories.length % kCategoryPalette.length];
   }
@@ -148,6 +160,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   @override
   void dispose() {
     _name.dispose();
+    _budget.dispose();
     super.dispose();
   }
 
@@ -162,11 +175,21 @@ class _CategoryDialogState extends State<_CategoryDialog> {
       setState(() => _error = 'This name already exists');
       return;
     }
+    int? budgetMinor;
+    if (_isExpense && _budget.text.trim().isNotEmpty) {
+      final v = evaluateAmount(_budget.text);
+      if (v == null || (v * 100).round() <= 0) {
+        setState(() => _budgetError = 'Enter an amount greater than 0');
+        return;
+      }
+      budgetMinor = (v * 100).round();
+    }
     final changed = EntryCategory(
       id: widget.existing?.id,
       name: name,
       type: widget.type,
       colorValue: _color,
+      budgetMinor: budgetMinor,
     );
     if (_isEditing) {
       await widget.state.updateCategory(widget.existing!, changed);
@@ -221,6 +244,27 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   ),
               ],
             ),
+            if (_isExpense) ...[
+              const SizedBox(height: 20),
+              TextField(
+                controller: _budget,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                ],
+                decoration: InputDecoration(
+                  labelText: 'Monthly limit (optional)',
+                  prefixText: '${widget.state.currency.symbol} ',
+                  helperText: 'Leave empty for no limit',
+                  errorText: _budgetError,
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (_) {
+                  if (_budgetError != null) setState(() => _budgetError = null);
+                },
+              ),
+            ],
           ],
         ),
       ),

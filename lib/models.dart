@@ -24,6 +24,7 @@ const List<Currency> kCurrencies = [
   Currency('CAD', r'C$', 'Canadian Dollar'),
   Currency('CHF', 'CHF', 'Swiss Franc'),
   Currency('AED', 'AED', 'UAE Dirham'),
+  Currency('AMD', '֏', 'Armenian Dram'),
   Currency('SAR', 'SAR', 'Saudi Riyal'),
   Currency('SGD', r'S$', 'Singapore Dollar'),
   Currency('HKD', r'HK$', 'Hong Kong Dollar'),
@@ -92,12 +93,19 @@ class EntryCategory {
     required this.name,
     required this.type,
     required this.colorValue,
+    this.budgetMinor,
   });
 
   final int? id;
   final String name;
   final EntryType type;
   final int colorValue;
+
+  /// Monthly spending limit in minor units (expense categories only).
+  /// Null means no limit.
+  final int? budgetMinor;
+
+  bool get hasBudget => (budgetMinor ?? 0) > 0;
 
   Color get color => Color(colorValue);
 
@@ -108,6 +116,7 @@ class EntryCategory {
         'name': name,
         'type': type.name,
         'color': colorValue,
+        'budget': budgetMinor,
       };
 
   static EntryCategory fromMap(Map<String, Object?> m) => EntryCategory(
@@ -115,6 +124,7 @@ class EntryCategory {
         name: m['name'] as String,
         type: EntryType.values.byName(m['type'] as String),
         colorValue: m['color'] as int,
+        budgetMinor: m['budget'] as int?,
       );
 }
 

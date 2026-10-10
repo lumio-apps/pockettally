@@ -17,12 +17,16 @@
 - **Categories:** create your own, rename, recolor or delete them
 - **Stats:** totals for any day, week or month, with a pie chart by category
 - **Search and filter:** by text, type, category, date range and amount
+- **Budgets:** a monthly limit and a limit per category, with warnings
+- **Calculator** in the amount field (120+45)
+- **Backup and restore** to a file you choose, nothing is uploaded
+- Week starts on Monday or Sunday
 - Edit entries, swipe to delete with Undo
-- One app-wide currency (INR, USD, EUR and many more), changeable in Settings
+- One app-wide currency (INR, USD, EUR, AMD and many more), changeable in Settings
 - Light, dark or system theme
 - In-app "Check for updates" that downloads new releases from GitHub
 
-Coming next: monthly budget, recurring entries, CSV backup and restore.
+Coming next: bar chart, year view, PDF report, lend/borrow, savings goals, bill photos.
 
 ## Privacy
 

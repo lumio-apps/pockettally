@@ -8,6 +8,7 @@ import 'models.dart';
 /// Schema history:
 ///   v1 (app 0.1.0): entries
 ///   v2 (app 0.2.0): categories
+///   v3 (app 0.3.0): categories.budget
 class AppDatabase {
   AppDatabase._();
   static final AppDatabase instance = AppDatabase._();
@@ -19,14 +20,17 @@ class AppDatabase {
     final dir = await getDatabasesPath();
     _db = await openDatabase(
       p.join(dir, 'pockettally.db'),
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await _createEntries(db);
         await _createCategories(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
+          // Creates the table already with the budget column.
           await _createCategories(db);
+        } else if (oldVersion < 3) {
+          await db.execute('ALTER TABLE categories ADD COLUMN budget INTEGER');
         }
       },
     );
@@ -57,6 +61,7 @@ class AppDatabase {
         name TEXT NOT NULL,
         type TEXT NOT NULL,
         color INTEGER NOT NULL,
+        budget INTEGER,
         UNIQUE(name, type)
       )
     ''');
@@ -159,6 +164,42 @@ class AppDatabase {
         whereArgs: [c.name, c.type.name],
       );
       await txn.delete('categories', where: 'id = ?', whereArgs: [c.id]);
+    });
+  }
+
+  // ---- backup / restore ----
+
+  /// Replaces ALL categories and entries in one transaction.
+  /// "Other" is added back for both types if the backup lacks it.
+  Future<void> replaceAll(
+      List<EntryCategory> categories, List<Entry> entries) async {
+    final db = await _database;
+    await db.transaction((txn) async {
+      await txn.delete('entries');
+      await txn.delete('categories');
+      for (final c in categories) {
+        await txn.insert(
+          'categories',
+          {
+            'name': c.name,
+            'type': c.type.name,
+            'color': c.colorValue,
+            'budget': c.budgetMinor,
+          },
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+      for (final type in EntryType.values) {
+        await txn.insert(
+          'categories',
+          {'name': kOtherCategory, 'type': type.name, 'color': 0xFF90A4AE},
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      }
+      for (final e in entries) {
+        final map = e.toMap()..remove('id');
+        await txn.insert('entries', map);
+      }
     });
   }
 }
