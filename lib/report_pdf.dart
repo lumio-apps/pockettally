@@ -3,6 +3,7 @@ import 'dart:ui' show Locale;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -60,6 +61,8 @@ class ReportPdf {
     final lang = languageFor(state.languageCode);
     final l = lookupAppLocalizations(Locale(lang));
     String cat(String name) => categoryLabel(l, name);
+    // Month names in the report's language (safe to call more than once).
+    await initializeDateFormatting(lang);
 
     // A bundled font, so the PDF can show text in many languages.
     final base =
