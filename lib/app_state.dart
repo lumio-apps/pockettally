@@ -1,8 +1,11 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'backup.dart';
 import 'db.dart';
+import 'l10n/l10n.dart';
 import 'models.dart';
 import 'theme.dart';
 import 'utils/money_format.dart';
@@ -23,6 +26,28 @@ class AppState extends ChangeNotifier {
 
   Currency get currency =>
       currencyByCode(_prefs.getString('currency') ?? 'INR');
+
+  /// Language chosen by the user, or null (= follow the device).
+  String? get languageSetting => _prefs.getString('language');
+
+  /// Language the app is shown in: the user's choice, else the device
+  /// language if the app has it, else English.
+  String get languageCode {
+    final chosen = languageSetting;
+    if (chosen != null && kLanguages.any((l) => l.code == chosen)) {
+      return chosen;
+    }
+    return deviceLanguageCode;
+  }
+
+  static String get deviceLanguageCode {
+    final device = PlatformDispatcher.instance.locale.languageCode;
+    return kLanguages.any((l) => l.code == device) ? device : 'en';
+  }
+
+  /// A currency that fits the device's region, for the welcome screen.
+  static Currency get suggestedCurrency =>
+      currencyForCountry(PlatformDispatcher.instance.locale.countryCode);
 
   /// Weeks start on Monday unless the user picks Sunday.
   bool get weekStartsOnSunday => _prefs.getString('week_start') == 'sunday';
@@ -78,6 +103,11 @@ class AppState extends ChangeNotifier {
   Future<void> completeOnboarding(String name, Currency currency) async {
     await _prefs.setString('user_name', name.trim());
     await _prefs.setString('currency', currency.code);
+    notifyListeners();
+  }
+
+  Future<void> setLanguage(String code) async {
+    await _prefs.setString('language', code);
     notifyListeners();
   }
 
@@ -279,23 +309,23 @@ class AppState extends ChangeNotifier {
       .toList();
 
   /// A short warning when [e] (just saved) pushed a budget over its limit.
-  String? budgetWarningFor(Entry e) {
+  String? budgetWarningFor(Entry e, AppLocalizations l) {
     if (e.isIncome) return null;
     final warnings = <String>[];
     for (final c in budgetedCategories) {
       if (c.name != e.category) continue;
       final spent = expenseForCategory(c.name, e.date);
       if (spent > c.budgetMinor!) {
-        warnings.add('${c.name} is over its limit '
-            '(${formatMoney(spent)} of ${formatMoney(c.budgetMinor!)})');
+        warnings.add(l.warningCategoryOver(categoryLabel(l, c.name),
+            formatMoney(spent), formatMoney(c.budgetMinor!)));
       }
     }
     final limit = monthlyBudgetMinor;
     if (limit > 0) {
       final spent = expenseIn(e.date);
       if (spent > limit) {
-        warnings.add('Monthly budget exceeded '
-            '(${formatMoney(spent)} of ${formatMoney(limit)})');
+        warnings.add(
+            l.warningMonthlyOver(formatMoney(spent), formatMoney(limit)));
       }
     }
     return warnings.isEmpty ? null : warnings.join('\n');

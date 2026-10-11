@@ -63,6 +63,26 @@ const List<Currency> kCurrencies = [
 Currency currencyByCode(String code) =>
     kCurrencies.firstWhere((c) => c.code == code, orElse: () => kCurrencies.first);
 
+/// Currency usually used in a country (ISO 3166 code), US dollar otherwise.
+Currency currencyForCountry(String? country) {
+  const euro = {
+    'AT', 'BE', 'CY', 'DE', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'IE', 'IT',
+    'LT', 'LU', 'LV', 'MT', 'NL', 'PT', 'SI', 'SK', //
+  };
+  const map = {
+    'IN': 'INR', 'US': 'USD', 'GB': 'GBP', 'JP': 'JPY', 'CN': 'CNY',
+    'AU': 'AUD', 'CA': 'CAD', 'CH': 'CHF', 'LI': 'CHF', 'AE': 'AED',
+    'AM': 'AMD', 'SA': 'SAR', 'SG': 'SGD', 'HK': 'HKD', 'NZ': 'NZD',
+    'KR': 'KRW', 'RU': 'RUB', 'BR': 'BRL', 'MX': 'MXN', 'ZA': 'ZAR',
+    'TR': 'TRY', 'SE': 'SEK', 'NO': 'NOK', 'PK': 'PKR', 'BD': 'BDT',
+    'NP': 'NPR', 'LK': 'LKR', //
+  };
+  final c = country?.toUpperCase();
+  if (c == null) return currencyByCode('USD');
+  if (euro.contains(c)) return currencyByCode('EUR');
+  return currencyByCode(map[c] ?? 'USD');
+}
+
 /// Colors a category can have (ARGB). Also used for the pie chart.
 const List<int> kCategoryPalette = [
   0xFFE57373, // red

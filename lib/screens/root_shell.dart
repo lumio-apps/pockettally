@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
 import 'budgets_screen.dart';
@@ -34,6 +35,7 @@ class _RootShellState extends State<RootShell> {
   @override
   Widget build(BuildContext context) {
     final state = widget.state;
+    final l = context.l10n;
     return Scaffold(
       body: IndexedStack(
         index: _index,
@@ -46,7 +48,7 @@ class _RootShellState extends State<RootShell> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        tooltip: 'Add entry',
+        tooltip: l.addEntry,
         onPressed: _add,
         elevation: 4,
         backgroundColor: BrandColors.of(context).brand,
@@ -62,14 +64,14 @@ class _RootShellState extends State<RootShell> {
             _NavItem(
               icon: Icons.home_outlined,
               selectedIcon: Icons.home_rounded,
-              label: 'Home',
+              label: l.navHome,
               selected: _index == 0,
               onTap: () => _openTab(0),
             ),
             _NavItem(
               icon: Icons.pie_chart_outline,
               selectedIcon: Icons.pie_chart_rounded,
-              label: 'Insights',
+              label: l.navInsights,
               selected: _index == 1,
               onTap: () => _openTab(1),
             ),
@@ -77,14 +79,14 @@ class _RootShellState extends State<RootShell> {
             _NavItem(
               icon: Icons.account_balance_wallet_outlined,
               selectedIcon: Icons.account_balance_wallet_rounded,
-              label: 'Budgets',
+              label: l.navBudgets,
               selected: _index == 2,
               onTap: () => _openTab(2),
             ),
             _NavItem(
               icon: Icons.settings_outlined,
               selectedIcon: Icons.settings_rounded,
-              label: 'Settings',
+              label: l.navSettings,
               selected: _index == 3,
               onTap: () => _openTab(3),
             ),
@@ -127,6 +129,8 @@ class _NavItem extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: selected ? FontWeight.w800 : FontWeight.w600,

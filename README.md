@@ -11,6 +11,7 @@
 
 ## Features
 
+- **13 languages:** English, हिन्दी, Հայերեն, 中文, Español, العربية, Français, বাংলা, Português, Русский, اردو, Bahasa Indonesia, 日本語
 - Add income (daily, weekly or monthly) and daily expenses
 - Income and expenses in one list, each entry separate (income green, expense red)
 - Monthly balance, income and expenses on the home screen
@@ -46,6 +47,12 @@ Not sure? Take the universal APK. After that, "Check for updates" in the app
 picks the smaller file for your phone by itself. Once a phone has a
 processor-specific APK installed, update it with the same kind of file
 (or through the app), not with the universal one.
+
+## Translations
+
+Texts live in `lib/l10n/app_<language>.arb`. To fix a translation, edit the
+line in that file and open a pull request. The app code is generated from
+these files by `flutter pub get`.
 
 ## Privacy
 

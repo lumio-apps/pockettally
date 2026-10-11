@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 import '../widgets/entry_tile.dart';
 import 'entry_form_screen.dart';
@@ -74,7 +75,7 @@ class _SearchScreenState extends State<SearchScreen> {
       ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
   }
 
-  List<Entry> _results() {
+  List<Entry> _results(AppLocalizations l) {
     final q = _query.text.trim().toLowerCase();
     final min = _parseAmount(_minAmount);
     final max = _parseAmount(_maxAmount);
@@ -94,7 +95,8 @@ class _SearchScreenState extends State<SearchScreen> {
       if (max != null && e.amountMinor > max) return false;
       if (q.isNotEmpty &&
           !e.note.toLowerCase().contains(q) &&
-          !e.category.toLowerCase().contains(q)) {
+          !e.category.toLowerCase().contains(q) &&
+          !categoryLabel(l, e.category).toLowerCase().contains(q)) {
         return false;
       }
       return true;
@@ -118,14 +120,15 @@ class _SearchScreenState extends State<SearchScreen> {
       listenable: state,
       builder: (context, _) {
         final theme = Theme.of(context);
+        final l = context.l10n;
         final options = _categoryOptions;
         if (_category != null && !options.contains(_category)) {
           _category = null;
         }
-        final results = _results();
+        final results = _results(l);
         final income = AppState.sumIncome(results);
         final expense = AppState.sumExpense(results);
-        final dateFmt = DateFormat('d MMM y');
+        final dateFmt = DateFormat.yMMMd();
 
         return Scaffold(
           appBar: AppBar(
@@ -133,8 +136,8 @@ class _SearchScreenState extends State<SearchScreen> {
               controller: _query,
               autofocus: true,
               textInputAction: TextInputAction.search,
-              decoration: const InputDecoration(
-                hintText: 'Search notes or categories',
+              decoration: InputDecoration(
+                hintText: l.searchHint,
                 border: InputBorder.none,
               ),
               onChanged: (_) => setState(() {}),
@@ -142,7 +145,7 @@ class _SearchScreenState extends State<SearchScreen> {
             actions: [
               if (_query.text.isNotEmpty)
                 IconButton(
-                  tooltip: 'Clear',
+                  tooltip: l.clear,
                   icon: const Icon(Icons.close),
                   onPressed: () => setState(_query.clear),
                 ),
@@ -157,12 +160,12 @@ class _SearchScreenState extends State<SearchScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SegmentedButton<_TypeFilter>(
-                      segments: const [
-                        ButtonSegment(value: _TypeFilter.all, label: Text('All')),
+                      segments: [
+                        ButtonSegment(value: _TypeFilter.all, label: Text(l.all)),
                         ButtonSegment(
-                            value: _TypeFilter.income, label: Text('Income')),
+                            value: _TypeFilter.income, label: Text(l.income)),
                         ButtonSegment(
-                            value: _TypeFilter.expense, label: Text('Expense')),
+                            value: _TypeFilter.expense, label: Text(l.expense)),
                       ],
                       showSelectedIcon: false,
                       selected: {_type},
@@ -173,16 +176,17 @@ class _SearchScreenState extends State<SearchScreen> {
                     DropdownButtonFormField<String?>(
                       key: ValueKey('cat|$_type|$_category|${options.join('|')}'),
                       initialValue: _category,
-                      decoration: const InputDecoration(
-                        labelText: 'Category',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: l.category,
+                        border: const OutlineInputBorder(),
                         isDense: true,
                       ),
                       items: [
-                        const DropdownMenuItem<String?>(
-                            value: null, child: Text('All categories')),
+                        DropdownMenuItem<String?>(
+                            value: null, child: Text(l.allCategories)),
                         for (final c in options)
-                          DropdownMenuItem<String?>(value: c, child: Text(c)),
+                          DropdownMenuItem<String?>(
+                              value: c, child: Text(categoryLabel(l, c))),
                       ],
                       onChanged: (c) => setState(() => _category = c),
                     ),
@@ -190,24 +194,24 @@ class _SearchScreenState extends State<SearchScreen> {
                     OutlinedButton.icon(
                       icon: const Icon(Icons.date_range, size: 18),
                       label: Text(_dates == null
-                          ? 'Any date'
+                          ? l.anyDate
                           : '${dateFmt.format(_dates!.start)} – ${dateFmt.format(_dates!.end)}'),
                       onPressed: _pickDates,
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Expanded(child: _amountField(_minAmount, 'Min amount')),
+                        Expanded(child: _amountField(_minAmount, l.minAmount)),
                         const SizedBox(width: 12),
-                        Expanded(child: _amountField(_maxAmount, 'Max amount')),
+                        Expanded(child: _amountField(_maxAmount, l.maxAmount)),
                       ],
                     ),
                     if (_hasFilters)
                       Align(
-                        alignment: Alignment.centerRight,
+                        alignment: AlignmentDirectional.centerEnd,
                         child: TextButton(
                           onPressed: _clearFilters,
-                          child: const Text('Clear filters'),
+                          child: Text(l.clearFilters),
                         ),
                       ),
                   ],
@@ -221,7 +225,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   runSpacing: 4,
                   children: [
                     Text(
-                      results.length == 1 ? '1 result' : '${results.length} results',
+                      l.resultCount(results.length),
                       style: theme.textTheme.labelLarge,
                     ),
                     if (income > 0)
@@ -237,9 +241,9 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               const SizedBox(height: 8),
               if (results.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: Text('Nothing found.')),
+                Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Center(child: Text(l.nothingFound)),
                 )
               else
                 for (final e in results)

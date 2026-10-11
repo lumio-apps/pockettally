@@ -4,12 +4,29 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../app_state.dart';
 import '../backup.dart';
 import '../backup_service.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../update_checker.dart';
 import '../utils/money_format.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
+
+/// Name of a color palette in the app's language.
+String paletteName(AppLocalizations l, AppPalette p) {
+  switch (p.id) {
+    case 'ocean':
+      return l.paletteOcean;
+    case 'plum':
+      return l.palettePlum;
+    case 'wine':
+      return l.paletteWine;
+    case 'graphite':
+      return l.paletteGraphite;
+    default:
+      return l.paletteForest;
+  }
+}
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, required this.state});
@@ -40,34 +57,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListenableBuilder(
       listenable: state,
       builder: (context, _) {
+        final l = context.l10n;
+        final money = state.money;
         return Scaffold(
-          appBar: AppBar(title: const Text('Settings')),
+          appBar: AppBar(title: Text(l.navSettings)),
           body: ListView(
             children: [
               ListTile(
+                leading: const Icon(Icons.translate),
+                title: Text(l.language),
+                subtitle: Text(languageByCode(state.languageCode).nativeName),
+                onTap: _pickLanguage,
+              ),
+              ListTile(
                 leading: const Icon(Icons.person_outline),
-                title: const Text('Your name'),
+                title: Text(l.yourName),
                 subtitle: Text(state.userName),
                 onTap: _editName,
               ),
               ListTile(
                 leading: const Icon(Icons.payments_outlined),
-                title: const Text('Currency'),
+                title: Text(l.currency),
                 subtitle: Text(
                     '${state.currency.code} ${state.currency.symbol} · ${state.currency.name}'),
                 onTap: _pickCurrency,
               ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(72, 0, 16, 8),
-                child: Text(
-                  'Changing currency only changes the symbol. '
-                  'Amounts you already entered are not converted.',
-                  style: TextStyle(fontSize: 12),
-                ),
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(72, 0, 16, 8),
+                child: Text(l.currencyNote,
+                    style: const TextStyle(fontSize: 12)),
               ),
               ListTile(
                 leading: const Icon(Icons.pin_outlined),
-                title: const Text('Number format'),
+                title: Text(l.numberFormat),
                 trailing: DropdownButton<NumberStyle>(
                   value: state.numberStyleSetting,
                   underline: const SizedBox.shrink(),
@@ -75,7 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     for (final style in NumberStyle.values)
                       DropdownMenuItem(
                         value: style,
-                        child: Text(_styleLabel(style)),
+                        child: Text(_styleLabel(l, style)),
                       ),
                   ],
                   onChanged: (v) {
@@ -85,18 +107,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.exposure_outlined),
-                title: const Text('Decimals'),
+                title: Text(l.decimals),
                 trailing: DropdownButton<int>(
                   value: state.decimalsSetting,
                   underline: const SizedBox.shrink(),
                   items: [
                     DropdownMenuItem(
                       value: -1,
-                      child: Text(
-                          'Automatic (${state.currency.decimals == 0 ? 'none' : '2'})'),
+                      child: Text(l.automaticWith(
+                          state.currency.decimals == 0 ? '13' : '12${money.decimalSeparator}50')),
                     ),
-                    const DropdownMenuItem(value: 2, child: Text('2 (12.50)')),
-                    const DropdownMenuItem(value: 0, child: Text('None (13)')),
+                    DropdownMenuItem(
+                        value: 2,
+                        child: Text(
+                            l.decimalsTwo('12${money.decimalSeparator}50'))),
+                    DropdownMenuItem(
+                        value: 0, child: Text(l.decimalsNone('13'))),
                   ],
                   onChanged: (v) {
                     if (v != null) state.setDecimals(v);
@@ -105,25 +131,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.palette_outlined),
-                title: const Text('Accent color'),
-                subtitle: Text(state.palette.name),
+                title: Text(l.accentColor),
+                subtitle: Text(paletteName(l, state.palette)),
                 trailing: CircleAvatar(
                     radius: 14, backgroundColor: state.palette.brand),
                 onTap: _pickPalette,
               ),
               ListTile(
                 leading: const Icon(Icons.brightness_6_outlined),
-                title: const Text('Theme'),
+                title: Text(l.theme),
                 trailing: DropdownButton<ThemeMode>(
                   value: state.themeMode,
                   underline: const SizedBox.shrink(),
-                  items: const [
+                  items: [
                     DropdownMenuItem(
-                        value: ThemeMode.system, child: Text('System')),
+                        value: ThemeMode.system, child: Text(l.themeSystem)),
                     DropdownMenuItem(
-                        value: ThemeMode.light, child: Text('Light')),
+                        value: ThemeMode.light, child: Text(l.themeLight)),
                     DropdownMenuItem(
-                        value: ThemeMode.dark, child: Text('Dark')),
+                        value: ThemeMode.dark, child: Text(l.themeDark)),
                   ],
                   onChanged: (m) {
                     if (m != null) state.setThemeMode(m);
@@ -132,13 +158,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.calendar_view_week_outlined),
-                title: const Text('Week starts on'),
+                title: Text(l.weekStartsOn),
                 trailing: DropdownButton<bool>(
                   value: state.weekStartsOnSunday,
                   underline: const SizedBox.shrink(),
-                  items: const [
-                    DropdownMenuItem(value: false, child: Text('Monday')),
-                    DropdownMenuItem(value: true, child: Text('Sunday')),
+                  items: [
+                    DropdownMenuItem(value: false, child: Text(l.monday)),
+                    DropdownMenuItem(value: true, child: Text(l.sunday)),
                   ],
                   onChanged: (v) {
                     if (v != null) state.setWeekStartsOnSunday(v);
@@ -147,18 +173,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.category_outlined),
-                title: const Text('Categories'),
-                subtitle: const Text('Add, rename, reorder, hide or delete'),
+                title: Text(l.categories),
+                subtitle: Text(l.categoriesSubtitle),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => CategoriesScreen(state: state),
                 )),
               ),
               ListTile(
                 leading: const Icon(Icons.savings_outlined),
-                title: const Text('Budgets'),
+                title: Text(l.navBudgets),
                 subtitle: Text(state.monthlyBudgetMinor > 0
-                    ? 'Monthly limit ${state.formatMoney(state.monthlyBudgetMinor)}'
-                    : 'Monthly and category limits'),
+                    ? l.monthlyLimitAmount(
+                        state.formatMoney(state.monthlyBudgetMinor))
+                    : l.budgetsSubtitle),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => BudgetsScreen(state: state),
                 )),
@@ -166,14 +193,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Divider(),
               ListTile(
                 leading: const Icon(Icons.upload_file_outlined),
-                title: const Text('Back up data'),
-                subtitle: const Text('Save everything to a file you choose'),
+                title: Text(l.backUpData),
+                subtitle: Text(l.backUpSubtitle),
                 onTap: _busy ? null : _backup,
               ),
               ListTile(
                 leading: const Icon(Icons.restore_outlined),
-                title: const Text('Restore from backup'),
-                subtitle: const Text('Replace all data with a backup file'),
+                title: Text(l.restoreFromBackup),
+                subtitle: Text(l.restoreSubtitle),
                 onTap: _busy ? null : _restore,
               ),
               const Divider(),
@@ -186,16 +213,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.system_update_outlined),
-                  title: const Text('Check for updates'),
+                  title: Text(l.checkForUpdates),
                   subtitle: Text(_version.isEmpty
                       ? 'PocketTally'
-                      : 'Installed version $_version'),
+                      : l.installedVersion(_version)),
                   onTap: _checking ? null : _checkForUpdates,
                 )
               else
                 ListTile(
                   leading: const Icon(Icons.info_outline),
-                  title: const Text('Version'),
+                  title: Text(l.version),
                   subtitle: Text(_version),
                 ),
             ],
@@ -205,46 +232,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Future<void> _editName() async {
-    final controller = TextEditingController(text: state.userName);
-    final name = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Your name'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, controller.text),
-              child: const Text('Save')),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (name != null && name.trim().isNotEmpty) {
-      await state.setUserName(name);
-    }
-  }
-
   /// "1,234,567.89" etc.; "Automatic (…)" shows what it resolves to.
-  String _styleLabel(NumberStyle style) {
+  String _styleLabel(AppLocalizations l, NumberStyle style) {
     final resolved =
         style == NumberStyle.auto ? state.currency.numberStyle : style;
     final sample =
         MoneyFormatter(style: resolved, decimals: 2).number(123456789);
-    return style == NumberStyle.auto ? 'Automatic ($sample)' : sample;
+    return style == NumberStyle.auto ? l.automaticWith(sample) : sample;
+  }
+
+  Future<void> _pickLanguage() async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.7,
+        builder: (ctx, scroll) => ListView(
+          controller: scroll,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(ctx.l10n.language,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600)),
+            ),
+            for (final lang in kLanguages)
+              ListTile(
+                title: Text(lang.nativeName),
+                subtitle: Text(lang.englishName),
+                trailing: lang.code == state.languageCode
+                    ? const Icon(Icons.check)
+                    : null,
+                onTap: () => Navigator.pop(ctx, lang.code),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (picked != null) await state.setLanguage(picked);
   }
 
   Future<void> _pickPalette() async {
+    final l = context.l10n;
     final picked = await showDialog<AppPalette>(
       context: context,
       builder: (ctx) => SimpleDialog(
-        title: const Text('Accent color'),
+        title: Text(l.accentColor),
         children: [
           for (final p in kPalettes)
             SimpleDialogOption(
@@ -254,7 +288,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   CircleAvatar(radius: 16, backgroundColor: p.brand),
                   const SizedBox(width: 16),
-                  Expanded(child: Text(p.name)),
+                  Expanded(child: Text(paletteName(l, p))),
                   if (p.id == state.palette.id) const Icon(Icons.check),
                 ],
               ),
@@ -263,6 +297,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
     if (picked != null) await state.setPalette(picked);
+  }
+
+  Future<void> _editName() async {
+    final l = context.l10n;
+    final controller = TextEditingController(text: state.userName);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.yourName),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: Text(l.cancel)),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: Text(l.save)),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (name != null && name.trim().isNotEmpty) {
+      await state.setUserName(name);
+    }
   }
 
   Future<void> _pickCurrency() async {
@@ -275,10 +336,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         builder: (ctx, scroll) => ListView(
           controller: scroll,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Choose currency',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(ctx.l10n.chooseCurrency,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600)),
             ),
             for (final c in kCurrencies)
               ListTile(
@@ -297,33 +359,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _backup() async {
+    final l = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _busy = true);
     try {
-      final saved = await BackupService.export(state);
+      final saved =
+          await BackupService.export(state, dialogTitle: l.saveBackupTitle);
       if (saved) {
         messenger.showSnackBar(SnackBar(
-          content: Text('Backup saved (${state.entries.length} entries). '
-              'Keep this file safe.'),
+          content: Text(l.backupSaved(state.entries.length)),
         ));
       }
     } catch (_) {
-      messenger.showSnackBar(
-          const SnackBar(content: Text('Could not save the backup.')));
+      messenger.showSnackBar(SnackBar(content: Text(l.couldNotSaveBackup)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
   Future<void> _restore() async {
+    final l = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
     setState(() => _busy = true);
     try {
       final BackupData? backup;
       try {
-        backup = await BackupService.pick();
+        backup = await BackupService.pick(dialogTitle: l.chooseBackupTitle);
       } on FormatException catch (e) {
-        messenger.showSnackBar(SnackBar(content: Text(e.message)));
+        messenger.showSnackBar(
+            SnackBar(content: Text(backupErrorMessage(l, e.message))));
         return;
       }
       if (backup == null || !mounted) return;
@@ -333,21 +397,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final ok = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('Restore this backup?'),
-          content: Text(
-            'The backup has ${data.entries.length} entries and '
-            '${data.categories.length} categories.\n\n'
-            'All ${state.entries.length} entries now on this phone will be '
-            'replaced. This cannot be undone.',
-          ),
+          title: Text(l.restoreQuestion),
+          content: Text(l.restoreDetails(
+            data.entries.length.toString(),
+            data.categories.length.toString(),
+            state.entries.length.toString(),
+          )),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel'),
+              child: Text(l.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Restore'),
+              child: Text(l.restore),
             ),
           ],
         ),
@@ -355,31 +418,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (ok != true) return;
 
       await state.restoreBackup(data);
-      messenger.showSnackBar(
-          const SnackBar(content: Text('Backup restored')));
+      messenger.showSnackBar(SnackBar(content: Text(l.backupRestored)));
     } catch (_) {
-      messenger.showSnackBar(
-          const SnackBar(content: Text('Could not restore the backup.')));
+      messenger.showSnackBar(SnackBar(content: Text(l.couldNotRestore)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
   Future<void> _checkForUpdates() async {
+    final l = context.l10n;
     setState(() => _checking = true);
     final messenger = ScaffoldMessenger.of(context);
     try {
       final update = await UpdateChecker.check();
       if (!mounted) return;
       if (update == null) {
-        messenger.showSnackBar(
-            const SnackBar(content: Text("You're up to date")));
+        messenger.showSnackBar(SnackBar(content: Text(l.upToDate)));
       } else {
         await _showUpdateDialog(update);
       }
     } catch (_) {
-      messenger.showSnackBar(const SnackBar(
-          content: Text('Could not check for updates. Check your internet.')));
+      messenger
+          .showSnackBar(SnackBar(content: Text(l.couldNotCheckUpdates)));
     } finally {
       if (mounted) setState(() => _checking = false);
     }
@@ -405,12 +466,12 @@ class _UpdateDialog extends StatefulWidget {
 
 class _UpdateDialogState extends State<_UpdateDialog> {
   double? _progress;
-  String? _error;
+  bool _failed = false;
 
   Future<void> _start() async {
     setState(() {
       _progress = 0;
-      _error = null;
+      _failed = false;
     });
     try {
       await UpdateChecker.downloadAndInstall(widget.update, (p) {
@@ -421,7 +482,7 @@ class _UpdateDialogState extends State<_UpdateDialog> {
       if (mounted) {
         setState(() {
           _progress = null;
-          _error = 'Download failed. Please try again.';
+          _failed = true;
         });
       }
     }
@@ -429,9 +490,10 @@ class _UpdateDialogState extends State<_UpdateDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final downloading = _progress != null;
     return AlertDialog(
-      title: Text('Version ${widget.update.version} is available'),
+      title: Text(l.versionAvailable(widget.update.version)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -444,9 +506,9 @@ class _UpdateDialogState extends State<_UpdateDialog> {
               const SizedBox(height: 4),
               Text('${((_progress ?? 0) * 100).round()}%'),
             ],
-            if (_error != null) ...[
+            if (_failed) ...[
               const SizedBox(height: 12),
-              Text(_error!,
+              Text(l.downloadFailed,
                   style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ],
           ],
@@ -455,11 +517,11 @@ class _UpdateDialogState extends State<_UpdateDialog> {
       actions: [
         TextButton(
           onPressed: downloading ? null : () => Navigator.of(context).pop(),
-          child: const Text('Later'),
+          child: Text(l.later),
         ),
         FilledButton(
           onPressed: downloading ? null : _start,
-          child: const Text('Update'),
+          child: Text(l.update),
         ),
       ],
     );

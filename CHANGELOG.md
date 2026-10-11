@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.5
+
+- 13 languages: English, Hindi, Armenian, Chinese, Spanish, Arabic, French, Bengali, Portuguese, Russian, Urdu, Indonesian and Japanese
+- Arabic and Urdu are shown right to left
+- New welcome screen in three steps: language, name and currency (suggested from your region)
+- Change the language any time in Settings > Language
+- Built-in categories (Food, Salary…) are shown in your language; your own categories stay as you typed them
+- Dates and month names follow the app language
+- PDF reports are in your language for English, Spanish, French, Portuguese, Indonesian, Russian and Armenian, and in English for the other languages
+
 ## 0.6.0
 
 - Number format setting: 1,234.56 · 1.234,56 · 1 234,56 · 1'234.56 · 12,34,567.89 (Automatic picks one from your currency)

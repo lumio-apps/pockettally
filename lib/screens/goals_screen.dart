@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 import '../widgets/amount_dialog.dart';
 import '../widgets/entry_tile.dart' show kExpenseColor;
@@ -13,11 +14,12 @@ class GoalsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Savings goals')),
+      appBar: AppBar(title: Text(l.savingsGoals)),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add),
-        label: const Text('New goal'),
+        label: Text(l.newGoal),
         onPressed: () => showGoalDialog(context, state),
       ),
       body: ListenableBuilder(
@@ -25,11 +27,11 @@ class GoalsScreen extends StatelessWidget {
         builder: (context, _) {
           final goals = state.goals;
           if (goals.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
+                padding: const EdgeInsets.all(32),
                 child: Text(
-                  'No goals yet.\nSave towards something, like a new phone or a trip.',
+                  l.noGoalsYet,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -41,7 +43,7 @@ class GoalsScreen extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
-                child: Text('Saved in all goals: ${state.formatMoney(total)}',
+                child: Text(l.savedInAllGoals(state.formatMoney(total)),
                     style: Theme.of(context).textTheme.labelLarge),
               ),
               for (final g in goals) ...[
@@ -65,6 +67,7 @@ class _GoalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = context.l10n;
     final left = goal.targetMinor - goal.savedMinor;
     return Card(
       child: Padding(
@@ -87,22 +90,22 @@ class _GoalCard extends StatelessWidget {
                           fontWeight: FontWeight.w800, fontSize: 16)),
                 ),
                 if (goal.isReached)
-                  const Chip(
-                    avatar: Icon(Icons.emoji_events_outlined, size: 16),
-                    label: Text('Reached'),
+                  Chip(
+                    avatar: const Icon(Icons.emoji_events_outlined, size: 16),
+                    label: Text(l.reached),
                   ),
                 PopupMenuButton<String>(
-                  tooltip: 'More',
+                  tooltip: l.more,
                   onSelected: (v) => _onMenu(context, v),
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'edit', child: Text('Edit')),
-                    PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(value: 'edit', child: Text(l.edit)),
+                    PopupMenuItem(value: 'delete', child: Text(l.delete)),
                   ],
                 ),
               ],
             ),
             Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsetsDirectional.only(end: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -111,7 +114,8 @@ class _GoalCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          '${state.formatMoney(goal.savedMinor)} of ${state.formatMoney(goal.targetMinor)}',
+                          l.amountOfTotal(state.formatMoney(goal.savedMinor),
+                              state.formatMoney(goal.targetMinor)),
                           style: theme.textTheme.bodyMedium,
                         ),
                       ),
@@ -132,8 +136,8 @@ class _GoalCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     goal.isReached
-                        ? 'Goal reached. Well done!'
-                        : '${state.formatMoney(left)} to go',
+                        ? l.goalReached
+                        : l.amountToGo(state.formatMoney(left)),
                     style: theme.textTheme.bodySmall,
                   ),
                   const SizedBox(height: 8),
@@ -142,7 +146,7 @@ class _GoalCard extends StatelessWidget {
                       Expanded(
                         child: FilledButton.tonalIcon(
                           icon: const Icon(Icons.add),
-                          label: const Text('Add money'),
+                          label: Text(l.addMoney),
                           onPressed: () => _addMoney(context),
                         ),
                       ),
@@ -152,7 +156,7 @@ class _GoalCard extends StatelessWidget {
                           style: OutlinedButton.styleFrom(
                               minimumSize: const Size(0, 52)),
                           icon: const Icon(Icons.remove),
-                          label: const Text('Take out'),
+                          label: Text(l.takeOut),
                           onPressed: goal.savedMinor > 0
                               ? () => _takeOut(context)
                               : null,
@@ -170,7 +174,8 @@ class _GoalCard extends StatelessWidget {
   }
 
   Future<void> _addMoney(BuildContext context) async {
-    final v = await askAmount(context, state, title: 'Add to ${goal.name}');
+    final v = await askAmount(context, state,
+        title: context.l10n.addToGoal(goal.name));
     if (v != null) {
       await state.saveGoal(goal.copyWith(savedMinor: goal.savedMinor + v));
     }
@@ -180,7 +185,7 @@ class _GoalCard extends StatelessWidget {
     final v = await askAmount(
       context,
       state,
-      title: 'Take out of ${goal.name}',
+      title: context.l10n.takeOutOfGoal(goal.name),
       maxMinor: goal.savedMinor,
     );
     if (v != null) {
@@ -193,19 +198,20 @@ class _GoalCard extends StatelessWidget {
       await showGoalDialog(context, state, existing: goal);
       return;
     }
+    final l = context.l10n;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Delete "${goal.name}"?'),
-        content: const Text('The saved amount in this goal is removed too.'),
+        title: Text(l.deleteNamedQuestion(goal.name)),
+        content: Text(l.goalDeleteNote),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(l.cancel)),
           FilledButton(
               style: FilledButton.styleFrom(backgroundColor: kExpenseColor),
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Delete')),
+              child: Text(l.delete)),
         ],
       ),
     );
@@ -259,11 +265,12 @@ class _GoalDialogState extends State<_GoalDialog> {
   }
 
   Future<void> _save() async {
+    final l = context.l10n;
     final name = _name.text.trim();
     final target = widget.state.parseMinor(_target.text) ?? 0;
     setState(() {
-      _nameError = name.isEmpty ? 'Enter a name' : null;
-      _targetError = target <= 0 ? 'Enter an amount greater than 0' : null;
+      _nameError = name.isEmpty ? l.enterName : null;
+      _targetError = target <= 0 ? l.enterAmountAboveZero : null;
     });
     if (_nameError != null || _targetError != null) return;
     final old = widget.existing;
@@ -279,8 +286,9 @@ class _GoalDialogState extends State<_GoalDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return AlertDialog(
-      title: Text(widget.existing == null ? 'New goal' : 'Edit goal'),
+      title: Text(widget.existing == null ? l.newGoal : l.editGoal),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -291,8 +299,8 @@ class _GoalDialogState extends State<_GoalDialog> {
               autofocus: widget.existing == null,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                labelText: 'What are you saving for?',
-                hintText: 'New phone',
+                labelText: l.savingFor,
+                hintText: l.savingForHint,
                 errorText: _nameError,
                 border: const OutlineInputBorder(),
               ),
@@ -303,14 +311,14 @@ class _GoalDialogState extends State<_GoalDialog> {
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: 'Target amount',
+                labelText: l.targetAmount,
                 prefixText: '${widget.state.currency.symbol} ',
                 errorText: _targetError,
                 border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Color'),
+            Text(l.color),
             const SizedBox(height: 8),
             Wrap(
               spacing: 10,
@@ -336,9 +344,9 @@ class _GoalDialogState extends State<_GoalDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
-        FilledButton(onPressed: _save, child: const Text('Save')),
+        FilledButton(onPressed: _save, child: Text(l.save)),
       ],
     );
   }

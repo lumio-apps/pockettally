@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 
 /// Asks for an amount. Returns minor units, or null if cancelled.
 /// Typing simple math like 500+250 works too.
@@ -9,7 +10,7 @@ Future<int?> askAmount(
   BuildContext context,
   AppState state, {
   required String title,
-  String label = 'Amount',
+  String? label,
   String? helper,
   int? initialMinor,
   int? maxMinor,
@@ -19,7 +20,7 @@ Future<int?> askAmount(
     builder: (_) => _AmountDialog(
       state: state,
       title: title,
-      label: label,
+      label: label ?? context.l10n.amount,
       helper: helper,
       initialMinor: initialMinor,
       maxMinor: maxMinor,
@@ -69,12 +70,13 @@ class _AmountDialogState extends State<_AmountDialog> {
   void _submit() {
     final minor = widget.state.parseMinor(_controller.text) ?? 0;
     if (minor <= 0) {
-      setState(() => _error = 'Enter an amount greater than 0');
+      setState(() => _error = context.l10n.enterAmountAboveZero);
       return;
     }
     final max = widget.maxMinor;
     if (max != null && minor > max) {
-      setState(() => _error = 'Can be at most ${widget.state.formatMoney(max)}');
+      setState(() =>
+          _error = context.l10n.amountAtMost(widget.state.formatMoney(max)));
       return;
     }
     Navigator.of(context).pop(minor);
@@ -106,9 +108,9 @@ class _AmountDialogState extends State<_AmountDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.cancel),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Save')),
+        FilledButton(onPressed: _submit, child: Text(context.l10n.save)),
       ],
     );
   }

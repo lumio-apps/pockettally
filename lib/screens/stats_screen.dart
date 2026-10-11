@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 import '../report_pdf.dart';
 import '../theme.dart';
@@ -67,15 +68,17 @@ class _StatsScreenState extends State<StatsScreen> {
     });
   }
 
-  String _rangeLabel(DateTime start, DateTime end) {
+  /// "October 2026" etc. [locale] is used for the PDF, which may be in
+  /// another language than the app.
+  String _rangeLabel(DateTime start, DateTime end, [String? locale]) {
     switch (_period) {
       case StatsPeriod.day:
-        return DateFormat('EEE, d MMM y').format(start);
+        return DateFormat.yMMMEd(locale).format(start);
       case StatsPeriod.week:
         final last = DateTime(end.year, end.month, end.day - 1);
-        return '${DateFormat('d MMM').format(start)} – ${DateFormat('d MMM y').format(last)}';
+        return '${DateFormat.MMMd(locale).format(start)} – ${DateFormat.yMMMd(locale).format(last)}';
       case StatsPeriod.month:
-        return DateFormat('MMMM y').format(start);
+        return DateFormat.yMMMM(locale).format(start);
       case StatsPeriod.year:
         return '${start.year}';
     }
@@ -89,8 +92,11 @@ class _StatsScreenState extends State<StatsScreen> {
     });
   }
 
-  Future<void> _exportPdf(DateTime start, DateTime end, String label) async {
+  Future<void> _exportPdf(DateTime start, DateTime end) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
+    final label =
+        _rangeLabel(start, end, ReportPdf.languageFor(state.languageCode));
     setState(() => _exporting = true);
     try {
       final saved = await ReportPdf.saveReport(
@@ -100,12 +106,10 @@ class _StatsScreenState extends State<StatsScreen> {
         periodLabel: label,
       );
       if (saved) {
-        messenger.showSnackBar(
-            const SnackBar(content: Text('PDF report saved')));
+        messenger.showSnackBar(SnackBar(content: Text(l.pdfSaved)));
       }
     } catch (_) {
-      messenger.showSnackBar(
-          const SnackBar(content: Text('Could not create the PDF report.')));
+      messenger.showSnackBar(SnackBar(content: Text(l.couldNotCreatePdf)));
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
@@ -118,7 +122,7 @@ class _StatsScreenState extends State<StatsScreen> {
       final m = DateTime(monthStart.year, monthStart.month - i, 1);
       final list =
           state.entriesBetween(m, DateTime(m.year, m.month + 1, 1));
-      groups.add(BarGroup(DateFormat('MMM').format(m),
+      groups.add(BarGroup(DateFormat.MMM().format(m),
           AppState.sumIncome(list), AppState.sumExpense(list)));
     }
     final compact = NumberFormat.compact(locale: state.currency.locale);
@@ -126,7 +130,7 @@ class _StatsScreenState extends State<StatsScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 24),
-        Text('Last 6 months', style: theme.textTheme.titleMedium),
+        Text(context.l10n.lastSixMonths, style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         Card(
           child: Padding(
@@ -158,7 +162,7 @@ class _StatsScreenState extends State<StatsScreen> {
         final bal = inc - exp;
         rows.add(ListTile(
           contentPadding: EdgeInsets.zero,
-          title: Text(DateFormat('MMMM').format(DateTime(year, m, 1))),
+          title: Text(DateFormat.MMMM().format(DateTime(year, m, 1))),
           subtitle: Text.rich(TextSpan(children: [
             TextSpan(
                 text: '+ ${state.formatMoney(inc)}',
@@ -184,7 +188,7 @@ class _StatsScreenState extends State<StatsScreen> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 24),
-        Text('Month by month', style: theme.textTheme.titleMedium),
+        Text(context.l10n.monthByMonth, style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         Card(
           child: Padding(
@@ -209,6 +213,7 @@ class _StatsScreenState extends State<StatsScreen> {
       listenable: state,
       builder: (context, _) {
         final theme = Theme.of(context);
+        final l = context.l10n;
         final (start, end) = _range;
         final list = state.entriesBetween(start, end);
         final income = AppState.sumIncome(list);
@@ -229,10 +234,10 @@ class _StatsScreenState extends State<StatsScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Insights'),
+            title: Text(l.navInsights),
             actions: [
               IconButton(
-                tooltip: 'Save as PDF',
+                tooltip: l.saveAsPdf,
                 icon: _exporting
                     ? const SizedBox(
                         width: 20,
@@ -242,7 +247,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     : const Icon(Icons.picture_as_pdf_outlined),
                 onPressed: _exporting || list.isEmpty
                     ? null
-                    : () => _exportPdf(start, end, _rangeLabel(start, end)),
+                    : () => _exportPdf(start, end),
               ),
             ],
           ),
@@ -250,11 +255,11 @@ class _StatsScreenState extends State<StatsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
               SegmentedButton<StatsPeriod>(
-                segments: const [
-                  ButtonSegment(value: StatsPeriod.day, label: Text('Day')),
-                  ButtonSegment(value: StatsPeriod.week, label: Text('Week')),
-                  ButtonSegment(value: StatsPeriod.month, label: Text('Month')),
-                  ButtonSegment(value: StatsPeriod.year, label: Text('Year')),
+                segments: [
+                  ButtonSegment(value: StatsPeriod.day, label: Text(l.day)),
+                  ButtonSegment(value: StatsPeriod.week, label: Text(l.week)),
+                  ButtonSegment(value: StatsPeriod.month, label: Text(l.month)),
+                  ButtonSegment(value: StatsPeriod.year, label: Text(l.year)),
                 ],
                 showSelectedIcon: false,
                 selected: {_period},
@@ -267,7 +272,7 @@ class _StatsScreenState extends State<StatsScreen> {
               Row(
                 children: [
                   IconButton(
-                    tooltip: 'Previous',
+                    tooltip: l.previous,
                     icon: const Icon(Icons.chevron_left),
                     onPressed: () => _shift(-1),
                   ),
@@ -279,7 +284,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Next',
+                    tooltip: l.next,
                     icon: const Icon(Icons.chevron_right),
                     onPressed: canGoForward ? () => _shift(1) : null,
                   ),
@@ -291,12 +296,12 @@ class _StatsScreenState extends State<StatsScreen> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      _TotalRow('Income', state.formatMoney(income), kIncomeColor),
+                      _TotalRow(l.income, state.formatMoney(income), kIncomeColor),
                       const SizedBox(height: 8),
-                      _TotalRow('Expenses', state.formatMoney(expense), kExpenseColor),
+                      _TotalRow(l.expenses, state.formatMoney(expense), kExpenseColor),
                       const Divider(height: 24),
                       _TotalRow(
-                        'Balance',
+                        l.balance,
                         state.formatMoney(balance),
                         balance < 0 ? kExpenseColor : theme.colorScheme.onSurface,
                         bold: true,
@@ -308,12 +313,12 @@ class _StatsScreenState extends State<StatsScreen> {
               if (_period == StatsPeriod.year) _yearSection(theme, start.year),
               if (_period == StatsPeriod.month) _lastSixMonths(theme, start),
               const SizedBox(height: 24),
-              Text('By category', style: theme.textTheme.titleMedium),
+              Text(l.byCategory, style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
               SegmentedButton<EntryType>(
-                segments: const [
-                  ButtonSegment(value: EntryType.expense, label: Text('Expenses')),
-                  ButtonSegment(value: EntryType.income, label: Text('Income')),
+                segments: [
+                  ButtonSegment(value: EntryType.expense, label: Text(l.expenses)),
+                  ButtonSegment(value: EntryType.income, label: Text(l.income)),
                 ],
                 showSelectedIcon: false,
                 selected: {_pieType},
@@ -325,8 +330,8 @@ class _StatsScreenState extends State<StatsScreen> {
                   padding: const EdgeInsets.all(24),
                   child: Text(
                     _pieType == EntryType.expense
-                        ? 'No expenses in this period.'
-                        : 'No income in this period.',
+                        ? l.noExpensesInPeriod
+                        : l.noIncomeInPeriod,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium,
                   ),
@@ -343,7 +348,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     center: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('Total', style: theme.textTheme.bodySmall),
+                        Text(l.total, style: theme.textTheme.bodySmall),
                         FittedBox(
                           child: Text(
                             state.formatMoney(pieTotal),
@@ -363,7 +368,7 @@ class _StatsScreenState extends State<StatsScreen> {
                       radius: 8,
                       backgroundColor: state.colorFor(r.key, _pieType),
                     ),
-                    title: Text(r.key),
+                    title: Text(categoryLabel(l, r.key)),
                     subtitle: Text(
                         '${(r.value / pieTotal * 100).toStringAsFixed(1)}%'),
                     trailing: Text(

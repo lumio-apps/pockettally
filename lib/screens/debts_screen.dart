@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 import '../widgets/amount_dialog.dart';
 import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
@@ -14,19 +15,20 @@ class DebtsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return DefaultTabController(
       length: 2,
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: const Text('Lend & Borrow'),
-            bottom: const TabBar(
-              tabs: [Tab(text: 'I lent'), Tab(text: 'I borrowed')],
+            title: Text(l.lendAndBorrow),
+            bottom: TabBar(
+              tabs: [Tab(text: l.iLent), Tab(text: l.iBorrowed)],
             ),
           ),
           floatingActionButton: FloatingActionButton.extended(
             icon: const Icon(Icons.add),
-            label: const Text('Add'),
+            label: Text(l.add),
             onPressed: () {
               final tab = DefaultTabController.of(context).index;
               Navigator.of(context).push(MaterialPageRoute(
@@ -50,14 +52,14 @@ class DebtsScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: _Total(
-                              label: "You'll get back",
+                              label: l.youWillGetBack,
                               value: state.formatMoney(state.toReceiveMinor),
                               color: kIncomeColor,
                             ),
                           ),
                           Expanded(
                             child: _Total(
-                              label: 'You owe',
+                              label: l.youOwe,
                               value: state.formatMoney(state.toPayMinor),
                               color: kExpenseColor,
                             ),
@@ -100,7 +102,7 @@ class _Total extends StatelessWidget {
         const SizedBox(height: 2),
         FittedBox(
           fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerStart,
           child: Text(value,
               style: TextStyle(
                   color: color, fontSize: 18, fontWeight: FontWeight.w800)),
@@ -129,8 +131,8 @@ class _DebtList extends StatelessWidget {
           padding: const EdgeInsets.all(32),
           child: Text(
             type == DebtType.lent
-                ? 'Nobody owes you money.\nTap Add when you lend money to someone.'
-                : 'You owe nobody.\nTap Add when you borrow money from someone.',
+                ? context.l10n.nobodyOwesYou
+                : context.l10n.youOweNobody,
             textAlign: TextAlign.center,
           ),
         ),
@@ -154,6 +156,7 @@ class _DebtCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = context.l10n;
     final color = debt.type == DebtType.lent ? kIncomeColor : kExpenseColor;
     final progress =
         debt.amountMinor <= 0 ? 0.0 : (debt.paidMinor / debt.amountMinor).clamp(0.0, 1.0);
@@ -173,7 +176,9 @@ class _DebtCard extends StatelessWidget {
                     CircleAvatar(
                       backgroundColor: color.withValues(alpha: 0.15),
                       child: Text(
-                        debt.person.isEmpty ? '?' : debt.person[0].toUpperCase(),
+                        debt.person.isEmpty
+                            ? '?'
+                            : debt.person.characters.first.toUpperCase(),
                         style: TextStyle(color: color, fontWeight: FontWeight.w800),
                       ),
                     ),
@@ -187,7 +192,7 @@ class _DebtCard extends StatelessWidget {
                                   fontWeight: FontWeight.w800, fontSize: 16)),
                           Text(
                             [
-                              DateFormat('d MMM y').format(debt.date),
+                              DateFormat.yMMMd().format(debt.date),
                               if (debt.note.isNotEmpty) debt.note,
                             ].join(' · '),
                             maxLines: 1,
@@ -198,14 +203,14 @@ class _DebtCard extends StatelessWidget {
                       ),
                     ),
                     debt.isSettled
-                        ? const Chip(
-                            avatar: Icon(Icons.check, size: 16),
-                            label: Text('Settled'),
+                        ? Chip(
+                            avatar: const Icon(Icons.check, size: 16),
+                            label: Text(l.settled),
                           )
                         : Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text('Left', style: theme.textTheme.bodySmall),
+                              Text(l.left, style: theme.textTheme.bodySmall),
                               Text(
                                 state.formatMoney(debt.remainingMinor),
                                 style: TextStyle(
@@ -229,7 +234,8 @@ class _DebtCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '${state.formatMoney(debt.paidMinor)} of ${state.formatMoney(debt.amountMinor)} paid back',
+                  l.paidBackOf(state.formatMoney(debt.paidMinor),
+                      state.formatMoney(debt.amountMinor)),
                   style: theme.textTheme.bodySmall,
                 ),
               ],
@@ -241,6 +247,7 @@ class _DebtCard extends StatelessWidget {
   }
 
   Future<void> _showActions(BuildContext context) async {
+    final l = context.l10n;
     final action = await showModalBottomSheet<String>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -250,29 +257,30 @@ class _DebtCard extends StatelessWidget {
             if (!debt.isSettled) ...[
               ListTile(
                 leading: const Icon(Icons.payments_outlined),
-                title: const Text('Add a payment'),
-                subtitle: const Text('Part of the money was paid back'),
+                title: Text(l.addPayment),
+                subtitle: Text(l.addPaymentHint),
                 onTap: () => Navigator.pop(ctx, 'pay'),
               ),
               ListTile(
                 leading: const Icon(Icons.check_circle_outline),
-                title: const Text('Mark as settled'),
+                title: Text(l.markSettled),
                 onTap: () => Navigator.pop(ctx, 'settle'),
               ),
             ] else
               ListTile(
                 leading: const Icon(Icons.undo),
-                title: const Text('Reopen'),
+                title: Text(l.reopen),
                 onTap: () => Navigator.pop(ctx, 'reopen'),
               ),
             ListTile(
               leading: const Icon(Icons.edit_outlined),
-              title: const Text('Edit'),
+              title: Text(l.edit),
               onTap: () => Navigator.pop(ctx, 'edit'),
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: kExpenseColor),
-              title: const Text('Delete', style: TextStyle(color: kExpenseColor)),
+              title: Text(l.delete,
+                  style: const TextStyle(color: kExpenseColor)),
               onTap: () => Navigator.pop(ctx, 'delete'),
             ),
           ],
@@ -285,8 +293,8 @@ class _DebtCard extends StatelessWidget {
         final paid = await askAmount(
           context,
           state,
-          title: 'Payment from ${debt.person}',
-          helper: '${state.formatMoney(debt.remainingMinor)} is still open',
+          title: l.paymentFrom(debt.person),
+          helper: l.stillOpen(state.formatMoney(debt.remainingMinor)),
           maxMinor: debt.remainingMinor,
         );
         if (paid != null) {
@@ -304,14 +312,14 @@ class _DebtCard extends StatelessWidget {
         final ok = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: Text('Delete the record for ${debt.person}?'),
+            title: Text(l.deleteRecordFor(debt.person)),
             actions: [
               TextButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Cancel')),
+                  child: Text(l.cancel)),
               FilledButton(
                   onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Delete')),
+                  child: Text(l.delete)),
             ],
           ),
         );
@@ -366,7 +374,7 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
 
   Future<void> _pickAmount() async {
     final v = await askAmount(context, widget.state,
-        title: 'Amount', initialMinor: _amountMinor);
+        title: context.l10n.amount, initialMinor: _amountMinor);
     if (v != null) {
       setState(() {
         _amountMinor = v;
@@ -386,10 +394,11 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
   }
 
   Future<void> _save() async {
+    final l = context.l10n;
     final person = _person.text.trim();
     setState(() {
-      _personError = person.isEmpty ? 'Enter a name' : null;
-      _amountError = _amountMinor == null ? 'Enter the amount' : null;
+      _personError = person.isEmpty ? l.enterName : null;
+      _amountError = _amountMinor == null ? l.enterTheAmount : null;
     });
     if (_personError != null || _amountError != null) return;
     final old = widget.debt;
@@ -411,15 +420,16 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.debt == null ? 'New record' : 'Edit record')),
+      appBar: AppBar(title: Text(widget.debt == null ? l.newRecord : l.editRecord)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           SegmentedButton<DebtType>(
-            segments: const [
-              ButtonSegment(value: DebtType.lent, label: Text('I lent')),
-              ButtonSegment(value: DebtType.borrowed, label: Text('I borrowed')),
+            segments: [
+              ButtonSegment(value: DebtType.lent, label: Text(l.iLent)),
+              ButtonSegment(value: DebtType.borrowed, label: Text(l.iBorrowed)),
             ],
             showSelectedIcon: false,
             selected: {_type},
@@ -430,8 +440,8 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
             controller: _person,
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
-              labelText: _type == DebtType.lent ? 'Lent to' : 'Borrowed from',
-              hintText: 'Name',
+              labelText: _type == DebtType.lent ? l.lentTo : l.borrowedFrom,
+              hintText: l.name,
               errorText: _personError,
               border: const OutlineInputBorder(),
             ),
@@ -441,13 +451,13 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
             onTap: _pickAmount,
             child: InputDecorator(
               decoration: InputDecoration(
-                labelText: 'Amount',
+                labelText: l.amount,
                 errorText: _amountError,
                 border: const OutlineInputBorder(),
                 suffixIcon: const Icon(Icons.edit_outlined),
               ),
               child: Text(_amountMinor == null
-                  ? 'Tap to enter'
+                  ? l.tapToEnter
                   : widget.state.formatMoney(_amountMinor!)),
             ),
           ),
@@ -455,25 +465,25 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
           InkWell(
             onTap: _pickDate,
             child: InputDecorator(
-              decoration: const InputDecoration(
-                labelText: 'Date',
-                border: OutlineInputBorder(),
-                suffixIcon: Icon(Icons.calendar_today_outlined),
+              decoration: InputDecoration(
+                labelText: l.date,
+                border: const OutlineInputBorder(),
+                suffixIcon: const Icon(Icons.calendar_today_outlined),
               ),
-              child: Text(DateFormat('EEE, d MMM y').format(_date)),
+              child: Text(DateFormat.yMMMEd().format(_date)),
             ),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _note,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              labelText: 'Note (optional)',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: l.noteOptional,
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 24),
-          FilledButton(onPressed: _save, child: const Text('Save')),
+          FilledButton(onPressed: _save, child: Text(l.save)),
         ],
       ),
     );

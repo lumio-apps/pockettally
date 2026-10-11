@@ -101,22 +101,22 @@ class BackupData {
         ],
       });
 
-  /// Parses a backup file. Throws [FormatException] with a readable message
+  /// Parses a backup file. Throws [FormatException] whose message is an
+  /// error code (see backupErrorMessage in l10n/l10n.dart)
   /// when the file is not a PocketTally backup.
   static BackupData fromJsonString(String text) {
     final Object? decoded;
     try {
       decoded = jsonDecode(text);
     } on FormatException {
-      throw const FormatException('This file is not a valid backup.');
+      throw const FormatException('invalid');
     }
     if (decoded is! Map<String, dynamic> || decoded['app'] != appId) {
-      throw const FormatException('This file is not a PocketTally backup.');
+      throw const FormatException('not_ours');
     }
     final format = decoded['format'];
     if (format is! int || format > formatVersion) {
-      throw const FormatException(
-          'This backup was made by a newer version. Please update the app first.');
+      throw const FormatException('too_new');
     }
 
     try {
@@ -180,7 +180,7 @@ class BackupData {
         exportedAt: DateTime.tryParse(decoded['exportedAt'] as String? ?? ''),
       );
     } catch (_) {
-      throw const FormatException('This backup file is damaged.');
+      throw const FormatException('damaged');
     }
   }
 

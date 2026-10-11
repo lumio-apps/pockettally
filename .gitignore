@@ -22,3 +22,6 @@ android/app/release/
 android/key.properties
 *.jks
 *.keystore
+
+# Generated from lib/l10n/*.arb by flutter pub get
+lib/l10n/app_localizations*.dart

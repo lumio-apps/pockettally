@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 import '../photo_store.dart';
 import '../theme.dart';
@@ -125,6 +126,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   }
 
   Future<void> _addPhoto() async {
+    final l = context.l10n;
     final camera = await showModalBottomSheet<bool>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -133,12 +135,12 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Take a photo'),
+              title: Text(l.takePhoto),
               onTap: () => Navigator.pop(ctx, true),
             ),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Choose from gallery'),
+              title: Text(l.chooseFromGallery),
               onTap: () => Navigator.pop(ctx, false),
             ),
           ],
@@ -152,39 +154,40 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       if (name != null && mounted) setState(() => _photo = name);
     } catch (_) {
       messenger.showSnackBar(
-          const SnackBar(content: Text('Could not add the photo.')));
+          SnackBar(content: Text(l.couldNotAddPhoto)));
     }
   }
 
   Future<void> _delete() async {
     final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete this entry?'),
+        title: Text(l.deleteEntryQuestion),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(l.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Delete')),
+              child: Text(l.delete)),
         ],
       ),
     );
     if (ok != true || !mounted) return;
     Navigator.of(context).pop();
-    await deleteEntryWithUndo(messenger, widget.state, widget.entry!);
+    await deleteEntryWithUndo(messenger, l, widget.state, widget.entry!);
   }
 
   Future<void> _save() async {
     final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
     final amount = widget.state.parseMinor(_input);
     if (amount == null || amount <= 0) {
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(const SnackBar(
-            content: Text('Enter an amount greater than 0')));
+        ..showSnackBar(SnackBar(content: Text(l.enterAmountAboveZero)));
       return;
     }
     final entry = Entry(
@@ -202,7 +205,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     } else {
       await widget.state.addEntry(entry);
     }
-    final warning = widget.state.budgetWarningFor(entry);
+    final warning = widget.state.budgetWarningFor(entry, l);
     if (mounted) Navigator.of(context).pop();
     if (warning != null) {
       messenger.showSnackBar(SnackBar(
@@ -221,6 +224,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = context.l10n;
     final isIncome = _type == EntryType.income;
     final amountColor = isIncome ? kIncomeColor : kExpenseColor;
     final categoryNames = _categories;
@@ -236,11 +240,11 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit entry' : 'New entry'),
+        title: Text(_isEditing ? l.editEntry : l.newEntry),
         actions: [
           if (_isEditing)
             IconButton(
-              tooltip: 'Delete',
+              tooltip: l.delete,
               icon: const Icon(Icons.delete_outline),
               onPressed: _delete,
             ),
@@ -254,11 +258,11 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 children: [
                   SegmentedButton<EntryType>(
-                    segments: const [
+                    segments: [
                       ButtonSegment(
-                          value: EntryType.expense, label: Text('Expense')),
+                          value: EntryType.expense, label: Text(l.expense)),
                       ButtonSegment(
-                          value: EntryType.income, label: Text('Income')),
+                          value: EntryType.income, label: Text(l.income)),
                     ],
                     showSelectedIcon: false,
                     selected: {_type},
@@ -269,7 +273,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                   ),
                   const SizedBox(height: 16),
                   Center(
-                    child: Text('Amount', style: theme.textTheme.bodySmall),
+                    child: Text(l.amount, style: theme.textTheme.bodySmall),
                   ),
                   FittedBox(
                     fit: BoxFit.scaleDown,
@@ -302,7 +306,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                     children: [
                       for (final c in categoryNames)
                         ChoiceChip(
-                          label: Text(c),
+                          label: Text(categoryLabel(l, c)),
                           selected: c == _category,
                           avatar: CircleAvatar(
                             backgroundColor:
@@ -313,7 +317,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                         ),
                       ActionChip(
                         avatar: const Icon(Icons.tune, size: 18),
-                        label: const Text('Manage'),
+                        label: Text(l.manage),
                         onPressed: () async {
                           await Navigator.of(context).push(MaterialPageRoute(
                             builder: (_) => CategoriesScreen(
@@ -328,17 +332,17 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                   ),
                   if (isIncome) ...[
                     const SizedBox(height: 14),
-                    Text('This income is', style: theme.textTheme.bodySmall),
+                    Text(l.thisIncomeIs, style: theme.textTheme.bodySmall),
                     const SizedBox(height: 6),
                     SegmentedButton<IncomePeriod>(
-                      segments: const [
+                      segments: [
                         ButtonSegment(
-                            value: IncomePeriod.daily, label: Text('Daily')),
+                            value: IncomePeriod.daily, label: Text(l.daily)),
                         ButtonSegment(
-                            value: IncomePeriod.weekly, label: Text('Weekly')),
+                            value: IncomePeriod.weekly, label: Text(l.weekly)),
                         ButtonSegment(
                             value: IncomePeriod.monthly,
-                            label: Text('Monthly')),
+                            label: Text(l.monthly)),
                       ],
                       showSelectedIcon: false,
                       selected: {_period},
@@ -355,7 +359,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                               minimumSize: const Size(0, 48)),
                           icon: const Icon(Icons.calendar_today_outlined,
                               size: 18),
-                          label: Text(DateFormat('EEE, d MMM').format(_date)),
+                          label: Text(DateFormat.MMMEd().format(_date)),
                           onPressed: _pickDate,
                         ),
                       ),
@@ -367,7 +371,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                                     minimumSize: const Size(0, 48)),
                                 icon: const Icon(Icons.receipt_long_outlined,
                                     size: 18),
-                                label: const Text('Bill photo'),
+                                label: Text(l.billPhoto),
                                 onPressed: _addPhoto,
                               )
                             : Row(
@@ -388,17 +392,17 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                                           height: 48,
                                           fit: BoxFit.cover,
                                           errorBuilder: (context, error, stack) =>
-                                              const SizedBox(
+                                              SizedBox(
                                             height: 48,
                                             child: Center(
-                                                child: Text('Photo missing')),
+                                                child: Text(l.photoMissing)),
                                           ),
                                         ),
                                       ),
                                     ),
                                   ),
                                   IconButton(
-                                    tooltip: 'Remove photo',
+                                    tooltip: l.removePhoto,
                                     icon: const Icon(Icons.close),
                                     onPressed: () =>
                                         setState(() => _photo = null),
@@ -413,7 +417,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                     controller: _noteController,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
-                      hintText: 'Note (optional)',
+                      hintText: l.noteOptional,
                       prefixIcon: const Icon(Icons.edit_note),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14)),
@@ -425,6 +429,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
             _Keypad(
               onKey: _press,
               decimalKey: widget.state.money.decimals == 0 ? '00' : _sep,
+              deleteDigitLabel: l.deleteDigit,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
@@ -433,10 +438,10 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                 child: FilledButton(
                   onPressed: _save,
                   child: Text(_isEditing
-                      ? 'Save changes'
+                      ? l.saveChanges
                       : isIncome
-                          ? 'Save income'
-                          : 'Save expense'),
+                          ? l.saveIncome
+                          : l.saveExpense),
                 ),
               ),
             ),
@@ -448,13 +453,20 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
 }
 
 class _Keypad extends StatelessWidget {
-  const _Keypad({required this.onKey, required this.decimalKey});
+  const _Keypad({
+    required this.onKey,
+    required this.decimalKey,
+    required this.deleteDigitLabel,
+  });
 
   final ValueChanged<String> onKey;
 
   /// Label of the bottom-left key: "." or "," — or "00" when the
   /// currency is shown without decimals.
   final String decimalKey;
+
+  /// Screen reader label of the backspace key.
+  final String deleteDigitLabel;
 
   static const _rows = [
     ['7', '8', '9', '÷'],
@@ -511,7 +523,8 @@ class _Keypad extends StatelessWidget {
         ),
         onPressed: () => onKey(sent),
         child: k == '⌫'
-            ? const Icon(Icons.backspace_outlined, semanticLabel: 'Delete digit')
+            ? Icon(Icons.backspace_outlined,
+                semanticLabel: deleteDigitLabel)
             : Text(label,
                 style:
                     const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../widgets/entry_tile.dart';
@@ -22,11 +23,11 @@ class HomeScreen extends StatelessWidget {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
-  String _greeting() {
+  String _greeting(AppLocalizations l) {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (h < 12) return l.goodMorning;
+    if (h < 17) return l.goodAfternoon;
+    return l.goodEvening;
   }
 
   @override
@@ -35,6 +36,7 @@ class HomeScreen extends StatelessWidget {
       listenable: state,
       builder: (context, _) {
         final theme = Theme.of(context);
+        final l = context.l10n;
         final now = DateTime.now();
         final entries = state.entries;
         final name = state.userName;
@@ -62,7 +64,7 @@ class HomeScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(_greeting(), style: theme.textTheme.bodySmall),
+                          Text(_greeting(l), style: theme.textTheme.bodySmall),
                           Text(
                             name,
                             overflow: TextOverflow.ellipsis,
@@ -73,7 +75,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton.outlined(
-                      tooltip: 'Search',
+                      tooltip: l.search,
                       icon: const Icon(Icons.search),
                       onPressed: () =>
                           _push(context, SearchScreen(state: state)),
@@ -92,7 +94,7 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     _QuickAction(
                       icon: Icons.remove,
-                      label: 'Expense',
+                      label: l.expense,
                       background: const Color(0xFFFFE3DE),
                       foreground: const Color(0xFFB3261E),
                       onTap: () => _push(
@@ -102,7 +104,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     _QuickAction(
                       icon: Icons.add,
-                      label: 'Income',
+                      label: l.income,
                       background: const Color(0xFFD7F3E6),
                       foreground: const Color(0xFF1B6E4C),
                       onTap: () => _push(
@@ -112,14 +114,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                     _QuickAction(
                       icon: Icons.handshake_outlined,
-                      label: 'Lend/Borrow',
+                      label: l.lendBorrowShort,
                       background: const Color(0xFFDDE6FA),
                       foreground: const Color(0xFF2F4DA8),
                       onTap: () => _push(context, DebtsScreen(state: state)),
                     ),
                     _QuickAction(
                       icon: Icons.savings_outlined,
-                      label: 'Goals',
+                      label: l.goals,
                       background: const Color(0xFFFFF0CC),
                       foreground: const Color(0xFF8A5A00),
                       onTap: () => _push(context, GoalsScreen(state: state)),
@@ -138,14 +140,14 @@ class HomeScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: _MiniStat(
-                                label: "You'll get",
+                                label: l.youWillGet,
                                 value: state.formatMoney(state.toReceiveMinor),
                                 color: kIncomeColor,
                               ),
                             ),
                             Expanded(
                               child: _MiniStat(
-                                label: 'You owe',
+                                label: l.youOwe,
                                 value: state.formatMoney(state.toPayMinor),
                                 color: kExpenseColor,
                               ),
@@ -158,16 +160,16 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 24),
-                Text('Recent',
+                Text(l.recent,
                     style: theme.textTheme.titleMedium
                         ?.copyWith(fontWeight: FontWeight.w800)),
                 const SizedBox(height: 8),
                 if (entries.isEmpty)
-                  const Card(
+                  Card(
                     child: Padding(
-                      padding: EdgeInsets.all(28),
+                      padding: const EdgeInsets.all(28),
                       child: Text(
-                        'No entries yet.\nTap + to record your first income or expense.',
+                        l.noEntriesYet,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -193,7 +195,7 @@ class HomeScreen extends StatelessWidget {
     for (final day in groups.keys) {
       widgets.add(Padding(
         padding: const EdgeInsets.fromLTRB(4, 12, 4, 6),
-        child: Text(_dayLabel(day),
+        child: Text(_dayLabel(context.l10n, day),
             style: theme.textTheme.labelLarge
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
       ));
@@ -218,12 +220,12 @@ class HomeScreen extends StatelessWidget {
     return widgets;
   }
 
-  String _dayLabel(DateTime day) {
+  String _dayLabel(AppLocalizations l, DateTime day) {
     final today = DateTime.now();
     final t = DateTime(today.year, today.month, today.day);
-    if (day == t) return 'Today';
-    if (day == DateTime(t.year, t.month, t.day - 1)) return 'Yesterday';
-    return DateFormat('EEE, d MMM y').format(day);
+    if (day == t) return l.today;
+    if (day == DateTime(t.year, t.month, t.day - 1)) return l.yesterday;
+    return DateFormat.yMMMEd().format(day);
   }
 }
 
@@ -248,6 +250,7 @@ class _BalanceCard extends StatelessWidget {
     final limit = state.monthlyBudgetMinor;
     final over = state.overBudgetCategories(month);
     final brand = BrandColors.of(context);
+    final l = context.l10n;
     final label = TextStyle(color: brand.label, fontSize: 13);
 
     return Material(
@@ -261,12 +264,12 @@ class _BalanceCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${DateFormat('MMMM').format(month)} balance',
+              Text(l.monthBalance(DateFormat.MMMM().format(month)),
                   style: label.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               FittedBox(
                 fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerStart,
                 child: Text(
                   state.formatMoney(balance),
                   style: TextStyle(
@@ -282,7 +285,7 @@ class _BalanceCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _Tile(
-                      label: 'Income',
+                      label: l.income,
                       value: '+ ${state.formatMoney(income)}',
                       color: kMint,
                     ),
@@ -290,7 +293,7 @@ class _BalanceCard extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: _Tile(
-                      label: 'Expenses',
+                      label: l.expenses,
                       value: '- ${state.formatMoney(expense)}',
                       color: const Color(0xFFFFB4A8),
                     ),
@@ -311,13 +314,16 @@ class _BalanceCard extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                    'Monthly budget ${state.formatMoney(limit)}',
+                                    l.monthlyBudgetAmount(
+                                        state.formatMoney(limit)),
                                     style: label),
                               ),
                               Text(
                                 expense > limit
-                                    ? 'Over by ${state.formatMoney(expense - limit)}'
-                                    : '${(expense / limit * 100).round()}% used',
+                                    ? l.overBy(
+                                        state.formatMoney(expense - limit))
+                                    : l.percentUsed(
+                                        (expense / limit * 100).round().toString()),
                                 style: label.copyWith(
                                   color: expense > limit
                                       ? const Color(0xFFFFB4A8)
@@ -350,8 +356,9 @@ class _BalanceCard extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   over.length == 1
-                                      ? '${over.first.name} is over its limit'
-                                      : '${over.length} categories are over their limit',
+                                      ? l.categoryOverLimit(
+                                          categoryLabel(l, over.first.name))
+                                      : l.categoriesOverLimit(over.length),
                                   style: label.copyWith(
                                       color: kAccent,
                                       fontWeight: FontWeight.w700),
@@ -395,7 +402,7 @@ class _Tile extends StatelessWidget {
           const SizedBox(height: 2),
           FittedBox(
             fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: Text(value,
                 style: TextStyle(
                     color: color, fontSize: 16, fontWeight: FontWeight.w800)),
@@ -471,7 +478,7 @@ class _MiniStat extends StatelessWidget {
         Text(label, style: Theme.of(context).textTheme.bodySmall),
         FittedBox(
           fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerStart,
           child: Text(value,
               style: TextStyle(
                   color: color, fontWeight: FontWeight.w800, fontSize: 15)),

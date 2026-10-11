@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 
 const Color kIncomeColor = Color(0xFF1B7A4C);
@@ -27,6 +28,8 @@ class EntryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = context.l10n;
+    final name = categoryLabel(l, entry.category);
     final color = entry.isIncome ? kIncomeColor : kExpenseColor;
     final sign = entry.isIncome ? '+' : '-';
     final categoryColor = state.colorFor(entry.category, entry.type);
@@ -38,7 +41,7 @@ class EntryTile extends StatelessWidget {
     final subtitleParts = <String>[
       if (showDate) MaterialLocalizations.of(context).formatMediumDate(entry.date),
       if (entry.isIncome && entry.period != null)
-        '${periodLabel(entry.period!)} income',
+        periodIncomeLabel(l, entry.period!),
       if (entry.note.isNotEmpty) entry.note,
     ];
 
@@ -50,12 +53,12 @@ class EntryTile extends StatelessWidget {
           color: kExpenseColor,
           borderRadius: BorderRadius.circular(16),
         ),
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 24),
+        alignment: AlignmentDirectional.centerEnd,
+        padding: const EdgeInsetsDirectional.only(end: 24),
         child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
       onDismissed: (_) =>
-          deleteEntryWithUndo(ScaffoldMessenger.of(context), state, entry),
+          deleteEntryWithUndo(ScaffoldMessenger.of(context), l, state, entry),
       child: ListTile(
         onTap: onTap,
         onLongPress: () => _showActions(context),
@@ -69,7 +72,7 @@ class EntryTile extends StatelessWidget {
           ),
           alignment: Alignment.center,
           child: Text(
-            entry.category.isEmpty ? '?' : entry.category[0].toUpperCase(),
+            name.isEmpty ? '?' : name.characters.first.toUpperCase(),
             style: TextStyle(
               color: letterColor,
               fontWeight: FontWeight.w800,
@@ -81,7 +84,7 @@ class EntryTile extends StatelessWidget {
           children: [
             Flexible(
               child: Text(
-                entry.category,
+                name,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
@@ -117,6 +120,7 @@ class EntryTile extends StatelessWidget {
   /// Long press: Edit or Delete.
   Future<void> _showActions(BuildContext context) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
     final action = await showModalBottomSheet<String>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -125,13 +129,13 @@ class EntryTile extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.edit_outlined),
-              title: const Text('Edit'),
+              title: Text(l.edit),
               onTap: () => Navigator.pop(ctx, 'edit'),
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: kExpenseColor),
-              title: const Text('Delete',
-                  style: TextStyle(color: kExpenseColor)),
+              title: Text(l.delete,
+                  style: const TextStyle(color: kExpenseColor)),
               onTap: () => Navigator.pop(ctx, 'delete'),
             ),
           ],
@@ -139,32 +143,23 @@ class EntryTile extends StatelessWidget {
       ),
     );
     if (action == 'edit') onTap();
-    if (action == 'delete') await deleteEntryWithUndo(messenger, state, entry);
-  }
-}
-
-String periodLabel(IncomePeriod p) {
-  switch (p) {
-    case IncomePeriod.daily:
-      return 'Daily';
-    case IncomePeriod.weekly:
-      return 'Weekly';
-    case IncomePeriod.monthly:
-      return 'Monthly';
+    if (action == 'delete') {
+      await deleteEntryWithUndo(messenger, l, state, entry);
+    }
   }
 }
 
 /// Deletes [entry] and shows "Entry deleted" with an Undo button.
-Future<void> deleteEntryWithUndo(
-    ScaffoldMessengerState messenger, AppState state, Entry entry) async {
+Future<void> deleteEntryWithUndo(ScaffoldMessengerState messenger,
+    AppLocalizations l, AppState state, Entry entry) async {
   await state.deleteEntry(entry);
   messenger
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
-        content: const Text('Entry deleted'),
+        content: Text(l.entryDeleted),
         action: SnackBarAction(
-          label: 'Undo',
+          label: l.undo,
           onPressed: () => state.restoreEntry(entry),
         ),
       ),

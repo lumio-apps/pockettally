@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import 'entry_tile.dart' show kIncomeColor, kExpenseColor;
 
 const Color kWarningColor = Color(0xFF9A6700);
@@ -24,6 +25,7 @@ class BudgetBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = context.l10n;
     final ratio = limit <= 0 ? 0.0 : spent / limit;
     final over = spent > limit;
     final color = over
@@ -43,7 +45,7 @@ class BudgetBar extends StatelessWidget {
             else
               const Spacer(),
             Text(
-              '${state.formatMoney(spent)} of ${state.formatMoney(limit)}',
+              l.amountOfTotal(state.formatMoney(spent), state.formatMoney(limit)),
               style: theme.textTheme.bodySmall,
             ),
           ],
@@ -61,8 +63,8 @@ class BudgetBar extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           over
-              ? 'Over by ${state.formatMoney(spent - limit)}'
-              : '${state.formatMoney(limit - spent)} left',
+              ? l.overBy(state.formatMoney(spent - limit))
+              : l.amountLeft(state.formatMoney(limit - spent)),
           style: theme.textTheme.bodySmall?.copyWith(
             color: over ? kExpenseColor : null,
             fontWeight: over ? FontWeight.w600 : null,

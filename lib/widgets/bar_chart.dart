@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
+
 class BarGroup {
   const BarGroup(this.label, this.income, this.expense);
 
@@ -75,9 +77,9 @@ class IncomeExpenseBarChart extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _Legend(color: incomeColor, label: 'Income'),
+            _Legend(color: incomeColor, label: context.l10n.income),
             const SizedBox(width: 20),
-            _Legend(color: expenseColor, label: 'Expenses'),
+            _Legend(color: expenseColor, label: context.l10n.expenses),
           ],
         ),
       ],

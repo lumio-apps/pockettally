@@ -10,14 +10,14 @@ import 'backup.dart';
 /// No storage permission is needed and nothing is uploaded.
 class BackupService {
   /// Asks the user where to save the backup. Returns false if they cancelled.
-  static Future<bool> export(AppState state) async {
+  static Future<bool> export(AppState state, {required String dialogTitle}) async {
     final now = DateTime.now();
     final stamp = '${now.year}-${now.month.toString().padLeft(2, '0')}-'
         '${now.day.toString().padLeft(2, '0')}';
     final bytes =
         Uint8List.fromList(utf8.encode(state.createBackup().toJsonString()));
     final path = await FilePicker.platform.saveFile(
-      dialogTitle: 'Save PocketTally backup',
+      dialogTitle: dialogTitle,
       fileName: 'pockettally-backup-$stamp.json',
       bytes: bytes,
     );
@@ -26,22 +26,22 @@ class BackupService {
 
   /// Lets the user pick a backup file and parses it.
   /// Returns null if they cancelled; throws [FormatException] for a bad file.
-  static Future<BackupData?> pick() async {
+  static Future<BackupData?> pick({required String dialogTitle}) async {
     final result = await FilePicker.platform.pickFiles(
-      dialogTitle: 'Choose a PocketTally backup',
+      dialogTitle: dialogTitle,
       type: FileType.any,
       withData: true,
     );
     final bytes = result?.files.single.bytes;
     if (result == null) return null;
     if (bytes == null) {
-      throw const FormatException('Could not read this file.');
+      throw const FormatException('unreadable');
     }
     final String text;
     try {
       text = utf8.decode(bytes);
     } on FormatException {
-      throw const FormatException('This file is not a valid backup.');
+      throw const FormatException('invalid');
     }
     return BackupData.fromJsonString(text);
   }

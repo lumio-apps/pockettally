@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui' show Locale;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -7,7 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'app_state.dart';
-import 'models.dart';
+import 'l10n/l10n.dart';
 
 /// Builds a PDF report of a period and saves it where the user chooses.
 /// Made entirely on the phone, nothing is uploaded.
@@ -18,6 +19,14 @@ class ReportPdf {
   static const _muted = PdfColor.fromInt(0xFF5A6661);
   static const _headerFill = PdfColor.fromInt(0xFFE8F0EC);
 
+  /// Languages the bundled PDF font can write correctly. Other app
+  /// languages (their scripts need text shaping or very large fonts) get an
+  /// English report.
+  static const _pdfLanguages = {'en', 'es', 'fr', 'pt', 'id', 'ru', 'hy'};
+
+  static String languageFor(String appLanguage) =>
+      _pdfLanguages.contains(appLanguage) ? appLanguage : 'en';
+
   /// Returns false if the user cancelled the save dialog.
   static Future<bool> saveReport({
     required AppState state,
@@ -25,19 +34,18 @@ class ReportPdf {
     required DateTime end,
     required String periodLabel,
   }) async {
+    final l = lookupAppLocalizations(Locale(languageFor(state.languageCode)));
     final bytes = await build(
       state: state,
       start: start,
       end: end,
       periodLabel: periodLabel,
     );
-    final safeLabel = periodLabel
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
-        .replaceAll(RegExp(r'^-+|-+$'), '');
+    String two(int n) => n.toString().padLeft(2, '0');
+    final stamp = '${start.year}-${two(start.month)}-${two(start.day)}';
     final path = await FilePicker.platform.saveFile(
-      dialogTitle: 'Save PDF report',
-      fileName: 'pockettally-report-$safeLabel.pdf',
+      dialogTitle: l.savePdfTitle,
+      fileName: 'pockettally-report-$stamp.pdf',
       bytes: bytes,
     );
     return path != null;
@@ -49,6 +57,10 @@ class ReportPdf {
     required DateTime end,
     required String periodLabel,
   }) async {
+    final lang = languageFor(state.languageCode);
+    final l = lookupAppLocalizations(Locale(lang));
+    String cat(String name) => categoryLabel(l, name);
+
     // A bundled font, so the PDF can show text in many languages.
     final base =
         pw.Font.ttf(await rootBundle.load('assets/fonts/DejaVuSans.ttf'));
@@ -85,7 +97,7 @@ class ReportPdf {
     const headerStyle =
         pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10);
     const cellStyle = pw.TextStyle(fontSize: 10);
-    final dateFmt = DateFormat('d MMM y');
+    final dateFmt = DateFormat.yMMMd(lang);
 
     pw.Widget section(String title) => pw.Padding(
           padding: const pw.EdgeInsets.only(top: 18, bottom: 6),
@@ -95,7 +107,7 @@ class ReportPdf {
         );
 
     final doc = pw.Document(
-      title: 'PocketTally report - $periodLabel',
+      title: '${l.pdfTitle} - $periodLabel',
       author: 'PocketTally',
     );
 
@@ -108,12 +120,14 @@ class ReportPdf {
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text('PocketTally · $periodLabel', style: small),
-            pw.Text('Page ${ctx.pageNumber} of ${ctx.pagesCount}',
+            pw.Text(
+                l.pdfPage(
+                    ctx.pageNumber.toString(), ctx.pagesCount.toString()),
                 style: small),
           ],
         ),
         build: (ctx) => [
-          pw.Text('PocketTally report',
+          pw.Text(l.pdfTitle,
               style: const pw.TextStyle(
                   fontSize: 22, fontWeight: pw.FontWeight.bold, color: _brand)),
           pw.SizedBox(height: 4),
@@ -125,19 +139,20 @@ class ReportPdf {
           ),
           pw.SizedBox(height: 2),
           pw.Text(
-              'Created ${DateFormat('d MMM y, HH:mm').format(DateTime.now())}',
+              l.pdfCreated(
+                  DateFormat.yMMMd(lang).add_Hm().format(DateTime.now())),
               style: small),
 
-          section('Summary'),
+          section(l.pdfSummary),
           pw.TableHelper.fromTextArray(
             data: [
-              ['Income', m(income)],
-              ['Expenses', m(expense)],
-              ['Balance', m(balance)],
+              [l.income, m(income)],
+              [l.expenses, m(expense)],
+              [l.balance, m(balance)],
               if (isWholeMonth && budget > 0) ...[
-                ['Monthly budget', m(budget)],
+                [l.monthlyBudget, m(budget)],
                 [
-                  expense > budget ? 'Over budget by' : 'Left in budget',
+                  expense > budget ? l.pdfOverBudgetBy : l.pdfLeftInBudget,
                   m((budget - expense).abs()),
                 ],
               ],
@@ -149,13 +164,13 @@ class ReportPdf {
           ),
 
           if (categoryRows.isNotEmpty) ...[
-            section('Expenses by category'),
+            section(l.pdfExpensesByCategory),
             pw.TableHelper.fromTextArray(
-              headers: ['Category', 'Share', 'Amount'],
+              headers: [l.category, l.share, l.amount],
               data: [
                 for (final r in categoryRows)
                   [
-                    r.key,
+                    cat(r.key),
                     '${(r.value / expense * 100).toStringAsFixed(1)}%',
                     m(r.value),
                   ],
@@ -170,19 +185,19 @@ class ReportPdf {
             ),
           ],
 
-          section('All entries (${entries.length})'),
+          section(l.pdfAllEntries(entries.length.toString())),
           if (entries.isEmpty)
-            pw.Text('No entries in this period.', style: cellStyle)
+            pw.Text(l.pdfNoEntries, style: cellStyle)
           else
             pw.TableHelper.fromTextArray(
-              headers: ['Date', 'Category', 'Note', 'Amount'],
+              headers: [l.date, l.category, l.note, l.amount],
               data: [
                 for (final e in entries)
                   [
                     dateFmt.format(e.date),
                     e.isIncome && e.period != null
-                        ? '${e.category} (${_periodName(e.period!)})'
-                        : e.category,
+                        ? '${cat(e.category)} (${periodName(l, e.period!)})'
+                        : cat(e.category),
                     e.note.isEmpty ? '-' : e.note,
                     '${e.isIncome ? '+' : '-'} ${m(e.amountMinor)}',
                   ],
@@ -205,23 +220,11 @@ class ReportPdf {
               },
             ),
           pw.SizedBox(height: 18),
-          pw.Text('Made with PocketTally. All data stays on your phone.',
-              style: small),
+          pw.Text(l.pdfFooter, style: small),
         ],
       ),
     );
 
     return doc.save();
-  }
-
-  static String _periodName(IncomePeriod p) {
-    switch (p) {
-      case IncomePeriod.daily:
-        return 'daily';
-      case IncomePeriod.weekly:
-        return 'weekly';
-      case IncomePeriod.monthly:
-        return 'monthly';
-    }
   }
 }

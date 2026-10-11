@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 import '../widgets/budget_bar.dart';
 import 'categories_screen.dart';
@@ -19,16 +20,17 @@ class BudgetsScreen extends StatelessWidget {
       listenable: state,
       builder: (context, _) {
         final theme = Theme.of(context);
+        final l = context.l10n;
         final now = DateTime.now();
         final limit = state.monthlyBudgetMinor;
         final categories = state.categoriesFor(EntryType.expense);
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Budgets')),
+          appBar: AppBar(title: Text(l.navBudgets)),
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
-              Text(DateFormat('MMMM y').format(now),
+              Text(DateFormat.yMMMM().format(now),
                   style: theme.textTheme.labelLarge),
               const SizedBox(height: 8),
               Card(
@@ -37,7 +39,7 @@ class BudgetsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('Monthly budget', style: theme.textTheme.titleMedium),
+                      Text(l.monthlyBudget, style: theme.textTheme.titleMedium),
                       const SizedBox(height: 12),
                       if (limit > 0)
                         BudgetBar(
@@ -46,13 +48,13 @@ class BudgetsScreen extends StatelessWidget {
                           limit: limit,
                         )
                       else
-                        const Text('No monthly limit set.'),
+                        Text(l.noMonthlyLimit),
                       const SizedBox(height: 8),
                       Align(
-                        alignment: Alignment.centerRight,
+                        alignment: AlignmentDirectional.centerEnd,
                         child: TextButton(
                           onPressed: () => showMonthlyBudgetDialog(context, state),
-                          child: Text(limit > 0 ? 'Change' : 'Set monthly budget'),
+                          child: Text(limit > 0 ? l.change : l.setMonthlyBudget),
                         ),
                       ),
                     ],
@@ -60,16 +62,16 @@ class BudgetsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Category limits', style: theme.textTheme.titleMedium),
+              Text(l.categoryLimits, style: theme.textTheme.titleMedium),
               const SizedBox(height: 4),
-              Text('Tap a category to set or change its monthly limit.',
+              Text(l.categoryLimitsHint,
                   style: theme.textTheme.bodySmall),
               const SizedBox(height: 8),
               for (final c in categories)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: CircleAvatar(radius: 10, backgroundColor: c.color),
-                  title: Text(c.name),
+                  title: Text(categoryLabel(l, c.name)),
                   subtitle: c.hasBudget
                       ? Padding(
                           padding: const EdgeInsets.only(top: 6),
@@ -79,7 +81,7 @@ class BudgetsScreen extends StatelessWidget {
                             limit: c.budgetMinor!,
                           ),
                         )
-                      : const Text('No limit'),
+                      : Text(l.noLimit),
                   onTap: () => showCategoryDialog(
                     context,
                     state,
@@ -133,7 +135,7 @@ class _MonthlyBudgetDialogState extends State<_MonthlyBudgetDialog> {
   Future<void> _save() async {
     final v = widget.state.parseMinor(_amount.text);
     if (v == null || v <= 0) {
-      setState(() => _error = 'Enter an amount greater than 0');
+      setState(() => _error = context.l10n.enterAmountAboveZero);
       return;
     }
     await widget.state.setMonthlyBudget(v);
@@ -148,15 +150,16 @@ class _MonthlyBudgetDialogState extends State<_MonthlyBudgetDialog> {
   @override
   Widget build(BuildContext context) {
     final hasBudget = widget.state.monthlyBudgetMinor > 0;
+    final l = context.l10n;
     return AlertDialog(
-      title: const Text('Monthly budget'),
+      title: Text(l.monthlyBudget),
       content: TextField(
         controller: _amount,
         autofocus: true,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
         decoration: InputDecoration(
-          labelText: 'Limit for all expenses',
+          labelText: l.limitForAllExpenses,
           prefixText: '${widget.state.currency.symbol} ',
           errorText: _error,
           border: const OutlineInputBorder(),
@@ -167,12 +170,12 @@ class _MonthlyBudgetDialogState extends State<_MonthlyBudgetDialog> {
       ),
       actions: [
         if (hasBudget)
-          TextButton(onPressed: _remove, child: const Text('Remove')),
+          TextButton(onPressed: _remove, child: Text(l.remove)),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
-        FilledButton(onPressed: _save, child: const Text('Save')),
+        FilledButton(onPressed: _save, child: Text(l.save)),
       ],
     );
   }

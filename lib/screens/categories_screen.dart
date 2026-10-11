@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_state.dart';
+import '../l10n/l10n.dart';
 import '../models.dart';
 
 /// Create, rename, recolor, reorder, hide and delete categories.
@@ -17,20 +18,21 @@ class CategoriesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     return DefaultTabController(
       length: 2,
       initialIndex: initialType == EntryType.expense ? 0 : 1,
       child: Builder(
         builder: (context) => Scaffold(
           appBar: AppBar(
-            title: const Text('Categories'),
-            bottom: const TabBar(
-              tabs: [Tab(text: 'Expense'), Tab(text: 'Income')],
+            title: Text(l.categories),
+            bottom: TabBar(
+              tabs: [Tab(text: l.expense), Tab(text: l.income)],
             ),
           ),
           floatingActionButton: FloatingActionButton.extended(
             icon: const Icon(Icons.add),
-            label: const Text('New category'),
+            label: Text(l.newCategory),
             onPressed: () {
               final index = DefaultTabController.of(context).index;
               final type = index == 0 ? EntryType.expense : EntryType.income;
@@ -68,12 +70,11 @@ class _CategoryList extends StatelessWidget {
     return ReorderableListView.builder(
       padding: const EdgeInsets.only(bottom: 96),
       buildDefaultDragHandles: false,
-      header: const Padding(
-        padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
+      header: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
         child: Text(
-          'Drag to change the order. Hidden categories are not shown '
-          'when adding an entry.',
-          style: TextStyle(fontSize: 12),
+          context.l10n.reorderHint,
+          style: const TextStyle(fontSize: 12),
         ),
       ),
       footer: Column(
@@ -92,6 +93,7 @@ class _CategoryList extends StatelessWidget {
 
   Widget _tile(BuildContext context, EntryCategory c, int? index) {
     final count = state.entryCountFor(c);
+    final l = context.l10n;
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return ListTile(
       key: ValueKey(c.id ?? c.name),
@@ -100,13 +102,13 @@ class _CategoryList extends StatelessWidget {
         child: CircleAvatar(backgroundColor: c.color, radius: 14),
       ),
       title: Text(
-        c.name,
+        categoryLabel(l, c.name),
         style: c.hidden ? TextStyle(color: muted) : null,
       ),
       subtitle: Text([
-        if (c.hidden) 'Hidden',
-        count == 1 ? '1 entry' : '$count entries',
-        if (c.hasBudget) 'Limit ${state.formatMoney(c.budgetMinor!)}',
+        if (c.hidden) l.hidden,
+        l.entryCount(count),
+        if (c.hasBudget) l.limitAmount(state.formatMoney(c.budgetMinor!)),
       ].join(' · ')),
       onTap: () => showCategoryDialog(context, state, type: type, existing: c),
       trailing: index == null
@@ -115,7 +117,7 @@ class _CategoryList extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  tooltip: c.hidden ? 'Show' : 'Hide',
+                  tooltip: c.hidden ? l.show : l.hide,
                   icon: Icon(c.hidden
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined),
@@ -123,9 +125,9 @@ class _CategoryList extends StatelessWidget {
                 ),
                 ReorderableDragStartListener(
                   index: index,
-                  child: const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Icon(Icons.drag_handle, semanticLabel: 'Drag'),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(Icons.drag_handle, semanticLabel: l.drag),
                   ),
                 ),
               ],
@@ -143,16 +145,31 @@ Future<void> showCategoryDialog(
 }) {
   return showDialog<void>(
     context: context,
-    builder: (_) => _CategoryDialog(state: state, type: type, existing: existing),
+    builder: (_) => _CategoryDialog(
+      state: state,
+      type: type,
+      existing: existing,
+      // Built-in names are shown translated; saving that text unchanged
+      // keeps the built-in name.
+      shownName: existing == null
+          ? ''
+          : categoryLabel(context.l10n, existing.name),
+    ),
   );
 }
 
 class _CategoryDialog extends StatefulWidget {
-  const _CategoryDialog({required this.state, required this.type, this.existing});
+  const _CategoryDialog({
+    required this.state,
+    required this.type,
+    required this.shownName,
+    this.existing,
+  });
 
   final AppState state;
   final EntryType type;
   final EntryCategory? existing;
+  final String shownName;
 
   @override
   State<_CategoryDialog> createState() => _CategoryDialogState();
@@ -173,7 +190,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   @override
   void initState() {
     super.initState();
-    _name = TextEditingController(text: widget.existing?.name ?? '');
+    _name = TextEditingController(text: widget.shownName);
     final budget = widget.existing?.budgetMinor;
     _budget = TextEditingController(
         text: budget != null && budget > 0
@@ -191,21 +208,25 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   }
 
   Future<void> _save() async {
-    final name = _name.text.trim();
+    final l = context.l10n;
+    final typed = _name.text.trim();
+    final name = widget.existing != null && typed == widget.shownName
+        ? widget.existing!.name
+        : typed;
     if (name.isEmpty) {
-      setState(() => _error = 'Enter a name');
+      setState(() => _error = l.enterName);
       return;
     }
     if (widget.state.categoryNameTaken(name, widget.type,
         exceptId: widget.existing?.id)) {
-      setState(() => _error = 'This name already exists');
+      setState(() => _error = l.nameExists);
       return;
     }
     int? budgetMinor;
     if (_isExpense && _budget.text.trim().isNotEmpty) {
       final v = widget.state.parseMinor(_budget.text);
       if (v == null || v <= 0) {
-        setState(() => _budgetError = 'Enter an amount greater than 0');
+        setState(() => _budgetError = l.enterAmountAboveZero);
         return;
       }
       budgetMinor = v;
@@ -231,22 +252,23 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   }
 
   Future<void> _delete() async {
+    final l = context.l10n;
     final c = widget.existing!;
     final count = widget.state.entryCountFor(c);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Delete "${c.name}"?'),
+        title: Text(l.deleteNamedQuestion(widget.shownName)),
         content: Text(count == 0
-            ? 'This category has no entries.'
-            : '$count ${count == 1 ? 'entry' : 'entries'} will be moved to "$kOtherCategory".'),
+            ? l.categoryHasNoEntries
+            : l.entriesMovedTo(count, l.catOther)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+              child: Text(l.cancel)),
           FilledButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Delete')),
+              child: Text(l.delete)),
         ],
       ),
     );
@@ -257,9 +279,13 @@ class _CategoryDialogState extends State<_CategoryDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final typeLabel = widget.type == EntryType.expense ? 'expense' : 'income';
+    final l = context.l10n;
     return AlertDialog(
-      title: Text(_isEditing ? 'Edit category' : 'New $typeLabel category'),
+      title: Text(_isEditing
+          ? l.editCategory
+          : _isExpense
+              ? l.newExpenseCategory
+              : l.newIncomeCategory),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -272,7 +298,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
               enabled: !_isOther,
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
-                labelText: 'Name',
+                labelText: l.name,
                 errorText: _error,
                 border: const OutlineInputBorder(),
               ),
@@ -281,7 +307,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
               },
             ),
             const SizedBox(height: 16),
-            const Text('Color'),
+            Text(l.color),
             const SizedBox(height: 8),
             Wrap(
               spacing: 10,
@@ -310,9 +336,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                 ],
                 decoration: InputDecoration(
-                  labelText: 'Monthly limit (optional)',
+                  labelText: l.monthlyLimitOptional,
                   prefixText: '${widget.state.currency.symbol} ',
-                  helperText: 'Leave empty for no limit',
+                  helperText: l.leaveEmptyNoLimit,
                   errorText: _budgetError,
                   border: const OutlineInputBorder(),
                 ),
@@ -330,13 +356,13 @@ class _CategoryDialogState extends State<_CategoryDialog> {
             onPressed: _delete,
             style: TextButton.styleFrom(
                 foregroundColor: Theme.of(context).colorScheme.error),
-            child: const Text('Delete'),
+            child: Text(l.delete),
           ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l.cancel),
         ),
-        FilledButton(onPressed: _save, child: const Text('Save')),
+        FilledButton(onPressed: _save, child: Text(l.save)),
       ],
     );
   }

@@ -1,0 +1,535 @@
+{
+  "@@locale": "en",
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "remove": "Remove",
+  "change": "Change",
+  "clear": "Clear",
+  "undo": "Undo",
+  "more": "More",
+  "next": "Next",
+  "previous": "Previous",
+  "back": "Back",
+  "expense": "Expense",
+  "income": "Income",
+  "expenses": "Expenses",
+  "balance": "Balance",
+  "category": "Category",
+  "categories": "Categories",
+  "amount": "Amount",
+  "date": "Date",
+  "name": "Name",
+  "color": "Color",
+  "total": "Total",
+  "share": "Share",
+  "note": "Note",
+  "noteOptional": "Note (optional)",
+  "enterName": "Enter a name",
+  "enterAmountAboveZero": "Enter an amount greater than 0",
+  "amountAtMost": "Can be at most {amount}",
+  "@amountAtMost": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "amountOfTotal": "{amount} of {total}",
+  "@amountOfTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "overBy": "Over by {amount}",
+  "@overBy": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "amountLeft": "{amount} left",
+  "@amountLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "daily": "Daily",
+  "weekly": "Weekly",
+  "monthly": "Monthly",
+  "dailyIncome": "Daily income",
+  "weeklyIncome": "Weekly income",
+  "monthlyIncome": "Monthly income",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "navHome": "Home",
+  "navInsights": "Insights",
+  "navBudgets": "Budgets",
+  "navSettings": "Settings",
+  "addEntry": "Add entry",
+  "goodMorning": "Good morning",
+  "goodAfternoon": "Good afternoon",
+  "goodEvening": "Good evening",
+  "search": "Search",
+  "lendBorrowShort": "Lend/Borrow",
+  "goals": "Goals",
+  "youWillGet": "You'll get",
+  "youOwe": "You owe",
+  "recent": "Recent",
+  "noEntriesYet": "No entries yet.\nTap + to record your first income or expense.",
+  "monthBalance": "{month} balance",
+  "@monthBalance": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "monthlyBudgetAmount": "Monthly budget {amount}",
+  "@monthlyBudgetAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "percentUsed": "{percent}% used",
+  "@percentUsed": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryOverLimit": "{name} is over its limit",
+  "@categoryOverLimit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoriesOverLimit": "{count, plural, =1{1 category is over its limit} other{{count} categories are over their limit}}",
+  "@categoriesOverLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "warningCategoryOver": "{name} is over its limit ({spent} of {limit})",
+  "@warningCategoryOver": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "spent": {
+        "type": "String"
+      }
+    }
+  },
+  "warningMonthlyOver": "Monthly budget exceeded ({spent} of {limit})",
+  "@warningMonthlyOver": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      },
+      "spent": {
+        "type": "String"
+      }
+    }
+  },
+  "newEntry": "New entry",
+  "editEntry": "Edit entry",
+  "deleteEntryQuestion": "Delete this entry?",
+  "entryDeleted": "Entry deleted",
+  "takePhoto": "Take a photo",
+  "chooseFromGallery": "Choose from gallery",
+  "chooseFile": "Choose a file",
+  "couldNotAddPhoto": "Could not add the photo.",
+  "manage": "Manage",
+  "thisIncomeIs": "This income is",
+  "billPhoto": "Bill photo",
+  "photoMissing": "Photo missing",
+  "removePhoto": "Remove photo",
+  "photoGone": "This photo is no longer on this device.",
+  "saveChanges": "Save changes",
+  "saveIncome": "Save income",
+  "saveExpense": "Save expense",
+  "deleteDigit": "Delete digit",
+  "newCategory": "New category",
+  "newExpenseCategory": "New expense category",
+  "newIncomeCategory": "New income category",
+  "editCategory": "Edit category",
+  "reorderHint": "Drag to change the order. Hidden categories are not shown when adding an entry.",
+  "hidden": "Hidden",
+  "show": "Show",
+  "hide": "Hide",
+  "drag": "Drag",
+  "entryCount": "{count, plural, =0{No entries} =1{1 entry} other{{count} entries}}",
+  "@entryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "limitAmount": "Limit {amount}",
+  "@limitAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "nameExists": "This name already exists",
+  "deleteNamedQuestion": "Delete \"{name}\"?",
+  "@deleteNamedQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryHasNoEntries": "This category has no entries.",
+  "entriesMovedTo": "{count, plural, =1{1 entry will be moved to \"{target}\".} other{{count} entries will be moved to \"{target}\".}}",
+  "@entriesMovedTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
+  "monthlyLimitOptional": "Monthly limit (optional)",
+  "leaveEmptyNoLimit": "Leave empty for no limit",
+  "catFood": "Food",
+  "catRent": "Rent",
+  "catTravel": "Travel",
+  "catShopping": "Shopping",
+  "catBills": "Bills",
+  "catHealth": "Health",
+  "catEntertainment": "Entertainment",
+  "catEducation": "Education",
+  "catOther": "Other",
+  "catSalary": "Salary",
+  "catBusiness": "Business",
+  "catGift": "Gift",
+  "monthlyBudget": "Monthly budget",
+  "noMonthlyLimit": "No monthly limit set.",
+  "setMonthlyBudget": "Set monthly budget",
+  "categoryLimits": "Category limits",
+  "categoryLimitsHint": "Tap a category to set or change its monthly limit.",
+  "noLimit": "No limit",
+  "limitForAllExpenses": "Limit for all expenses",
+  "lendAndBorrow": "Lend & Borrow",
+  "iLent": "I lent",
+  "iBorrowed": "I borrowed",
+  "youWillGetBack": "You'll get back",
+  "nobodyOwesYou": "Nobody owes you money.\nTap Add when you lend money to someone.",
+  "youOweNobody": "You owe nobody.\nTap Add when you borrow money from someone.",
+  "settled": "Settled",
+  "left": "Left",
+  "paidBackOf": "{paid} of {total} paid back",
+  "@paidBackOf": {
+    "placeholders": {
+      "paid": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "addPayment": "Add a payment",
+  "addPaymentHint": "Part of the money was paid back",
+  "markSettled": "Mark as settled",
+  "reopen": "Reopen",
+  "paymentFrom": "Payment from {person}",
+  "@paymentFrom": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      }
+    }
+  },
+  "stillOpen": "{amount} is still open",
+  "@stillOpen": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteRecordFor": "Delete the record for {person}?",
+  "@deleteRecordFor": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      }
+    }
+  },
+  "enterTheAmount": "Enter the amount",
+  "newRecord": "New record",
+  "editRecord": "Edit record",
+  "lentTo": "Lent to",
+  "borrowedFrom": "Borrowed from",
+  "tapToEnter": "Tap to enter",
+  "savingsGoals": "Savings goals",
+  "newGoal": "New goal",
+  "editGoal": "Edit goal",
+  "noGoalsYet": "No goals yet.\nSave towards something, like a new phone or a trip.",
+  "savedInAllGoals": "Saved in all goals: {amount}",
+  "@savedInAllGoals": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "reached": "Reached",
+  "goalReached": "Goal reached. Well done!",
+  "amountToGo": "{amount} to go",
+  "@amountToGo": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "addMoney": "Add money",
+  "takeOut": "Take out",
+  "addToGoal": "Add to {name}",
+  "@addToGoal": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "takeOutOfGoal": "Take out of {name}",
+  "@takeOutOfGoal": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "goalDeleteNote": "The saved amount in this goal is removed too.",
+  "savingFor": "What are you saving for?",
+  "savingForHint": "New phone",
+  "targetAmount": "Target amount",
+  "searchHint": "Search notes or categories",
+  "all": "All",
+  "allCategories": "All categories",
+  "anyDate": "Any date",
+  "minAmount": "Min amount",
+  "maxAmount": "Max amount",
+  "clearFilters": "Clear filters",
+  "resultCount": "{count, plural, =0{No results} =1{1 result} other{{count} results}}",
+  "@resultCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nothingFound": "Nothing found.",
+  "pdfSaved": "PDF report saved",
+  "couldNotCreatePdf": "Could not create the PDF report.",
+  "lastSixMonths": "Last 6 months",
+  "monthByMonth": "Month by month",
+  "saveAsPdf": "Save as PDF",
+  "day": "Day",
+  "week": "Week",
+  "month": "Month",
+  "year": "Year",
+  "byCategory": "By category",
+  "noExpensesInPeriod": "No expenses in this period.",
+  "noIncomeInPeriod": "No income in this period.",
+  "language": "Language",
+  "yourName": "Your name",
+  "currency": "Currency",
+  "currencyNote": "Changing currency only changes the symbol. Amounts you already entered are not converted.",
+  "chooseCurrency": "Choose currency",
+  "numberFormat": "Number format",
+  "automaticWith": "Automatic ({example})",
+  "@automaticWith": {
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "decimals": "Decimals",
+  "decimalsTwo": "2 ({example})",
+  "@decimalsTwo": {
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "decimalsNone": "None ({example})",
+  "@decimalsNone": {
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "accentColor": "Accent color",
+  "paletteForest": "Forest",
+  "paletteOcean": "Ocean",
+  "palettePlum": "Plum",
+  "paletteWine": "Wine",
+  "paletteGraphite": "Graphite",
+  "theme": "Theme",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "weekStartsOn": "Week starts on",
+  "monday": "Monday",
+  "sunday": "Sunday",
+  "categoriesSubtitle": "Add, rename, reorder, hide or delete",
+  "budgetsSubtitle": "Monthly and category limits",
+  "monthlyLimitAmount": "Monthly limit {amount}",
+  "@monthlyLimitAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "backUpData": "Back up data",
+  "backUpSubtitle": "Save everything to a file you choose",
+  "restoreFromBackup": "Restore from backup",
+  "restoreSubtitle": "Replace all data with a backup file",
+  "saveBackupTitle": "Save PocketTally backup",
+  "chooseBackupTitle": "Choose a PocketTally backup",
+  "backupSaved": "{count, plural, =1{Backup saved (1 entry). Keep this file safe.} other{Backup saved ({count} entries). Keep this file safe.}}",
+  "@backupSaved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "couldNotSaveBackup": "Could not save the backup.",
+  "restoreQuestion": "Restore this backup?",
+  "restoreDetails": "Entries in the backup: {backupEntries}\nCategories in the backup: {backupCategories}\nEntries on this device now: {currentEntries}\n\nAll data on this device will be replaced. This cannot be undone.",
+  "@restoreDetails": {
+    "placeholders": {
+      "backupCategories": {
+        "type": "String"
+      },
+      "backupEntries": {
+        "type": "String"
+      },
+      "currentEntries": {
+        "type": "String"
+      }
+    }
+  },
+  "restore": "Restore",
+  "backupRestored": "Backup restored",
+  "couldNotRestore": "Could not restore the backup.",
+  "fileUnreadable": "Could not read this file.",
+  "backupInvalid": "This file is not a valid backup.",
+  "backupNotOurs": "This file is not a PocketTally backup.",
+  "backupTooNew": "This backup was made by a newer version. Please update the app first.",
+  "backupDamaged": "This backup file is damaged.",
+  "checkForUpdates": "Check for updates",
+  "installedVersion": "Installed version {version}",
+  "@installedVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "version": "Version",
+  "upToDate": "You're up to date",
+  "couldNotCheckUpdates": "Could not check for updates. Check your internet connection.",
+  "versionAvailable": "Version {version} is available",
+  "@versionAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadFailed": "Download failed. Please try again.",
+  "later": "Later",
+  "update": "Update",
+  "welcomeTitle": "Welcome to PocketTally",
+  "welcomeSubtitle": "Track your daily income and expenses. Everything stays on your device.",
+  "chooseLanguage": "Choose your language",
+  "whatToCallYou": "What should we call you?",
+  "chooseYourCurrency": "Choose your currency",
+  "currencySuggested": "Suggested for your region",
+  "changeLaterInSettings": "You can change this later in Settings.",
+  "continueButton": "Continue",
+  "getStarted": "Get started",
+  "stepOf": "Step {step} of {total}",
+  "@stepOf": {
+    "placeholders": {
+      "step": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "savePdfTitle": "Save PDF report",
+  "pdfTitle": "PocketTally report",
+  "pdfPage": "Page {page} of {total}",
+  "@pdfPage": {
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfCreated": "Created {date}",
+  "@pdfCreated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfSummary": "Summary",
+  "pdfOverBudgetBy": "Over budget by",
+  "pdfLeftInBudget": "Left in budget",
+  "pdfExpensesByCategory": "Expenses by category",
+  "pdfAllEntries": "All entries ({count})",
+  "@pdfAllEntries": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfNoEntries": "No entries in this period.",
+  "pdfFooter": "Made with PocketTally. All data stays on your device."
+}
