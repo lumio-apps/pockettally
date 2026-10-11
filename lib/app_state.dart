@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'backup.dart';
 import 'db.dart';
 import 'models.dart';
+import 'theme.dart';
+import 'utils/money_format.dart';
 
 /// Holds settings, entries and categories for the whole app.
 class AppState extends ChangeNotifier {
@@ -28,6 +29,30 @@ class AppState extends ChangeNotifier {
 
   /// Overall monthly spending limit in minor units, 0 = not set.
   int get monthlyBudgetMinor => _prefs.getInt('monthly_budget') ?? 0;
+
+  /// Number format setting; [NumberStyle.auto] follows the currency.
+  NumberStyle get numberStyleSetting {
+    final name = _prefs.getString('number_style');
+    return NumberStyle.values
+        .firstWhere((s) => s.name == name, orElse: () => NumberStyle.auto);
+  }
+
+  /// Decimal places setting: -1 = automatic (by currency), 0 or 2.
+  int get decimalsSetting {
+    final d = _prefs.getInt('decimals');
+    return d == 0 || d == 2 ? d! : -1;
+  }
+
+  /// Formatter for the current currency and settings.
+  MoneyFormatter get money => MoneyFormatter(
+        style: numberStyleSetting == NumberStyle.auto
+            ? currency.numberStyle
+            : numberStyleSetting,
+        decimals: decimalsSetting == -1 ? currency.decimals : decimalsSetting,
+      );
+
+  /// Color theme of the app (dark green by default).
+  AppPalette get palette => paletteById(_prefs.getString('palette'));
 
   ThemeMode get themeMode {
     switch (_prefs.getString('theme')) {
@@ -80,6 +105,22 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setNumberStyle(NumberStyle style) async {
+    await _prefs.setString('number_style', style.name);
+    notifyListeners();
+  }
+
+  /// -1 = automatic, 0 = whole numbers, 2 = two decimals.
+  Future<void> setDecimals(int decimals) async {
+    await _prefs.setInt('decimals', decimals);
+    notifyListeners();
+  }
+
+  Future<void> setPalette(AppPalette p) async {
+    await _prefs.setString('palette', p.id);
+    notifyListeners();
+  }
+
   Future<void> setThemeMode(ThemeMode mode) async {
     await _prefs.setString('theme', mode.name);
     notifyListeners();
@@ -113,14 +154,45 @@ class AppState extends ChangeNotifier {
 
   // ---- categories ----
 
-  /// Categories of one type, with "Other" always last.
-  List<EntryCategory> categoriesFor(EntryType type) {
-    final list = categories.where((c) => c.type == type).toList();
+  /// Categories of one type in the user's order, with "Other" always last.
+  /// Without [includeHidden], hidden ones are left out (except [keep],
+  /// e.g. the category of the entry being edited).
+  List<EntryCategory> categoriesFor(
+    EntryType type, {
+    bool includeHidden = true,
+    String? keep,
+  }) {
+    final list = categories
+        .where((c) =>
+            c.type == type && (includeHidden || !c.hidden || c.name == keep))
+        .toList();
     list.sort((a, b) {
       if (a.isOther != b.isOther) return a.isOther ? 1 : -1;
+      if (a.position != b.position) return a.position.compareTo(b.position);
       return a.name.toLowerCase().compareTo(b.name.toLowerCase());
     });
     return list;
+  }
+
+  /// Saves a new order for the categories of one type ("Other" stays last).
+  Future<void> reorderCategories(List<EntryCategory> ordered) async {
+    final withoutOther = ordered.where((c) => !c.isOther).toList();
+    // Update the list in memory first so the dragged tile stays put.
+    final positions = {
+      for (var i = 0; i < withoutOther.length; i++) withoutOther[i].id: i + 1,
+    };
+    categories = [
+      for (final c in categories)
+        positions.containsKey(c.id) ? c.copyWith(position: positions[c.id]) : c,
+    ];
+    notifyListeners();
+    await AppDatabase.instance.reorderCategories(withoutOther);
+  }
+
+  Future<void> setCategoryHidden(EntryCategory c, bool hidden) async {
+    if (c.isOther) return;
+    await AppDatabase.instance.updateCategory(c, c.copyWith(hidden: hidden));
+    await load();
   }
 
   Color colorFor(String categoryName, EntryType type) {
@@ -140,8 +212,14 @@ class AppState extends ChangeNotifier {
   int entryCountFor(EntryCategory c) =>
       entries.where((e) => e.type == c.type && e.category == c.name).length;
 
+  /// Adds a category at the end of the user's order (or alphabetically,
+  /// if the order was never changed).
   Future<void> addCategory(EntryCategory c) async {
-    await AppDatabase.instance.insertCategory(c);
+    final last = categories
+        .where((x) => x.type == c.type)
+        .fold<int>(0, (m, x) => x.position > m ? x.position : m);
+    await AppDatabase.instance
+        .insertCategory(c.copyWith(position: last == 0 ? 0 : last + 1));
     await load();
   }
 
@@ -230,6 +308,9 @@ class AppState extends ChangeNotifier {
         currencyCode: currency.code,
         weekStartsOnSunday: weekStartsOnSunday,
         monthlyBudgetMinor: monthlyBudgetMinor,
+        numberStyle: numberStyleSetting.name,
+        decimals: decimalsSetting,
+        palette: palette.id,
         categories: categories,
         entries: entries,
         debts: debts,
@@ -251,6 +332,11 @@ class AppState extends ChangeNotifier {
     } else {
       await _prefs.remove('monthly_budget');
     }
+    if (b.numberStyle != null) {
+      await _prefs.setString('number_style', b.numberStyle!);
+    }
+    if (b.decimals != null) await _prefs.setInt('decimals', b.decimals!);
+    if (b.palette != null) await _prefs.setString('palette', b.palette!);
     await load();
   }
 
@@ -290,10 +376,17 @@ class AppState extends ChangeNotifier {
 
   // ---- formatting ----
 
-  String formatMoney(int minor) {
-    final c = currency;
-    final f = NumberFormat.currency(
-        locale: c.locale, symbol: '${c.symbol} ', decimalDigits: 2);
-    return f.format(minor / 100);
+  /// "₹ 1,23,456.00" — or with another [symbol], e.g. the currency code.
+  String formatMoney(int minor, {String? symbol}) =>
+      money.money(minor, symbol ?? currency.symbol);
+
+  /// Parses an amount field (with calculator support) into minor units.
+  /// Returns null when empty or invalid.
+  int? parseMinor(String text) {
+    final v = money.parse(text);
+    return v == null ? null : money.toMinor(v);
   }
+
+  /// Text to put in an amount field when editing, e.g. "12.5".
+  String amountInput(int minor) => money.input(minor);
 }

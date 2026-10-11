@@ -10,14 +10,112 @@ const Color kMint = Color(0xFF7BE0B5);
 const Color kChartIncome = Color(0xFF1F7A63);
 const Color kChartExpense = Color(0xFFF2B33D);
 
-ThemeData buildTheme(Brightness brightness) {
+/// A color theme the user can pick in Settings ("Accent color").
+/// The amber highlight stays the same in every palette.
+class AppPalette {
+  const AppPalette({
+    required this.id,
+    required this.name,
+    required this.brand,
+    required this.brandSoft,
+    required this.label,
+    required this.light,
+  });
+
+  final String id;
+  final String name;
+
+  /// Deep main color: balance card, add button, avatar.
+  final Color brand;
+
+  /// Slightly lighter, for tiles on top of [brand].
+  final Color brandSoft;
+
+  /// Small text on top of [brand].
+  final Color label;
+
+  /// Main color in dark mode.
+  final Color light;
+}
+
+const List<AppPalette> kPalettes = [
+  AppPalette(
+    id: 'forest',
+    name: 'Forest',
+    brand: kBrand,
+    brandSoft: kBrandSoft,
+    label: Color(0xFFA9DCC8),
+    light: kMint,
+  ),
+  AppPalette(
+    id: 'ocean',
+    name: 'Ocean',
+    brand: Color(0xFF0F2F57),
+    brandSoft: Color(0xFF1B4473),
+    label: Color(0xFFB3CBE8),
+    light: Color(0xFF8CC8FF),
+  ),
+  AppPalette(
+    id: 'plum',
+    name: 'Plum',
+    brand: Color(0xFF3B1F5E),
+    brandSoft: Color(0xFF4D2D75),
+    label: Color(0xFFCDBBE6),
+    light: Color(0xFFD6BCFF),
+  ),
+  AppPalette(
+    id: 'wine',
+    name: 'Wine',
+    brand: Color(0xFF5A1730),
+    brandSoft: Color(0xFF702540),
+    label: Color(0xFFEBBDCB),
+    light: Color(0xFFFFB3C8),
+  ),
+  AppPalette(
+    id: 'graphite',
+    name: 'Graphite',
+    brand: Color(0xFF1F2933),
+    brandSoft: Color(0xFF303D49),
+    label: Color(0xFFBAC6D1),
+    light: Color(0xFFB8CCE0),
+  ),
+];
+
+AppPalette paletteById(String? id) =>
+    kPalettes.firstWhere((p) => p.id == id, orElse: () => kPalettes.first);
+
+/// Gives widgets the current palette: `BrandColors.of(context).brand`.
+class BrandColors extends ThemeExtension<BrandColors> {
+  const BrandColors(this.palette);
+
+  final AppPalette palette;
+
+  Color get brand => palette.brand;
+  Color get brandSoft => palette.brandSoft;
+  Color get label => palette.label;
+
+  static BrandColors of(BuildContext context) =>
+      Theme.of(context).extension<BrandColors>() ??
+      BrandColors(kPalettes.first);
+
+  @override
+  BrandColors copyWith({AppPalette? palette}) =>
+      BrandColors(palette ?? this.palette);
+
+  @override
+  BrandColors lerp(BrandColors? other, double t) =>
+      t < 0.5 || other == null ? this : other;
+}
+
+ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
+  final p = palette ?? kPalettes.first;
   final dark = brightness == Brightness.dark;
   final scheme = ColorScheme.fromSeed(
-    seedColor: kBrand,
+    seedColor: p.brand,
     brightness: brightness,
   ).copyWith(
-    primary: dark ? kMint : kBrand,
-    onPrimary: dark ? kBrand : Colors.white,
+    primary: dark ? p.light : p.brand,
+    onPrimary: dark ? p.brand : Colors.white,
     secondary: kAccent,
     surface: dark ? const Color(0xFF13221D) : Colors.white,
   );
@@ -27,6 +125,7 @@ ThemeData buildTheme(Brightness brightness) {
     useMaterial3: true,
     colorScheme: scheme,
     scaffoldBackgroundColor: background,
+    extensions: [BrandColors(p)],
     appBarTheme: AppBarTheme(
       backgroundColor: background,
       surfaceTintColor: Colors.transparent,

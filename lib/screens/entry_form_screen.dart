@@ -5,7 +5,7 @@ import '../app_state.dart';
 import '../models.dart';
 import '../photo_store.dart';
 import '../theme.dart';
-import '../utils/amount_parser.dart';
+import '../utils/amount_parser.dart' show isCalculation;
 import '../widgets/entry_tile.dart'
     show kIncomeColor, kExpenseColor, deleteEntryWithUndo;
 import 'categories_screen.dart';
@@ -42,8 +42,10 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   bool get _isEditing => widget.entry != null;
 
   List<String> get _categories {
-    final names =
-        widget.state.categoriesFor(_type).map((c) => c.name).toList();
+    final names = widget.state
+        .categoriesFor(_type, includeHidden: false, keep: widget.entry?.category)
+        .map((c) => c.name)
+        .toList();
     return names.isEmpty ? [kOtherCategory] : names;
   }
 
@@ -57,10 +59,8 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     _period = e?.period ?? IncomePeriod.monthly;
     _photo = e?.photo;
     if (e != null) {
-      // 320.00 -> "320", 12.50 -> "12.5"
-      _input = (e.amountMinor / 100)
-          .toStringAsFixed(2)
-          .replaceFirst(RegExp(r'\.?0+$'), '');
+      // 320.00 -> "320", 12.50 -> "12.5" (or "12,5")
+      _input = widget.state.amountInput(e.amountMinor);
     }
     _noteController = TextEditingController(text: e?.note ?? '');
   }
@@ -74,6 +74,9 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   // ---- keypad ----
 
   static const _operators = ['+', '-', '×', '÷'];
+
+  /// "." or ",", following the number format setting.
+  String get _sep => widget.state.money.decimalSeparator;
 
   void _press(String key) {
     setState(() {
@@ -93,20 +96,20 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       }
       if (key == '.') {
         final lastNumber = _input.split(RegExp(r'[-+×÷]')).last;
-        if (lastNumber.contains('.')) return;
+        if (lastNumber.contains(_sep)) return;
         if (lastNumber.isEmpty) _input += '0';
+        key = _sep;
       }
+      if (key == '00' && _input.split(RegExp(r'[-+×÷]')).last.isEmpty) return;
       if (_input.length >= 24) return;
       _input += key;
     });
   }
 
   void _applyResult() {
-    final v = evaluateAmount(_input);
-    if (v == null) return;
-    setState(() {
-      _input = v.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
-    });
+    final minor = widget.state.parseMinor(_input);
+    if (minor == null) return;
+    setState(() => _input = widget.state.amountInput(minor));
   }
 
   // ---- actions ----
@@ -176,8 +179,8 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
 
   Future<void> _save() async {
     final messenger = ScaffoldMessenger.of(context);
-    final value = evaluateAmount(_input);
-    if (value == null || (value * 100).round() <= 0) {
+    final amount = widget.state.parseMinor(_input);
+    if (amount == null || amount <= 0) {
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(const SnackBar(
@@ -187,7 +190,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     final entry = Entry(
       id: widget.entry?.id,
       type: _type,
-      amountMinor: (value * 100).round(),
+      amountMinor: amount,
       category: _category,
       date: _date,
       note: _noteController.text.trim(),
@@ -227,7 +230,8 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
           ? kOtherCategory
           : categoryNames.first;
     }
-    final result = isCalculation(_input) ? evaluateAmount(_input) : null;
+    final result =
+        isCalculation(_input) ? widget.state.parseMinor(_input) : null;
     final photoFile = _photo == null ? null : PhotoStore.file(_photo!);
 
     return Scaffold(
@@ -287,7 +291,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                             child: TextButton(
                               onPressed: _applyResult,
                               child: Text(
-                                  '= ${widget.state.currency.symbol} ${result.toStringAsFixed(2)}'),
+                                  '= ${widget.state.formatMoney(result)}'),
                             ),
                           ),
                   ),
@@ -418,7 +422,10 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                 ],
               ),
             ),
-            _Keypad(onKey: _press),
+            _Keypad(
+              onKey: _press,
+              decimalKey: widget.state.money.decimals == 0 ? '00' : _sep,
+            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
               child: SizedBox(
@@ -441,9 +448,13 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
 }
 
 class _Keypad extends StatelessWidget {
-  const _Keypad({required this.onKey});
+  const _Keypad({required this.onKey, required this.decimalKey});
 
   final ValueChanged<String> onKey;
+
+  /// Label of the bottom-left key: "." or "," — or "00" when the
+  /// currency is shown without decimals.
+  final String decimalKey;
 
   static const _rows = [
     ['7', '8', '9', '÷'],
@@ -478,7 +489,12 @@ class _Keypad extends StatelessWidget {
 
   Widget _key(String k, ColorScheme scheme) {
     final isOperator = ['+', '-', '×', '÷'].contains(k);
-    final label = k == '-' ? '−' : k;
+    final label = k == '-'
+        ? '−'
+        : k == '.'
+            ? decimalKey
+            : k;
+    final sent = k == '.' && decimalKey == '00' ? '00' : k;
     return SizedBox(
       height: 50,
       child: FilledButton.tonal(
@@ -493,7 +509,7 @@ class _Keypad extends StatelessWidget {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
-        onPressed: () => onKey(k),
+        onPressed: () => onKey(sent),
         child: k == '⌫'
             ? const Icon(Icons.backspace_outlined, semanticLabel: 'Delete digit')
             : Text(label,

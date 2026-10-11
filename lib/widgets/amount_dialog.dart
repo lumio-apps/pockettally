@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_state.dart';
-import '../utils/amount_parser.dart';
 
 /// Asks for an amount. Returns minor units, or null if cancelled.
 /// Typing simple math like 500+250 works too.
@@ -58,7 +57,7 @@ class _AmountDialogState extends State<_AmountDialog> {
     super.initState();
     final initial = widget.initialMinor;
     _controller = TextEditingController(
-        text: initial == null ? '' : (initial / 100).toStringAsFixed(2));
+        text: initial == null ? '' : widget.state.amountInput(initial));
   }
 
   @override
@@ -68,8 +67,7 @@ class _AmountDialogState extends State<_AmountDialog> {
   }
 
   void _submit() {
-    final v = evaluateAmount(_controller.text);
-    final minor = v == null ? 0 : (v * 100).round();
+    final minor = widget.state.parseMinor(_controller.text) ?? 0;
     if (minor <= 0) {
       setState(() => _error = 'Enter an amount greater than 0');
       return;

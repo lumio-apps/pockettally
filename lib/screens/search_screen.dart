@@ -57,8 +57,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   /// Parses an amount field into minor units, or null when empty/invalid.
   int? _parseAmount(TextEditingController c) {
-    final v = double.tryParse(c.text.replaceAll(',', '.'));
-    return v == null ? null : (v * 100).round();
+    return widget.state.parseMinor(c.text);
   }
 
   List<String> get _categoryOptions {

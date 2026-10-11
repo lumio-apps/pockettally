@@ -63,12 +63,8 @@ class ReportPdf {
 
     // The currency code (INR, AMD…) instead of the symbol, because a few
     // symbols are missing from most fonts.
-    final money = NumberFormat.currency(
-      locale: state.currency.locale,
-      symbol: '${state.currency.code} ',
-      decimalDigits: 2,
-    );
-    String m(int minor) => money.format(minor / 100);
+    String m(int minor) =>
+        state.formatMoney(minor, symbol: state.currency.code);
 
     final income = AppState.sumIncome(entries);
     final expense = AppState.sumExpense(entries);

@@ -10,6 +10,7 @@ import 'models.dart';
 ///   v2 (app 0.2.0): categories
 ///   v3 (app 0.3.0): categories.budget
 ///   v4 (app 0.5.0): entries.photo, debts, goals
+///   v5 (app 0.6.0): categories.position, categories.hidden
 class AppDatabase {
   AppDatabase._();
   static final AppDatabase instance = AppDatabase._();
@@ -21,7 +22,7 @@ class AppDatabase {
     final dir = await getDatabasesPath();
     _db = await openDatabase(
       p.join(dir, 'pockettally.db'),
-      version: 4,
+      version: 5,
       onCreate: (db, version) async {
         await _createEntries(db);
         await _createCategories(db);
@@ -37,6 +38,13 @@ class AppDatabase {
         if (oldVersion < 4) {
           await db.execute('ALTER TABLE entries ADD COLUMN photo TEXT');
           await _createDebtsAndGoals(db);
+        }
+        // Tables made by _createCategories above already have these.
+        if (oldVersion >= 2 && oldVersion < 5) {
+          await db.execute('ALTER TABLE categories '
+              'ADD COLUMN position INTEGER NOT NULL DEFAULT 0');
+          await db.execute('ALTER TABLE categories '
+              'ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0');
         }
       },
     );
@@ -92,6 +100,8 @@ class AppDatabase {
         type TEXT NOT NULL,
         color INTEGER NOT NULL,
         budget INTEGER,
+        position INTEGER NOT NULL DEFAULT 0,
+        hidden INTEGER NOT NULL DEFAULT 0,
         UNIQUE(name, type)
       )
     ''');
@@ -164,6 +174,17 @@ class AppDatabase {
   Future<void> insertCategory(EntryCategory c) async {
     final db = await _database;
     await db.insert('categories', c.toMap());
+  }
+
+  /// Saves the user's order: [ordered] gets positions 1, 2, 3…
+  Future<void> reorderCategories(List<EntryCategory> ordered) async {
+    final db = await _database;
+    final batch = db.batch();
+    for (var i = 0; i < ordered.length; i++) {
+      batch.update('categories', {'position': i + 1},
+          where: 'id = ?', whereArgs: [ordered[i].id]);
+    }
+    await batch.commit(noResult: true);
   }
 
   /// Saves a changed name/color. Entries using the old name follow the rename.
@@ -271,6 +292,8 @@ class AppDatabase {
             'type': c.type.name,
             'color': c.colorValue,
             'budget': c.budgetMinor,
+            'position': c.position,
+            'hidden': c.isOther ? 0 : (c.hidden ? 1 : 0),
           },
           conflictAlgorithm: ConflictAlgorithm.ignore,
         );

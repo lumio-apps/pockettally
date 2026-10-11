@@ -1,45 +1,62 @@
 import 'dart:ui' show Color;
 
+import 'utils/money_format.dart';
+
 enum EntryType { income, expense }
 
 enum IncomePeriod { daily, weekly, monthly }
 
 class Currency {
-  const Currency(this.code, this.symbol, this.name, {this.locale = 'en_US'});
+  const Currency(
+    this.code,
+    this.symbol,
+    this.name, {
+    this.locale = 'en_US',
+    this.decimals = 2,
+    this.numberStyle = NumberStyle.commaDot,
+  });
 
   final String code;
   final String symbol;
   final String name;
   final String locale;
+
+  /// Decimal places normally used (0 for JPY and KRW).
+  final int decimals;
+
+  /// Number format used when the setting is "Automatic".
+  final NumberStyle numberStyle;
 }
 
 const List<Currency> kCurrencies = [
-  Currency('INR', '₹', 'Indian Rupee', locale: 'en_IN'),
+  Currency('INR', '₹', 'Indian Rupee',
+      locale: 'en_IN', numberStyle: NumberStyle.indian),
   Currency('USD', r'$', 'US Dollar'),
-  Currency('EUR', '€', 'Euro'),
+  Currency('EUR', '€', 'Euro', numberStyle: NumberStyle.dotComma),
   Currency('GBP', '£', 'British Pound'),
-  Currency('JPY', '¥', 'Japanese Yen'),
+  Currency('JPY', '¥', 'Japanese Yen', decimals: 0),
   Currency('CNY', 'CN¥', 'Chinese Yuan'),
   Currency('AUD', r'A$', 'Australian Dollar'),
   Currency('CAD', r'C$', 'Canadian Dollar'),
-  Currency('CHF', 'CHF', 'Swiss Franc'),
+  Currency('CHF', 'CHF', 'Swiss Franc', numberStyle: NumberStyle.apostropheDot),
   Currency('AED', 'AED', 'UAE Dirham'),
-  Currency('AMD', '֏', 'Armenian Dram'),
+  Currency('AMD', '֏', 'Armenian Dram', numberStyle: NumberStyle.spaceComma),
   Currency('SAR', 'SAR', 'Saudi Riyal'),
   Currency('SGD', r'S$', 'Singapore Dollar'),
   Currency('HKD', r'HK$', 'Hong Kong Dollar'),
   Currency('NZD', r'NZ$', 'New Zealand Dollar'),
-  Currency('KRW', '₩', 'South Korean Won'),
-  Currency('RUB', '₽', 'Russian Ruble'),
-  Currency('BRL', r'R$', 'Brazilian Real'),
+  Currency('KRW', '₩', 'South Korean Won', decimals: 0),
+  Currency('RUB', '₽', 'Russian Ruble', numberStyle: NumberStyle.spaceComma),
+  Currency('BRL', r'R$', 'Brazilian Real', numberStyle: NumberStyle.dotComma),
   Currency('MXN', r'MX$', 'Mexican Peso'),
-  Currency('ZAR', 'R', 'South African Rand'),
-  Currency('TRY', '₺', 'Turkish Lira'),
-  Currency('SEK', 'kr', 'Swedish Krona'),
-  Currency('NOK', 'kr', 'Norwegian Krone'),
-  Currency('PKR', 'Rs', 'Pakistani Rupee'),
-  Currency('BDT', '৳', 'Bangladeshi Taka'),
-  Currency('NPR', 'Rs', 'Nepalese Rupee'),
+  Currency('ZAR', 'R', 'South African Rand',
+      numberStyle: NumberStyle.spaceComma),
+  Currency('TRY', '₺', 'Turkish Lira', numberStyle: NumberStyle.dotComma),
+  Currency('SEK', 'kr', 'Swedish Krona', numberStyle: NumberStyle.spaceComma),
+  Currency('NOK', 'kr', 'Norwegian Krone', numberStyle: NumberStyle.spaceComma),
+  Currency('PKR', 'Rs', 'Pakistani Rupee', numberStyle: NumberStyle.indian),
+  Currency('BDT', '৳', 'Bangladeshi Taka', numberStyle: NumberStyle.indian),
+  Currency('NPR', 'Rs', 'Nepalese Rupee', numberStyle: NumberStyle.indian),
   Currency('LKR', 'Rs', 'Sri Lankan Rupee'),
 ];
 
@@ -94,6 +111,8 @@ class EntryCategory {
     required this.type,
     required this.colorValue,
     this.budgetMinor,
+    this.position = 0,
+    this.hidden = false,
   });
 
   final int? id;
@@ -105,11 +124,35 @@ class EntryCategory {
   /// Null means no limit.
   final int? budgetMinor;
 
+  /// Order chosen by the user. All 0 = alphabetical (never reordered).
+  final int position;
+
+  /// Hidden categories are not offered when adding an entry, but old
+  /// entries keep them.
+  final bool hidden;
+
   bool get hasBudget => (budgetMinor ?? 0) > 0;
 
   Color get color => Color(colorValue);
 
   bool get isOther => name == kOtherCategory;
+
+  EntryCategory copyWith({
+    String? name,
+    int? colorValue,
+    int? Function()? budgetMinor,
+    int? position,
+    bool? hidden,
+  }) =>
+      EntryCategory(
+        id: id,
+        name: name ?? this.name,
+        type: type,
+        colorValue: colorValue ?? this.colorValue,
+        budgetMinor: budgetMinor != null ? budgetMinor() : this.budgetMinor,
+        position: position ?? this.position,
+        hidden: hidden ?? this.hidden,
+      );
 
   Map<String, Object?> toMap() => {
         if (id != null) 'id': id,
@@ -117,6 +160,8 @@ class EntryCategory {
         'type': type.name,
         'color': colorValue,
         'budget': budgetMinor,
+        'position': position,
+        'hidden': hidden ? 1 : 0,
       };
 
   static EntryCategory fromMap(Map<String, Object?> m) => EntryCategory(
@@ -125,6 +170,8 @@ class EntryCategory {
         type: EntryType.values.byName(m['type'] as String),
         colorValue: m['color'] as int,
         budgetMinor: m['budget'] as int?,
+        position: (m['position'] as int?) ?? 0,
+        hidden: (m['hidden'] as int?) == 1,
       );
 }
 

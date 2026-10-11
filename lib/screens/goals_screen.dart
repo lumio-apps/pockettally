@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../app_state.dart';
 import '../models.dart';
-import '../utils/amount_parser.dart';
 import '../widgets/amount_dialog.dart';
 import '../widgets/entry_tile.dart' show kExpenseColor;
 
@@ -246,7 +245,7 @@ class _GoalDialogState extends State<_GoalDialog> {
     final g = widget.existing;
     _name = TextEditingController(text: g?.name ?? '');
     _target = TextEditingController(
-        text: g == null ? '' : (g.targetMinor / 100).toStringAsFixed(2));
+        text: g == null ? '' : widget.state.amountInput(g.targetMinor));
     _color = g?.colorValue ??
         kCategoryPalette[(widget.state.goals.length * 3 + 4) %
             kCategoryPalette.length];
@@ -261,8 +260,7 @@ class _GoalDialogState extends State<_GoalDialog> {
 
   Future<void> _save() async {
     final name = _name.text.trim();
-    final v = evaluateAmount(_target.text);
-    final target = v == null ? 0 : (v * 100).round();
+    final target = widget.state.parseMinor(_target.text) ?? 0;
     setState(() {
       _nameError = name.isEmpty ? 'Enter a name' : null;
       _targetError = target <= 0 ? 'Enter an amount greater than 0' : null;

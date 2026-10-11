@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 
 import '../app_state.dart';
 import '../models.dart';
-import '../utils/amount_parser.dart';
 import '../widgets/budget_bar.dart';
 import 'categories_screen.dart';
 
@@ -122,7 +121,7 @@ class _MonthlyBudgetDialogState extends State<_MonthlyBudgetDialog> {
     super.initState();
     final current = widget.state.monthlyBudgetMinor;
     _amount = TextEditingController(
-        text: current > 0 ? (current / 100).toStringAsFixed(2) : '');
+        text: current > 0 ? widget.state.amountInput(current) : '');
   }
 
   @override
@@ -132,12 +131,12 @@ class _MonthlyBudgetDialogState extends State<_MonthlyBudgetDialog> {
   }
 
   Future<void> _save() async {
-    final v = evaluateAmount(_amount.text);
-    if (v == null || (v * 100).round() <= 0) {
+    final v = widget.state.parseMinor(_amount.text);
+    if (v == null || v <= 0) {
       setState(() => _error = 'Enter an amount greater than 0');
       return;
     }
-    await widget.state.setMonthlyBudget((v * 100).round());
+    await widget.state.setMonthlyBudget(v);
     if (mounted) Navigator.of(context).pop();
   }
 

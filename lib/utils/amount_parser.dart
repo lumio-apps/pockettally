@@ -7,8 +7,13 @@
 ///   "12,5"        -> 12.5    (other commas = decimal point)
 ///   "(100+50)*2"  -> 300
 ///
+/// With [decimalComma] (number formats like 1.234,56) the roles swap:
+///   "1.500"       -> 1500    (dot before 3 digits = thousands separator)
+///   "12,5"        -> 12.5
+///   "12.5"        -> 12.5    (other dots still mean a decimal point)
+///
 /// Returns null when the text is empty or not a valid expression.
-double? evaluateAmount(String input) {
+double? evaluateAmount(String input, {bool decimalComma = false}) {
   var s = input.trim();
   if (s.isEmpty) return null;
 
@@ -18,10 +23,16 @@ double? evaluateAmount(String input) {
       .replaceAll('X', '*')
       .replaceAll('÷', '/')
       .replaceAll('−', '-')
-      .replaceAll(' ', '');
-  // "1,500" -> "1500"; any comma left after that is a decimal comma.
-  s = s.replaceAllMapped(
-      RegExp(r'(\d),(?=\d{3}(?!\d))'), (m) => m.group(1)!);
+      .replaceAll(RegExp(r"[\s  ']"), '');
+  if (decimalComma) {
+    // "1.500" -> "1500"; then the comma is the decimal point.
+    s = s.replaceAllMapped(
+        RegExp(r'(\d)\.(?=\d{3}(?!\d))'), (m) => m.group(1)!);
+  } else {
+    // "1,500" -> "1500"; any comma left after that is a decimal comma.
+    s = s.replaceAllMapped(
+        RegExp(r'(\d),(?=\d{3}(?!\d))'), (m) => m.group(1)!);
+  }
   s = s.replaceAll(',', '.');
 
   final parser = _Parser(s);

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi' show Abi;
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
@@ -47,11 +48,13 @@ class UpdateChecker {
 
     final assets = (json['assets'] as List<dynamic>? ?? [])
         .cast<Map<String, dynamic>>();
-    final apk = assets.firstWhere(
-      (a) => (a['name'] as String).toLowerCase().endsWith('.apk'),
-      orElse: () => <String, dynamic>{},
+    final url = pickApkUrl(
+      {
+        for (final a in assets)
+          (a['name'] as String): (a['browser_download_url'] as String),
+      },
+      deviceAbi(),
     );
-    final url = apk['browser_download_url'] as String?;
     if (url == null) return null;
 
     return UpdateInfo(
@@ -96,6 +99,42 @@ class UpdateChecker {
     if (result.type != ResultType.done) {
       throw Exception(result.message);
     }
+  }
+
+  /// The Android ABI this app runs as, matching the split APK names:
+  /// "arm64-v8a", "armeabi-v7a" or "x86_64". Null when unknown.
+  static String? deviceAbi() {
+    final abi = Abi.current();
+    if (abi == Abi.androidArm64) return 'arm64-v8a';
+    if (abi == Abi.androidArm) return 'armeabi-v7a';
+    if (abi == Abi.androidX64) return 'x86_64';
+    return null;
+  }
+
+  /// Picks the smallest APK that fits this phone from release assets
+  /// (file name -> download URL):
+  ///   1. the split APK for [abi], e.g. pockettally-v0.6.0-arm64-v8a.apk
+  ///   2. the universal APK (works everywhere, bigger download)
+  ///   3. any APK (releases before 0.6.0 had only one)
+  static String? pickApkUrl(Map<String, String> assets, String? abi) {
+    final apks = {
+      for (final e in assets.entries)
+        if (e.key.toLowerCase().endsWith('.apk')) e.key.toLowerCase(): e.value,
+    };
+    if (apks.isEmpty) return null;
+    if (abi != null) {
+      for (final e in apks.entries) {
+        if (e.key.endsWith('-$abi.apk')) return e.value;
+      }
+    }
+    for (final e in apks.entries) {
+      if (e.key.endsWith('-universal.apk')) return e.value;
+    }
+    const splits = ['-arm64-v8a.apk', '-armeabi-v7a.apk', '-x86_64.apk'];
+    for (final e in apks.entries) {
+      if (!splits.any(e.key.endsWith)) return e.value;
+    }
+    return null;
   }
 
   static bool _isNewer(String remote, String local) {

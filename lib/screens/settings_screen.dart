@@ -5,7 +5,9 @@ import '../app_state.dart';
 import '../backup.dart';
 import '../backup_service.dart';
 import '../models.dart';
+import '../theme.dart';
 import '../update_checker.dart';
+import '../utils/money_format.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
 
@@ -64,6 +66,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               ListTile(
+                leading: const Icon(Icons.pin_outlined),
+                title: const Text('Number format'),
+                trailing: DropdownButton<NumberStyle>(
+                  value: state.numberStyleSetting,
+                  underline: const SizedBox.shrink(),
+                  items: [
+                    for (final style in NumberStyle.values)
+                      DropdownMenuItem(
+                        value: style,
+                        child: Text(_styleLabel(style)),
+                      ),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) state.setNumberStyle(v);
+                  },
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.exposure_outlined),
+                title: const Text('Decimals'),
+                trailing: DropdownButton<int>(
+                  value: state.decimalsSetting,
+                  underline: const SizedBox.shrink(),
+                  items: [
+                    DropdownMenuItem(
+                      value: -1,
+                      child: Text(
+                          'Automatic (${state.currency.decimals == 0 ? 'none' : '2'})'),
+                    ),
+                    const DropdownMenuItem(value: 2, child: Text('2 (12.50)')),
+                    const DropdownMenuItem(value: 0, child: Text('None (13)')),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) state.setDecimals(v);
+                  },
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.palette_outlined),
+                title: const Text('Accent color'),
+                subtitle: Text(state.palette.name),
+                trailing: CircleAvatar(
+                    radius: 14, backgroundColor: state.palette.brand),
+                onTap: _pickPalette,
+              ),
+              ListTile(
                 leading: const Icon(Icons.brightness_6_outlined),
                 title: const Text('Theme'),
                 trailing: DropdownButton<ThemeMode>(
@@ -100,7 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ListTile(
                 leading: const Icon(Icons.category_outlined),
                 title: const Text('Categories'),
-                subtitle: const Text('Add, rename, recolor or delete'),
+                subtitle: const Text('Add, rename, reorder, hide or delete'),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => CategoriesScreen(state: state),
                 )),
@@ -181,6 +229,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (name != null && name.trim().isNotEmpty) {
       await state.setUserName(name);
     }
+  }
+
+  /// "1,234,567.89" etc.; "Automatic (…)" shows what it resolves to.
+  String _styleLabel(NumberStyle style) {
+    final resolved =
+        style == NumberStyle.auto ? state.currency.numberStyle : style;
+    final sample =
+        MoneyFormatter(style: resolved, decimals: 2).number(123456789);
+    return style == NumberStyle.auto ? 'Automatic ($sample)' : sample;
+  }
+
+  Future<void> _pickPalette() async {
+    final picked = await showDialog<AppPalette>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Accent color'),
+        children: [
+          for (final p in kPalettes)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(ctx, p),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              child: Row(
+                children: [
+                  CircleAvatar(radius: 16, backgroundColor: p.brand),
+                  const SizedBox(width: 16),
+                  Expanded(child: Text(p.name)),
+                  if (p.id == state.palette.id) const Icon(Icons.check),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+    if (picked != null) await state.setPalette(picked);
   }
 
   Future<void> _pickCurrency() async {

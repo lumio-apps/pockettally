@@ -48,7 +48,7 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 22,
-                      backgroundColor: kBrand,
+                      backgroundColor: BrandColors.of(context).brand,
                       child: Text(
                         name.isEmpty ? '?' : name[0].toUpperCase(),
                         style: const TextStyle(
@@ -247,10 +247,11 @@ class _BalanceCard extends StatelessWidget {
     final balance = income - expense;
     final limit = state.monthlyBudgetMinor;
     final over = state.overBudgetCategories(month);
-    const label = TextStyle(color: Color(0xFFA9DCC8), fontSize: 13);
+    final brand = BrandColors.of(context);
+    final label = TextStyle(color: brand.label, fontSize: 13);
 
     return Material(
-      color: kBrand,
+      color: brand.brand,
       borderRadius: BorderRadius.circular(28),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -335,7 +336,7 @@ class _BalanceCard extends StatelessWidget {
                               color: expense > limit
                                   ? const Color(0xFFFF8A7A)
                                   : kAccent,
-                              backgroundColor: kBrandSoft,
+                              backgroundColor: brand.brandSoft,
                             ),
                           ),
                         ],
@@ -380,17 +381,17 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brand = BrandColors.of(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: kBrandSoft,
+        color: brand.brandSoft,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: const TextStyle(color: Color(0xFFA9DCC8), fontSize: 12)),
+          Text(label, style: TextStyle(color: brand.label, fontSize: 12)),
           const SizedBox(height: 2),
           FittedBox(
             fit: BoxFit.scaleDown,

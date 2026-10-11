@@ -16,12 +16,17 @@ class BackupData {
     required this.entries,
     this.debts = const [],
     this.goals = const [],
+    this.numberStyle,
+    this.decimals,
+    this.palette,
     DateTime? exportedAt,
   }) : exportedAt = exportedAt ?? DateTime.now();
 
   static const String appId = 'PocketTally';
 
   /// 1 = app 0.3.0, 2 = app 0.5.0 (adds debts and goals).
+  /// App 0.6.0 only adds optional keys (number format, category order),
+  /// so it stays 2 and older versions can still read its backups.
   static const int formatVersion = 2;
 
   final String userName;
@@ -32,6 +37,11 @@ class BackupData {
   final List<Entry> entries;
   final List<Debt> debts;
   final List<SavingsGoal> goals;
+
+  /// Optional settings (null when the backup is older than 0.6.0).
+  final String? numberStyle;
+  final int? decimals;
+  final String? palette;
   final DateTime exportedAt;
 
   String toJsonString() => const JsonEncoder.withIndent(' ').convert({
@@ -43,6 +53,9 @@ class BackupData {
           'currency': currencyCode,
           'weekStart': weekStartsOnSunday ? 'sunday' : 'monday',
           'monthlyBudget': monthlyBudgetMinor,
+          if (numberStyle != null) 'numberStyle': numberStyle,
+          if (decimals != null) 'decimals': decimals,
+          if (palette != null) 'palette': palette,
         },
         'categories': [
           for (final c in categories)
@@ -51,6 +64,8 @@ class BackupData {
               'type': c.type.name,
               'color': c.colorValue,
               'budget': c.budgetMinor,
+              'position': c.position,
+              'hidden': c.hidden,
             },
         ],
         'entries': [
@@ -113,6 +128,8 @@ class BackupData {
             type: EntryType.values.byName(c['type'] as String),
             colorValue: c['color'] as int,
             budgetMinor: c['budget'] as int?,
+            position: (c['position'] as int?) ?? 0,
+            hidden: c['hidden'] == true,
           ),
       ];
       final entries = [
@@ -155,6 +172,9 @@ class BackupData {
         currencyCode: (settings['currency'] as String?) ?? 'INR',
         weekStartsOnSunday: settings['weekStart'] == 'sunday',
         monthlyBudgetMinor: (settings['monthlyBudget'] as int?) ?? 0,
+        numberStyle: settings['numberStyle'] as String?,
+        decimals: settings['decimals'] as int?,
+        palette: settings['palette'] as String?,
         categories: categories,
         entries: entries,
         exportedAt: DateTime.tryParse(decoded['exportedAt'] as String? ?? ''),

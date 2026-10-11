@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0
+
+- Number format setting: 1,234.56 · 1.234,56 · 1 234,56 · 1'234.56 · 12,34,567.89 (Automatic picks one from your currency)
+- Decimals setting: currencies like JPY and KRW are shown without decimals; you can turn decimals on or off for any currency
+- The keypad uses your decimal separator (or a 00 key when decimals are off)
+- Categories: drag to reorder, and hide the ones you don't use (old entries keep them)
+- Accent color: Forest, Ocean, Plum, Wine or Graphite
+- Smaller downloads: releases now include one APK per processor type, and the in-app updater picks the right one for your phone
+- Backups include the new settings and category order (older versions can still read them)
+
 ## 0.5.0
 
 - New logo ("Pocket In/Out") and splash screen

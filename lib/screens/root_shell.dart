@@ -49,7 +49,7 @@ class _RootShellState extends State<RootShell> {
         tooltip: 'Add entry',
         onPressed: _add,
         elevation: 4,
-        backgroundColor: kBrand,
+        backgroundColor: BrandColors.of(context).brand,
         foregroundColor: kAccent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: const Icon(Icons.add, size: 30),

@@ -64,19 +64,42 @@ jobs:
           } > android/key.properties
           python3 tool/prepare_android.py signing
 
-      - run: flutter build apk --release
+      # One universal APK (works on every phone) ...
+      - name: Build universal APK
+        run: |
+          flutter build apk --release
+          mv build/app/outputs/flutter-apk/app-release.apk \
+            "pockettally-${{ github.ref_name }}-universal.apk"
 
-      - name: Name the APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk "pockettally-${{ github.ref_name }}.apk"
+      # ... and one smaller APK per processor type. The in-app updater
+      # downloads the one that fits the phone.
+      - name: Build split APKs
+        run: |
+          flutter build apk --release --split-per-abi
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            mv "build/app/outputs/flutter-apk/app-$abi-release.apk" \
+              "pockettally-${{ github.ref_name }}-$abi.apk"
+          done
 
       - uses: actions/upload-artifact@v4
         with:
           name: pockettally-apk
           path: pockettally-*.apk
 
-      - name: Publish GitHub release
+      # The universal APK is uploaded first: updaters of 0.5.0 and older
+      # take the first APK of a release.
+      - name: Publish GitHub release (universal APK)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: pockettally-*.apk
+          files: pockettally-*-universal.apk
           generate_release_notes: true
+
+      - name: Add split APKs to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            pockettally-*-arm64-v8a.apk
+            pockettally-*-armeabi-v7a.apk
+            pockettally-*-x86_64.apk

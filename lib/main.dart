@@ -30,8 +30,8 @@ class PocketTallyApp extends StatelessWidget {
           title: 'PocketTally',
           debugShowCheckedModeBanner: false,
           themeMode: state.themeMode,
-          theme: buildTheme(Brightness.light),
-          darkTheme: buildTheme(Brightness.dark),
+          theme: buildTheme(Brightness.light, state.palette),
+          darkTheme: buildTheme(Brightness.dark, state.palette),
           home: state.onboarded
               ? RootShell(state: state)
               : WelcomeScreen(state: state),

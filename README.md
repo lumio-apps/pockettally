@@ -14,7 +14,7 @@
 - Add income (daily, weekly or monthly) and daily expenses
 - Income and expenses in one list, each entry separate (income green, expense red)
 - Monthly balance, income and expenses on the home screen
-- **Categories:** create your own, rename, recolor or delete them
+- **Categories:** create your own, rename, recolor, reorder, hide or delete them
 - **Stats:** totals for any day, week, month or year, a pie chart by category and a month-by-month bar chart
 - **PDF report** of any period, made on the phone
 - **Search and filter:** by text, type, category, date range and amount
@@ -27,9 +27,25 @@
 - Week starts on Monday or Sunday
 - Edit entries, swipe to delete with Undo
 - One app-wide currency (INR, USD, EUR, AMD and many more), changeable in Settings
-- Light, dark or system theme
+- Number format (1,234.56, 1.234,56, 1 234,56, 1'234.56, 12,34,567.89) and decimals on or off
+- Light, dark or system theme, and five accent colors
 - In-app "Check for updates" that downloads new releases from GitHub
 
+## Download
+
+Get the latest APK from [Releases](https://github.com/lumio-apps/pockettally/releases):
+
+| File | For |
+|---|---|
+| `…-arm64-v8a.apk` | Almost all phones from the last 7–8 years |
+| `…-armeabi-v7a.apk` | Older or low-cost phones (32-bit) |
+| `…-x86_64.apk` | Emulators and some tablets |
+| `…-universal.apk` | Any device (bigger file) |
+
+Not sure? Take the universal APK. After that, "Check for updates" in the app
+picks the smaller file for your phone by itself. Once a phone has a
+processor-specific APK installed, update it with the same kind of file
+(or through the app), not with the universal one.
 
 ## Privacy
 
