@@ -84,16 +84,10 @@ def install_widget_files() -> None:
 
 
 def patch_manifest() -> None:
-    install_widget_files()
+    # The home screen widget (install_widget_files, WIDGET_RECEIVER,
+    # WIDGET_LAUNCH_FILTER) is switched off since 0.9.2: it made the app
+    # crash on start. Kept here to bring it back later.
     text = MANIFEST.read_text()
-    if "BalanceWidgetProvider" not in text:
-        if "</application>" not in text:
-            die("no </application> in AndroidManifest.xml")
-        text = text.replace("</application>", WIDGET_RECEIVER + "    </application>", 1)
-    if "home_widget.action.LAUNCH" not in text:
-        if "</activity>" not in text:
-            die("no </activity> in AndroidManifest.xml")
-        text = text.replace("</activity>", WIDGET_LAUNCH_FILTER + "        </activity>", 1)
     if "REQUEST_INSTALL_PACKAGES" not in text:
         if "<application" not in text:
             die("no <application> tag in AndroidManifest.xml")

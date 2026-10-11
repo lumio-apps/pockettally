@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.2
+
+- Fix: "PocketTally keeps stopping" on Android since 0.8.0. The home screen widget and the app-icon shortcuts are removed for now; they caused the crash and will come back once fixed. Your data is unchanged
+
 ## 0.9.1
 
 - Fix: the app could stay on the start screen after updating to 0.8.0. Database updates now check what is missing and finish an update that stopped half way
@@ -24,8 +28,8 @@
 - Recurring entries: choose Repeat (every day, week, month or year) when adding an entry, e.g. salary or rent. Due entries are added automatically when you open the app; pause or stop them in Settings > Recurring entries
 - Favorites: tap the star in the entry form to save it; favorites appear on Home and add an entry with one tap (long-press to remove)
 - Tags: label entries like #trip or #office; search finds them
-- Android: long-press the app icon for "Add expense" and "Add income"
-- Android: home screen widget with this month's balance and a + button
+- Android: long-press the app icon for "Add expense" and "Add income" (removed again in 0.9.2)
+- Android: home screen widget with this month's balance and a + button (removed again in 0.9.2)
 - Backups include recurring entries, favorites and tags
 
 ## 0.7.0
