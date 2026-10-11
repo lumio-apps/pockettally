@@ -20,6 +20,8 @@ Future<void> main() async {
   final prefs = await SharedPreferences.getInstance();
   final state = AppState(prefs);
   await state.load();
+  // Salary, rent and other repeating entries that became due.
+  await state.runRecurring();
   await PhotoStore.init();
   runApp(PocketTallyApp(state: state));
 }

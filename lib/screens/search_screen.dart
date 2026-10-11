@@ -96,7 +96,8 @@ class _SearchScreenState extends State<SearchScreen> {
       if (q.isNotEmpty &&
           !e.note.toLowerCase().contains(q) &&
           !e.category.toLowerCase().contains(q) &&
-          !categoryLabel(l, e.category).toLowerCase().contains(q)) {
+          !categoryLabel(l, e.category).toLowerCase().contains(q) &&
+          !e.tags.any((t) => t.contains(q.replaceAll('#', '')))) {
         return false;
       }
       return true;

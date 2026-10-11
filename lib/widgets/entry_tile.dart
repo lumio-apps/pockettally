@@ -43,6 +43,7 @@ class EntryTile extends StatelessWidget {
       if (entry.isIncome && entry.period != null)
         periodIncomeLabel(l, entry.period!),
       if (entry.note.isNotEmpty) entry.note,
+      if (entry.tags.isNotEmpty) entry.tags.map((t) => '#$t').join(' '),
     ];
 
     return Dismissible(

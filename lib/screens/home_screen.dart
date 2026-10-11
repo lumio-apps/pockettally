@@ -128,6 +128,10 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (state.favorites.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  _FavoritesRow(state: state),
+                ],
                 if (state.toReceiveMinor > 0 || state.toPayMinor > 0) ...[
                   const SizedBox(height: 16),
                   Card(
@@ -482,6 +486,99 @@ class _MiniStat extends StatelessWidget {
           child: Text(value,
               style: TextStyle(
                   color: color, fontWeight: FontWeight.w800, fontSize: 15)),
+        ),
+      ],
+    );
+  }
+}
+
+/// One-tap entries saved with the star in the entry form.
+class _FavoritesRow extends StatelessWidget {
+  const _FavoritesRow({required this.state});
+
+  final AppState state;
+
+  Future<void> _add(BuildContext context, Favorite f) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
+    final entry = await state.addFromFavorite(f);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(l.favoriteAdded(
+            '${categoryLabel(l, f.category)} ${state.formatMoney(f.amountMinor)}')),
+        action: SnackBarAction(
+          label: l.undo,
+          onPressed: () => state.deleteEntry(entry),
+        ),
+      ));
+  }
+
+  Future<void> _remove(BuildContext context, Favorite f) async {
+    final l = context.l10n;
+    final name = f.note.isNotEmpty ? f.note : categoryLabel(l, f.category);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.removeFavoriteQuestion(name)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(l.cancel)),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l.remove)),
+        ],
+      ),
+    );
+    if (ok == true) await state.deleteFavorite(f);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(l.favorites,
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w800)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(l.favoritesHint,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 44,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: state.favorites.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              final f = state.favorites[i];
+              final color = f.type == EntryType.income
+                  ? kIncomeColor
+                  : kExpenseColor;
+              final label = f.note.isNotEmpty
+                  ? f.note
+                  : categoryLabel(l, f.category);
+              return GestureDetector(
+                onLongPress: () => _remove(context, f),
+                child: ActionChip(
+                  avatar: Icon(Icons.star_rounded, size: 18, color: color),
+                  label: Text('$label  ${state.formatMoney(f.amountMinor)}'),
+                  onPressed: () => _add(context, f),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.0
+
+- Recurring entries: choose Repeat (every day, week, month or year) when adding an entry, e.g. salary or rent. Due entries are added automatically when you open the app; pause or stop them in Settings > Recurring entries
+- Favorites: tap the star in the entry form to save it; favorites appear on Home and add an entry with one tap (long-press to remove)
+- Tags: label entries like #trip or #office; search finds them
+- Android: long-press the app icon for "Add expense" and "Add income"
+- Android: home screen widget with this month's balance and a + button
+- Backups include recurring entries, favorites and tags
+
 ## 0.7.0
 
 - PocketTally for Windows and Linux (same features and data format as on phones)

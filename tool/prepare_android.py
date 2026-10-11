@@ -2,12 +2,13 @@
 """Patches the generated android/ project in CI, so nothing has to be edited by hand.
 
 Usage:
-  python3 tool/prepare_android.py manifest   # permissions + app label
+  python3 tool/prepare_android.py manifest   # permissions, app label, widget
   python3 tool/prepare_android.py signing    # release signing from key.properties
 
 Fails loudly if the Flutter template changes and a patch no longer applies.
 """
 import pathlib
+import shutil
 import sys
 
 MANIFEST = pathlib.Path("android/app/src/main/AndroidManifest.xml")
@@ -46,8 +47,53 @@ def die(message: str) -> None:
     sys.exit(1)
 
 
+WIDGET_RECEIVER = (
+    '        <receiver android:name=".BalanceWidgetProvider" android:exported="true">\n'
+    '            <intent-filter>\n'
+    '                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>\n'
+    '            </intent-filter>\n'
+    '            <meta-data android:name="android.appwidget.provider"\n'
+    '                android:resource="@xml/balance_widget_info"/>\n'
+    '        </receiver>\n'
+)
+
+WIDGET_LAUNCH_FILTER = (
+    '            <intent-filter>\n'
+    '                <action android:name="es.antonborri.home_widget.action.LAUNCH"/>\n'
+    '            </intent-filter>\n'
+)
+
+
+def install_widget_files() -> None:
+    """Copies the home screen widget (Kotlin + resources) from tool/android."""
+    src = pathlib.Path("tool/android")
+    res = pathlib.Path("android/app/src/main/res")
+    for f in (src / "res").rglob("*"):
+        if f.is_file():
+            target = res / f.relative_to(src / "res")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(f, target)
+    main_activity = next(
+        pathlib.Path("android/app/src/main").rglob("MainActivity.kt"), None)
+    if main_activity is None:
+        die("MainActivity.kt not found")
+    shutil.copyfile(src / "kotlin" / "BalanceWidgetProvider.kt",
+                    main_activity.parent / "BalanceWidgetProvider.kt")
+    if "package com.lumio.pockettally" not in main_activity.read_text():
+        die("unexpected package in MainActivity.kt")
+
+
 def patch_manifest() -> None:
+    install_widget_files()
     text = MANIFEST.read_text()
+    if "BalanceWidgetProvider" not in text:
+        if "</application>" not in text:
+            die("no </application> in AndroidManifest.xml")
+        text = text.replace("</application>", WIDGET_RECEIVER + "    </application>", 1)
+    if "home_widget.action.LAUNCH" not in text:
+        if "</activity>" not in text:
+            die("no </activity> in AndroidManifest.xml")
+        text = text.replace("</activity>", WIDGET_LAUNCH_FILTER + "        </activity>", 1)
     if "REQUEST_INSTALL_PACKAGES" not in text:
         if "<application" not in text:
             die("no <application> tag in AndroidManifest.xml")

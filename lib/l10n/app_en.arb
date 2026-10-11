@@ -533,5 +533,57 @@
   "pdfNoEntries": "No entries in this period.",
   "pdfFooter": "Made with PocketTally. All data stays on your device.",
   "offlineTitle": "100% offline",
-  "offlineBody": "Your data stays on this device."
+  "offlineBody": "Your data stays on this device.",
+  "tagsHint": "Tags, e.g. trip, office",
+  "repeat": "Repeat",
+  "repeatNever": "Never",
+  "everyDay": "Every day",
+  "everyWeek": "Every week",
+  "everyMonth": "Every month",
+  "everyYear": "Every year",
+  "recurringEntries": "Recurring entries",
+  "recurringSubtitle": "Salary, rent and other entries that repeat",
+  "recurringCount": "{count, plural, =1{1 repeating entry} other{{count} repeating entries}}",
+  "@recurringCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noRecurring": "No recurring entries.\nChoose Repeat when you add an entry, for example for your salary or rent.",
+  "nextOn": "Next: {date}",
+  "@nextOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "paused": "Paused",
+  "stopRepeating": "Stop repeating",
+  "stopRepeatingQuestion": "Stop repeating this entry?",
+  "stopRepeatingNote": "Entries that were already added stay.",
+  "favorites": "Favorites",
+  "favoritesHint": "Tap to add, long-press to remove",
+  "saveAsFavorite": "Save as favorite",
+  "addedToFavorites": "Added to favorites",
+  "favoriteAdded": "{name} added",
+  "@favoriteAdded": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeFavoriteQuestion": "Remove \"{name}\" from favorites?",
+  "@removeFavoriteQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "addExpense": "Add expense",
+  "addIncome": "Add income"
 }

@@ -207,6 +207,7 @@ class Entry {
     this.note = '',
     this.period,
     this.photo,
+    this.tags = const [],
   });
 
   final int? id;
@@ -215,6 +216,9 @@ class Entry {
   final String category;
   final DateTime date;
   final String note;
+
+  /// Free labels like "trip" or "office", lower case, without "#".
+  final List<String> tags;
 
   /// File name of the bill photo in the app's private folder, if any.
   final String? photo;
@@ -233,6 +237,7 @@ class Entry {
         'note': note,
         'period': period?.name,
         'photo': photo,
+        'tags': tags.join(','),
       };
 
   static Entry fromMap(Map<String, Object?> m) => Entry(
@@ -246,6 +251,191 @@ class Entry {
             ? null
             : IncomePeriod.values.byName(m['period'] as String),
         photo: m['photo'] as String?,
+        tags: parseTags((m['tags'] as String?) ?? ''),
+      );
+}
+
+/// "Trip, #office  food" -> ["trip", "office", "food"] (unique, in order).
+List<String> parseTags(String text) {
+  final seen = <String>{};
+  for (final raw in text.split(RegExp(r'[,\s]+'))) {
+    final t = raw.trim().replaceAll('#', '').toLowerCase();
+    if (t.isNotEmpty) seen.add(t);
+  }
+  return seen.toList();
+}
+
+/// How often a recurring entry repeats.
+enum RepeatEvery { daily, weekly, monthly, yearly }
+
+/// The date after [from] for a rule repeating [every]. Monthly and yearly
+/// rules keep their [anchorDay] (31 Jan -> 28 Feb -> 31 Mar).
+DateTime nextRepeatDate(DateTime from, RepeatEvery every, int anchorDay) {
+  int clampDay(int year, int month) {
+    final last = DateTime(year, month + 1, 0).day;
+    return anchorDay > last ? last : anchorDay;
+  }
+
+  switch (every) {
+    case RepeatEvery.daily:
+      return DateTime(from.year, from.month, from.day + 1);
+    case RepeatEvery.weekly:
+      return DateTime(from.year, from.month, from.day + 7);
+    case RepeatEvery.monthly:
+      final y = from.month == 12 ? from.year + 1 : from.year;
+      final m = from.month == 12 ? 1 : from.month + 1;
+      return DateTime(y, m, clampDay(y, m));
+    case RepeatEvery.yearly:
+      return DateTime(from.year + 1, from.month, clampDay(from.year + 1, from.month));
+  }
+}
+
+/// An entry that is added again and again, e.g. salary every month.
+class RecurringRule {
+  const RecurringRule({
+    this.id,
+    required this.type,
+    required this.amountMinor,
+    required this.category,
+    this.note = '',
+    this.period,
+    this.tags = const [],
+    required this.every,
+    required this.anchorDay,
+    required this.nextDate,
+    this.paused = false,
+  });
+
+  /// A rule for [e]: the first repeat comes one step after its date.
+  factory RecurringRule.fromEntry(Entry e, RepeatEvery every) => RecurringRule(
+        type: e.type,
+        amountMinor: e.amountMinor,
+        category: e.category,
+        note: e.note,
+        period: e.period,
+        tags: e.tags,
+        every: every,
+        anchorDay: e.date.day,
+        nextDate: nextRepeatDate(e.date, every, e.date.day),
+      );
+
+  final int? id;
+  final EntryType type;
+  final int amountMinor;
+  final String category;
+  final String note;
+  final IncomePeriod? period;
+  final List<String> tags;
+  final RepeatEvery every;
+
+  /// Day of the month the rule started on (for monthly/yearly).
+  final int anchorDay;
+
+  /// When the next entry is due.
+  final DateTime nextDate;
+  final bool paused;
+
+  Entry entryOn(DateTime date) => Entry(
+        type: type,
+        amountMinor: amountMinor,
+        category: category,
+        date: date,
+        note: note,
+        period: period,
+        tags: tags,
+      );
+
+  RecurringRule copyWith({DateTime? nextDate, bool? paused}) => RecurringRule(
+        id: id,
+        type: type,
+        amountMinor: amountMinor,
+        category: category,
+        note: note,
+        period: period,
+        tags: tags,
+        every: every,
+        anchorDay: anchorDay,
+        nextDate: nextDate ?? this.nextDate,
+        paused: paused ?? this.paused,
+      );
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'id': id,
+        'type': type.name,
+        'amount_minor': amountMinor,
+        'category': category,
+        'note': note,
+        'period': period?.name,
+        'tags': tags.join(','),
+        'every': every.name,
+        'anchor_day': anchorDay,
+        'next_date': DateTime(nextDate.year, nextDate.month, nextDate.day)
+            .millisecondsSinceEpoch,
+        'paused': paused ? 1 : 0,
+      };
+
+  static RecurringRule fromMap(Map<String, Object?> m) => RecurringRule(
+        id: m['id'] as int?,
+        type: EntryType.values.byName(m['type'] as String),
+        amountMinor: m['amount_minor'] as int,
+        category: m['category'] as String,
+        note: (m['note'] as String?) ?? '',
+        period: m['period'] == null
+            ? null
+            : IncomePeriod.values.byName(m['period'] as String),
+        tags: parseTags((m['tags'] as String?) ?? ''),
+        every: RepeatEvery.values.byName(m['every'] as String),
+        anchorDay: m['anchor_day'] as int,
+        nextDate: DateTime.fromMillisecondsSinceEpoch(m['next_date'] as int),
+        paused: (m['paused'] as int?) == 1,
+      );
+}
+
+/// A saved entry that can be added again with one tap ("Coffee 3.50").
+class Favorite {
+  const Favorite({
+    this.id,
+    required this.type,
+    required this.amountMinor,
+    required this.category,
+    this.note = '',
+    this.period,
+  });
+
+  final int? id;
+  final EntryType type;
+  final int amountMinor;
+  final String category;
+  final String note;
+  final IncomePeriod? period;
+
+  Entry entryOn(DateTime date) => Entry(
+        type: type,
+        amountMinor: amountMinor,
+        category: category,
+        date: date,
+        note: note,
+        period: period,
+      );
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'id': id,
+        'type': type.name,
+        'amount_minor': amountMinor,
+        'category': category,
+        'note': note,
+        'period': period?.name,
+      };
+
+  static Favorite fromMap(Map<String, Object?> m) => Favorite(
+        id: m['id'] as int?,
+        type: EntryType.values.byName(m['type'] as String),
+        amountMinor: m['amount_minor'] as int,
+        category: m['category'] as String,
+        note: (m['note'] as String?) ?? '',
+        period: m['period'] == null
+            ? null
+            : IncomePeriod.values.byName(m['period'] as String),
       );
 }
 

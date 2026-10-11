@@ -11,6 +11,7 @@ import '../update_checker.dart';
 import '../utils/money_format.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
+import 'recurring_screen.dart';
 
 /// Name of a color palette in the app's language.
 String paletteName(AppLocalizations l, AppPalette p) {
@@ -177,6 +178,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: Text(l.categoriesSubtitle),
                 onTap: () => Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => CategoriesScreen(state: state),
+                )),
+              ),
+              ListTile(
+                leading: const Icon(Icons.repeat),
+                title: Text(l.recurringEntries),
+                subtitle: Text(state.recurring.isEmpty
+                    ? l.recurringSubtitle
+                    : l.recurringCount(state.recurring.length)),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => RecurringScreen(state: state),
                 )),
               ),
               ListTile(

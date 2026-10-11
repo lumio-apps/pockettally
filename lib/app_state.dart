@@ -20,6 +20,8 @@ class AppState extends ChangeNotifier {
   List<EntryCategory> categories = [];
   List<Debt> debts = [];
   List<SavingsGoal> goals = [];
+  List<RecurringRule> recurring = [];
+  List<Favorite> favorites = [];
 
   String get userName => _prefs.getString('user_name') ?? '';
   bool get onboarded => userName.isNotEmpty;
@@ -95,6 +97,8 @@ class AppState extends ChangeNotifier {
     categories = await AppDatabase.instance.allCategories();
     debts = await AppDatabase.instance.allDebts();
     goals = await AppDatabase.instance.allGoals();
+    recurring = await AppDatabase.instance.allRecurring();
+    favorites = await AppDatabase.instance.allFavorites();
     notifyListeners();
   }
 
@@ -345,12 +349,15 @@ class AppState extends ChangeNotifier {
         entries: entries,
         debts: debts,
         goals: goals,
+        recurring: recurring,
+        favorites: favorites,
       );
 
   /// Replaces all data and settings with the backup.
   Future<void> restoreBackup(BackupData b) async {
     await AppDatabase.instance
-        .replaceAll(b.categories, b.entries, b.debts, b.goals);
+        .replaceAll(b.categories, b.entries, b.debts, b.goals,
+            recurring: b.recurring, favorites: b.favorites);
     if (b.userName.trim().isNotEmpty) {
       await _prefs.setString('user_name', b.userName.trim());
     }
@@ -368,6 +375,96 @@ class AppState extends ChangeNotifier {
     if (b.decimals != null) await _prefs.setInt('decimals', b.decimals!);
     if (b.palette != null) await _prefs.setString('palette', b.palette!);
     await load();
+  }
+
+  // ---- recurring entries ----
+
+  /// Adds every entry that is due up to [today] and moves the rules on.
+  /// Returns how many entries were added. Safe to call often.
+  Future<int> runRecurring({DateTime? today}) async {
+    final now = today ?? DateTime.now();
+    final end = DateTime(now.year, now.month, now.day);
+    var added = 0;
+    for (final rule in recurring) {
+      if (rule.paused || rule.id == null) continue;
+      var next = rule.nextDate;
+      final due = <Entry>[];
+      // At most ~3 years of daily entries in one go, as a safety limit.
+      while (!next.isAfter(end) && due.length < 1100) {
+        due.add(rule.entryOn(next));
+        next = nextRepeatDate(next, rule.every, rule.anchorDay);
+      }
+      if (due.isEmpty) continue;
+      await AppDatabase.instance
+          .applyRecurring(rule.copyWith(nextDate: next), due);
+      added += due.length;
+    }
+    if (added > 0) await load();
+    return added;
+  }
+
+  /// Saves [e] and repeats it [every] day/week/month/year from now on.
+  Future<void> addRecurringFrom(Entry e, RepeatEvery every) async {
+    await AppDatabase.instance.saveRecurring(RecurringRule.fromEntry(e, every));
+    recurring = await AppDatabase.instance.allRecurring();
+    await runRecurring();
+    notifyListeners();
+  }
+
+  Future<void> setRecurringPaused(RecurringRule r, bool paused) async {
+    var rule = r.copyWith(paused: paused);
+    if (!paused) {
+      // Resuming does not add the entries missed while paused.
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      var next = rule.nextDate;
+      while (next.isBefore(today)) {
+        next = nextRepeatDate(next, rule.every, rule.anchorDay);
+      }
+      rule = rule.copyWith(nextDate: next);
+    }
+    await AppDatabase.instance.saveRecurring(rule);
+    await load();
+  }
+
+  Future<void> deleteRecurring(RecurringRule r) async {
+    await AppDatabase.instance.deleteRecurring(r.id!);
+    await load();
+  }
+
+  // ---- favorites ----
+
+  Future<void> addFavorite(Favorite f) async {
+    await AppDatabase.instance.insertFavorite(f);
+    await load();
+  }
+
+  Future<void> deleteFavorite(Favorite f) async {
+    await AppDatabase.instance.deleteFavorite(f.id!);
+    await load();
+  }
+
+  /// Adds the favorite as an entry for today and returns it (for Undo).
+  Future<Entry> addFromFavorite(Favorite f) async {
+    final e = f.entryOn(DateTime.now());
+    final id = await AppDatabase.instance.insert(e);
+    await load();
+    return entries.firstWhere((x) => x.id == id, orElse: () => e);
+  }
+
+  // ---- tags ----
+
+  /// Every tag used so far, most used first.
+  List<String> get allTags {
+    final count = <String, int>{};
+    for (final e in entries) {
+      for (final t in e.tags) {
+        count[t] = (count[t] ?? 0) + 1;
+      }
+    }
+    final list = count.keys.toList()
+      ..sort((a, b) => count[b]!.compareTo(count[a]!));
+    return list;
   }
 
   // ---- lend & borrow ----

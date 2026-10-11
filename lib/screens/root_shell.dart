@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../android_extras.dart';
 import '../app_state.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
@@ -37,8 +40,44 @@ class RootShell extends StatefulWidget {
 
 class _RootShellState extends State<RootShell> {
   AppPage _page = AppPage.home;
+  late final AppLifecycleListener _lifecycle;
+  StreamSubscription<Uri?>? _widgetSub;
 
   AppState get state => widget.state;
+
+  @override
+  void initState() {
+    super.initState();
+    // Coming back to the app on a new day adds due recurring entries.
+    _lifecycle = AppLifecycleListener(onResume: () => state.runRecurring());
+    state.addListener(_syncWidget);
+    _syncWidget();
+    _widgetSub = AndroidExtras.listenWidgetAdd(_add);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Again on language change, so the shortcut names follow it.
+    AndroidExtras.initShortcuts(context.l10n, _addType);
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    state.removeListener(_syncWidget);
+    _widgetSub?.cancel();
+    super.dispose();
+  }
+
+  void _syncWidget() => AndroidExtras.updateWidget(state);
+
+  void _addType(EntryType type) {
+    if (!mounted) return;
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => EntryFormScreen(state: state, initialType: type),
+    ));
+  }
 
   /// Used by Home: 1 = Insights, 2 = Budgets.
   void _openTab(int i) => setState(() => _page = AppPage.values[i]);

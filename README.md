@@ -21,6 +21,9 @@
 - **Search and filter:** by text, type, category, date range and amount
 - **Budgets:** a monthly limit and a limit per category, with warnings
 - **Calculator** in the amount field (120+45)
+- **Recurring entries** (salary, rent…) added automatically
+- **Favorites** for one-tap entries, and **tags** like #trip
+- Android **home screen widget** and app-icon shortcuts
 - **Lend & Borrow:** who owes you, whom you owe, part payments
 - **Savings goals** with progress
 - **Bill photos** attached to entries, stored only in the app

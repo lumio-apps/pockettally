@@ -16,6 +16,8 @@ class BackupData {
     required this.entries,
     this.debts = const [],
     this.goals = const [],
+    this.recurring = const [],
+    this.favorites = const [],
     this.numberStyle,
     this.decimals,
     this.palette,
@@ -37,6 +39,8 @@ class BackupData {
   final List<Entry> entries;
   final List<Debt> debts;
   final List<SavingsGoal> goals;
+  final List<RecurringRule> recurring;
+  final List<Favorite> favorites;
 
   /// Optional settings (null when the backup is older than 0.6.0).
   final String? numberStyle;
@@ -77,6 +81,32 @@ class BackupData {
               'date': _dateString(e.date),
               'note': e.note,
               'period': e.period?.name,
+              if (e.tags.isNotEmpty) 'tags': e.tags,
+            },
+        ],
+        'recurring': [
+          for (final r in recurring)
+            {
+              'type': r.type.name,
+              'amountMinor': r.amountMinor,
+              'category': r.category,
+              'note': r.note,
+              'period': r.period?.name,
+              'tags': r.tags,
+              'every': r.every.name,
+              'anchorDay': r.anchorDay,
+              'nextDate': _dateString(r.nextDate),
+              'paused': r.paused,
+            },
+        ],
+        'favorites': [
+          for (final f in favorites)
+            {
+              'type': f.type.name,
+              'amountMinor': f.amountMinor,
+              'category': f.category,
+              'note': f.note,
+              'period': f.period?.name,
             },
         ],
         'debts': [
@@ -143,6 +173,36 @@ class BackupData {
             period: e['period'] == null
                 ? null
                 : IncomePeriod.values.byName(e['period'] as String),
+            tags: [
+              for (final t in (e['tags'] as List<dynamic>? ?? [])) t as String,
+            ],
+          ),
+      ];
+      IncomePeriod? period(Object? v) =>
+          v == null ? null : IncomePeriod.values.byName(v as String);
+      final recurring = [
+        for (final r in (decoded['recurring'] as List<dynamic>? ?? []))
+          RecurringRule(
+            type: EntryType.values.byName((r as Map<String, dynamic>)['type'] as String),
+            amountMinor: r['amountMinor'] as int,
+            category: r['category'] as String,
+            note: (r['note'] as String?) ?? '',
+            period: period(r['period']),
+            tags: [for (final t in (r['tags'] as List<dynamic>? ?? [])) t as String],
+            every: RepeatEvery.values.byName(r['every'] as String),
+            anchorDay: r['anchorDay'] as int,
+            nextDate: DateTime.parse(r['nextDate'] as String),
+            paused: r['paused'] == true,
+          ),
+      ];
+      final favorites = [
+        for (final f in (decoded['favorites'] as List<dynamic>? ?? []))
+          Favorite(
+            type: EntryType.values.byName((f as Map<String, dynamic>)['type'] as String),
+            amountMinor: f['amountMinor'] as int,
+            category: f['category'] as String,
+            note: (f['note'] as String?) ?? '',
+            period: period(f['period']),
           ),
       ];
       final debts = [
@@ -166,6 +226,8 @@ class BackupData {
           ),
       ];
       return BackupData(
+        recurring: recurring,
+        favorites: favorites,
         debts: debts,
         goals: goals,
         userName: (settings['userName'] as String?) ?? '',

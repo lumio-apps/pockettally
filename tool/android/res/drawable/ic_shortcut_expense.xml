@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher shortcut "Add expense": a minus sign. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#C0392B" android:pathData="M12,2A10,10 0,1 1,12 22A10,10 0,1 1,12 2Z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M6.5,11h11v2h-11z" />
+</vector>

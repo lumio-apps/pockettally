@@ -41,6 +41,10 @@ class EntryFormScreen extends StatefulWidget {
 
 class _EntryFormScreenState extends State<EntryFormScreen> {
   late final TextEditingController _noteController;
+  late final TextEditingController _tagsController;
+
+  /// Repeat this new entry (null = only once).
+  RepeatEvery? _repeat;
 
   late EntryType _type;
   late String _category;
@@ -73,6 +77,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       _input = widget.state.amountInput(e.amountMinor);
     }
     _noteController = TextEditingController(text: e?.note ?? '');
+    _tagsController = TextEditingController(text: e?.tags.join(', ') ?? '');
     if (widget.embedded) widget.state.addListener(_onStateChanged);
   }
 
@@ -88,6 +93,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     if (widget.embedded) widget.state.removeListener(_onStateChanged);
     _keysFocus.dispose();
     _noteController.dispose();
+    _tagsController.dispose();
     super.dispose();
   }
 
@@ -254,11 +260,15 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       note: _noteController.text.trim(),
       period: _type == EntryType.income ? _period : null,
       photo: _photo,
+      tags: parseTags(_tagsController.text),
     );
     if (_isEditing) {
       await widget.state.updateEntry(entry);
     } else {
       await widget.state.addEntry(entry);
+      if (_repeat != null) {
+        await widget.state.addRecurringFrom(entry, _repeat!);
+      }
     }
     final warning = widget.state.budgetWarningFor(entry, l);
     if (widget.embedded) {
@@ -267,7 +277,9 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
         setState(() {
           _input = '';
           _photo = null;
+          _repeat = null;
           _noteController.clear();
+          _tagsController.clear();
         });
         _keysFocus.requestFocus();
       }
@@ -288,11 +300,60 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     }
   }
 
+  /// Saves what is in the form as a favorite for one-tap adding on Home.
+  Future<void> _saveFavorite() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
+    final amount = widget.state.parseMinor(_input);
+    if (amount == null || amount <= 0) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l.enterAmountAboveZero)));
+      return;
+    }
+    await widget.state.addFavorite(Favorite(
+      type: _type,
+      amountMinor: amount,
+      category: _category,
+      note: _noteController.text.trim(),
+      period: _type == EntryType.income ? _period : null,
+    ));
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l.addedToFavorites)));
+  }
+
+  void _addTag(String tag) {
+    final tags = parseTags(_tagsController.text);
+    if (tags.contains(tag)) return;
+    setState(() => _tagsController.text = [...tags, tag].join(', '));
+  }
+
+  String _repeatLabel(AppLocalizations l, RepeatEvery? r) {
+    switch (r) {
+      case null:
+        return l.repeatNever;
+      case RepeatEvery.daily:
+        return l.everyDay;
+      case RepeatEvery.weekly:
+        return l.everyWeek;
+      case RepeatEvery.monthly:
+        return l.everyMonth;
+      case RepeatEvery.yearly:
+        return l.everyYear;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l = context.l10n;
     final isIncome = _type == EntryType.income;
+    final typedTags = parseTags(_tagsController.text);
+    final tagSuggestions = widget.state.allTags
+        .where((t) => !typedTags.contains(t))
+        .take(8)
+        .toList();
     final amountColor = isIncome ? kIncomeColor : kExpenseColor;
     final categoryNames = _categories;
     if (!categoryNames.contains(_category)) {
@@ -316,6 +377,11 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
         backgroundColor: widget.embedded ? theme.colorScheme.surface : null,
         title: Text(_isEditing ? l.editEntry : l.newEntry),
         actions: [
+          IconButton(
+            tooltip: l.saveAsFavorite,
+            icon: const Icon(Icons.star_outline),
+            onPressed: _saveFavorite,
+          ),
           if (_isEditing)
             IconButton(
               tooltip: l.delete,
@@ -497,6 +563,56 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                           borderRadius: BorderRadius.circular(14)),
                     ),
                   ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _tagsController,
+                    decoration: InputDecoration(
+                      hintText: l.tagsHint,
+                      prefixIcon: const Icon(Icons.sell_outlined),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                  if (tagSuggestions.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        for (final t in tagSuggestions)
+                          ActionChip(
+                            label: Text('#$t'),
+                            visualDensity: VisualDensity.compact,
+                            onPressed: () => _addTag(t),
+                          ),
+                      ],
+                    ),
+                  ],
+                  if (!_isEditing) ...[
+                    const SizedBox(height: 10),
+                    DropdownButtonFormField<RepeatEvery?>(
+                      key: ValueKey('repeat-$_repeat'),
+                      initialValue: _repeat,
+                      decoration: InputDecoration(
+                        labelText: l.repeat,
+                        prefixIcon: const Icon(Icons.repeat),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                      ),
+                      items: [
+                        for (final r in <RepeatEvery?>[
+                          null,
+                          ...RepeatEvery.values,
+                        ])
+                          DropdownMenuItem(
+                            value: r,
+                            child: Text(_repeatLabel(l, r)),
+                          ),
+                      ],
+                      onChanged: (r) => setState(() => _repeat = r),
+                    ),
+                  ],
                 ],
               ),
             ),

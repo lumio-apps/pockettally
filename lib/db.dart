@@ -12,6 +12,7 @@ import 'platform.dart';
 ///   v3 (app 0.3.0): categories.budget
 ///   v4 (app 0.5.0): entries.photo, debts, goals
 ///   v5 (app 0.6.0): categories.position, categories.hidden
+///   v6 (app 0.8.0): entries.tags, recurring, favorites
 class AppDatabase {
   AppDatabase._();
   static final AppDatabase instance = AppDatabase._();
@@ -25,11 +26,12 @@ class AppDatabase {
         isDesktop ? (await appDataDirectory()).path : await getDatabasesPath();
     _db = await openDatabase(
       p.join(dir, 'pockettally.db'),
-      version: 5,
+      version: 6,
       onCreate: (db, version) async {
         await _createEntries(db);
         await _createCategories(db);
         await _createDebtsAndGoals(db);
+        await _createRecurringAndFavorites(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
@@ -49,6 +51,11 @@ class AppDatabase {
           await db.execute('ALTER TABLE categories '
               'ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0');
         }
+        if (oldVersion < 6) {
+          await db.execute(
+              "ALTER TABLE entries ADD COLUMN tags TEXT NOT NULL DEFAULT ''");
+          await _createRecurringAndFavorites(db);
+        }
       },
     );
     return _db!;
@@ -64,7 +71,8 @@ class AppDatabase {
         date INTEGER NOT NULL,
         note TEXT NOT NULL DEFAULT '',
         period TEXT,
-        photo TEXT
+        photo TEXT,
+        tags TEXT NOT NULL DEFAULT ''
       )
     ''');
     await db.execute('CREATE INDEX idx_entries_date ON entries(date)');
@@ -89,6 +97,34 @@ class AppDatabase {
         target_minor INTEGER NOT NULL,
         saved_minor INTEGER NOT NULL DEFAULT 0,
         color INTEGER NOT NULL
+      )
+    ''');
+  }
+
+  static Future<void> _createRecurringAndFavorites(Database db) async {
+    await db.execute('''
+      CREATE TABLE recurring (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        amount_minor INTEGER NOT NULL,
+        category TEXT NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        period TEXT,
+        tags TEXT NOT NULL DEFAULT '',
+        every TEXT NOT NULL,
+        anchor_day INTEGER NOT NULL,
+        next_date INTEGER NOT NULL,
+        paused INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        amount_minor INTEGER NOT NULL,
+        category TEXT NOT NULL,
+        note TEXT NOT NULL DEFAULT '',
+        period TEXT
       )
     ''');
   }
@@ -265,6 +301,59 @@ class AppDatabase {
     await db.delete('goals', where: 'id = ?', whereArgs: [id]);
   }
 
+  // ---- recurring entries ----
+
+  Future<List<RecurringRule>> allRecurring() async {
+    final db = await _database;
+    final rows = await db.query('recurring', orderBy: 'next_date, id');
+    return rows.map(RecurringRule.fromMap).toList();
+  }
+
+  Future<void> saveRecurring(RecurringRule r) async {
+    final db = await _database;
+    if (r.id == null) {
+      await db.insert('recurring', r.toMap());
+    } else {
+      await db.update('recurring', r.toMap(),
+          where: 'id = ?', whereArgs: [r.id]);
+    }
+  }
+
+  Future<void> deleteRecurring(int id) async {
+    final db = await _database;
+    await db.delete('recurring', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Adds the due [entries] and moves the rule on, in one transaction.
+  Future<void> applyRecurring(RecurringRule updated, List<Entry> entries) async {
+    final db = await _database;
+    await db.transaction((txn) async {
+      for (final e in entries) {
+        await txn.insert('entries', e.toMap()..remove('id'));
+      }
+      await txn.update('recurring', updated.toMap(),
+          where: 'id = ?', whereArgs: [updated.id]);
+    });
+  }
+
+  // ---- favorites ----
+
+  Future<List<Favorite>> allFavorites() async {
+    final db = await _database;
+    final rows = await db.query('favorites', orderBy: 'id');
+    return rows.map(Favorite.fromMap).toList();
+  }
+
+  Future<void> insertFavorite(Favorite f) async {
+    final db = await _database;
+    await db.insert('favorites', f.toMap());
+  }
+
+  Future<void> deleteFavorite(int id) async {
+    final db = await _database;
+    await db.delete('favorites', where: 'id = ?', whereArgs: [id]);
+  }
+
   // ---- backup / restore ----
 
   /// Replaces ALL data in one transaction.
@@ -273,14 +362,24 @@ class AppDatabase {
     List<EntryCategory> categories,
     List<Entry> entries,
     List<Debt> debts,
-    List<SavingsGoal> goals,
-  ) async {
+    List<SavingsGoal> goals, {
+    List<RecurringRule> recurring = const [],
+    List<Favorite> favorites = const [],
+  }) async {
     final db = await _database;
     await db.transaction((txn) async {
       await txn.delete('entries');
       await txn.delete('categories');
       await txn.delete('debts');
       await txn.delete('goals');
+      await txn.delete('recurring');
+      await txn.delete('favorites');
+      for (final r in recurring) {
+        await txn.insert('recurring', r.toMap()..remove('id'));
+      }
+      for (final f in favorites) {
+        await txn.insert('favorites', f.toMap()..remove('id'));
+      }
       for (final d in debts) {
         await txn.insert('debts', d.toMap()..remove('id'));
       }
