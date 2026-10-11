@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.1
+
+- Fix: the app could stay on the start screen after updating to 0.8.0. Database updates now check what is missing and finish an update that stopped half way
+- If the app ever cannot start, it shows the reason with a Copy button instead of hanging; your data is not touched
+- The widget, launcher shortcuts and recurring entries can no longer stop the app from opening
+
 ## 0.9.0
 
 - Highlights on Insights (month view): spending compared with last month, the top category, which category went up, average per day and how much of your income you kept

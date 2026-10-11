@@ -9,20 +9,38 @@ import 'l10n/l10n.dart';
 import 'photo_store.dart';
 import 'platform.dart';
 import 'screens/root_shell.dart';
+import 'screens/startup_error_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  initDatabaseFactory();
-  // Month and day names for every language (used by DateFormat).
-  await initializeDateFormatting();
-  final prefs = await SharedPreferences.getInstance();
-  final state = AppState(prefs);
-  await state.load();
-  // Salary, rent and other repeating entries that became due.
-  await state.runRecurring();
-  await PhotoStore.init();
+  late final AppState state;
+  try {
+    initDatabaseFactory();
+    // Month and day names for every language (used by DateFormat).
+    await initializeDateFormatting();
+    final prefs = await SharedPreferences.getInstance();
+    state = AppState(prefs);
+    await state.load();
+  } catch (error, stack) {
+    // Never hang on the splash screen: show what went wrong instead, so
+    // it can be reported. The data is not touched.
+    runApp(StartupErrorApp(error: error, stack: stack));
+    return;
+  }
+  // Extras that must never stop the app from opening.
+  try {
+    // Salary, rent and other repeating entries that became due.
+    await state.runRecurring();
+  } catch (e) {
+    debugPrint('Recurring entries skipped: $e');
+  }
+  try {
+    await PhotoStore.init();
+  } catch (e) {
+    debugPrint('Photo folder not ready: $e');
+  }
   runApp(PocketTallyApp(state: state));
 }
 

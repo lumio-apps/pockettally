@@ -48,12 +48,16 @@ class AndroidExtras {
   static StreamSubscription<Uri?>? listenWidgetAdd(void Function() onAdd) {
     if (!_enabled) return null;
     bool isAdd(Uri? uri) => uri?.host == 'add';
-    HomeWidget.initiallyLaunchedFromHomeWidget().then((uri) {
-      if (isAdd(uri)) onAdd();
-    }).catchError((_) {});
-    return HomeWidget.widgetClicked.listen((uri) {
-      if (isAdd(uri)) onAdd();
-    }, onError: (_) {});
+    try {
+      HomeWidget.initiallyLaunchedFromHomeWidget().then((uri) {
+        if (isAdd(uri)) onAdd();
+      }).catchError((_) {});
+      return HomeWidget.widgetClicked.listen((uri) {
+        if (isAdd(uri)) onAdd();
+      }, onError: (_) {});
+    } catch (_) {
+      return null;
+    }
   }
 
   static String? _lastWidgetText;
@@ -61,19 +65,19 @@ class AndroidExtras {
   /// Writes this month's balance to the home screen widget.
   static Future<void> updateWidget(AppState state) async {
     if (!_enabled) return;
-    final lang = state.languageCode;
-    final l = lookupAppLocalizations(Locale(lang));
-    final now = DateTime.now();
-    final income = state.incomeIn(now);
-    final expense = state.expenseIn(now);
-    final title = l.monthBalance(DateFormat.MMMM(lang).format(now));
-    final balance = state.formatMoney(income - expense);
-    final detail =
-        '+ ${state.formatMoney(income)}   − ${state.formatMoney(expense)}';
-    final text = '$title|$balance|$detail';
-    if (text == _lastWidgetText) return;
-    _lastWidgetText = text;
     try {
+      final lang = state.languageCode;
+      final l = lookupAppLocalizations(Locale(lang));
+      final now = DateTime.now();
+      final income = state.incomeIn(now);
+      final expense = state.expenseIn(now);
+      final title = l.monthBalance(DateFormat.MMMM(lang).format(now));
+      final balance = state.formatMoney(income - expense);
+      final detail =
+          '+ ${state.formatMoney(income)}   − ${state.formatMoney(expense)}';
+      final text = '$title|$balance|$detail';
+      if (text == _lastWidgetText) return;
+      _lastWidgetText = text;
       await HomeWidget.saveWidgetData<String>('title', title);
       await HomeWidget.saveWidgetData<String>('balance', balance);
       await HomeWidget.saveWidgetData<String>('detail', detail);

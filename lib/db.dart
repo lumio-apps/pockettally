@@ -33,32 +33,41 @@ class AppDatabase {
         await _createDebtsAndGoals(db);
         await _createRecurringAndFavorites(db);
       },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          // Creates the table already with the budget column.
-          await _createCategories(db);
-        } else if (oldVersion < 3) {
-          await db.execute('ALTER TABLE categories ADD COLUMN budget INTEGER');
-        }
-        if (oldVersion < 4) {
-          await db.execute('ALTER TABLE entries ADD COLUMN photo TEXT');
-          await _createDebtsAndGoals(db);
-        }
-        // Tables made by _createCategories above already have these.
-        if (oldVersion >= 2 && oldVersion < 5) {
-          await db.execute('ALTER TABLE categories '
-              'ADD COLUMN position INTEGER NOT NULL DEFAULT 0');
-          await db.execute('ALTER TABLE categories '
-              'ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0');
-        }
-        if (oldVersion < 6) {
-          await db.execute(
-              "ALTER TABLE entries ADD COLUMN tags TEXT NOT NULL DEFAULT ''");
-          await _createRecurringAndFavorites(db);
-        }
-      },
+      // Every upgrade brings the tables up to date by checking what is
+      // there, so an upgrade that stopped half way is finished next time.
+      onUpgrade: (db, oldVersion, newVersion) => _ensureSchema(db),
+      onOpen: _ensureSchema,
     );
     return _db!;
+  }
+
+  /// Adds whatever table or column is missing. Safe to run every time.
+  static Future<void> _ensureSchema(Database db) async {
+    if (!await _tableExists(db, 'categories')) await _createCategories(db);
+    await _addColumnIfMissing(db, 'categories', 'budget', 'INTEGER');
+    await _addColumnIfMissing(
+        db, 'categories', 'position', 'INTEGER NOT NULL DEFAULT 0');
+    await _addColumnIfMissing(
+        db, 'categories', 'hidden', 'INTEGER NOT NULL DEFAULT 0');
+    await _addColumnIfMissing(db, 'entries', 'photo', 'TEXT');
+    await _addColumnIfMissing(
+        db, 'entries', 'tags', "TEXT NOT NULL DEFAULT ''");
+    await _createDebtsAndGoals(db);
+    await _createRecurringAndFavorites(db);
+  }
+
+  static Future<bool> _tableExists(Database db, String table) async {
+    final rows = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+        [table]);
+    return rows.isNotEmpty;
+  }
+
+  static Future<void> _addColumnIfMissing(
+      Database db, String table, String column, String definition) async {
+    final columns = await db.rawQuery('PRAGMA table_info($table)');
+    if (columns.any((c) => c['name'] == column)) return;
+    await db.execute('ALTER TABLE $table ADD COLUMN $column $definition');
   }
 
   static Future<void> _createEntries(Database db) async {
@@ -80,7 +89,7 @@ class AppDatabase {
 
   static Future<void> _createDebtsAndGoals(Database db) async {
     await db.execute('''
-      CREATE TABLE debts (
+      CREATE TABLE IF NOT EXISTS debts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         person TEXT NOT NULL,
         type TEXT NOT NULL,
@@ -91,7 +100,7 @@ class AppDatabase {
       )
     ''');
     await db.execute('''
-      CREATE TABLE goals (
+      CREATE TABLE IF NOT EXISTS goals (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         target_minor INTEGER NOT NULL,
@@ -103,7 +112,7 @@ class AppDatabase {
 
   static Future<void> _createRecurringAndFavorites(Database db) async {
     await db.execute('''
-      CREATE TABLE recurring (
+      CREATE TABLE IF NOT EXISTS recurring (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         type TEXT NOT NULL,
         amount_minor INTEGER NOT NULL,
@@ -118,7 +127,7 @@ class AppDatabase {
       )
     ''');
     await db.execute('''
-      CREATE TABLE favorites (
+      CREATE TABLE IF NOT EXISTS favorites (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         type TEXT NOT NULL,
         amount_minor INTEGER NOT NULL,
