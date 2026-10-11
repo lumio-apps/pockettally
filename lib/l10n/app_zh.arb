@@ -249,5 +249,7 @@
   "pdfExpensesByCategory": "按类别的支出",
   "pdfAllEntries": "所有记录（{count}）",
   "pdfNoEntries": "此期间没有记录。",
-  "pdfFooter": "由 PocketTally 生成。所有数据都保存在你的设备上。"
+  "pdfFooter": "由 PocketTally 生成。所有数据都保存在你的设备上。",
+  "offlineTitle": "100% 离线",
+  "offlineBody": "你的数据只保存在本设备上。"
 }

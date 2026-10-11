@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0
+
+- PocketTally for Windows and Linux (same features and data format as on phones)
+- Windows: installer (per user, no admin rights) and a portable zip
+- Linux: AppImage (one file, updates itself) and a tar.gz
+- Wide windows get a sidebar with every page: Home, Insights, Budgets, Savings goals, Lend & Borrow, Categories and Settings
+- Quick add panel next to Home on large screens
+- Keyboard: Ctrl+N new entry, Ctrl+F search, type amounts with the number keys, Enter to save
+- "Check for updates" on desktop downloads the new installer or AppImage and restarts the app
+- Move your data between phone and computer with Back up / Restore
+- Fix: PDF report test failed when month names were not loaded yet
+
 ## 0.6.5
 
 - 13 languages: English, Hindi, Armenian, Chinese, Spanish, Arabic, French, Bengali, Portuguese, Russian, Urdu, Indonesian and Japanese

@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 
 import 'app_state.dart';
 import 'backup.dart';
+import 'utils/save_file.dart';
 
 /// Saves and opens backup files through the system file dialog.
 /// No storage permission is needed and nothing is uploaded.
@@ -16,12 +17,11 @@ class BackupService {
         '${now.day.toString().padLeft(2, '0')}';
     final bytes =
         Uint8List.fromList(utf8.encode(state.createBackup().toJsonString()));
-    final path = await FilePicker.platform.saveFile(
+    return saveBytesAs(
       dialogTitle: dialogTitle,
       fileName: 'pockettally-backup-$stamp.json',
       bytes: bytes,
     );
-    return path != null;
   }
 
   /// Lets the user pick a backup file and parses it.

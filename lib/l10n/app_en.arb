@@ -531,5 +531,7 @@
     }
   },
   "pdfNoEntries": "No entries in this period.",
-  "pdfFooter": "Made with PocketTally. All data stays on your device."
+  "pdfFooter": "Made with PocketTally. All data stays on your device.",
+  "offlineTitle": "100% offline",
+  "offlineBody": "Your data stays on this device."
 }

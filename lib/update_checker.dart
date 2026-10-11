@@ -14,21 +14,31 @@ const bool kUpdaterEnabled = bool.fromEnvironment('UPDATER', defaultValue: true)
 const String kGithubOwner = 'lumio-apps';
 const String kGithubRepo = 'pockettally';
 
+/// File name endings of the release files, per platform (lower case).
+const String kWindowsSetupSuffix = '-windows-setup.exe';
+const String kLinuxAppImageSuffix = '-linux-x86_64.appimage';
+
 class UpdateInfo {
   UpdateInfo({
     required this.version,
     required this.notes,
-    required this.apkUrl,
+    required this.downloadUrl,
+    required this.pageUrl,
   });
 
   final String version;
   final String notes;
-  final String apkUrl;
+
+  /// The file for this device: APK, Windows installer or Linux AppImage.
+  final String downloadUrl;
+
+  /// The release page on GitHub.
+  final String pageUrl;
 }
 
 class UpdateChecker {
-  /// Returns the newest release if it is newer than the installed app,
-  /// or null when the app is up to date.
+  /// Returns the newest release if it is newer than the installed app and
+  /// has a file for this device, or null when the app is up to date.
   static Future<UpdateInfo?> check() async {
     final info = await PackageInfo.fromPlatform();
     final uri = Uri.https(
@@ -44,38 +54,94 @@ class UpdateChecker {
 
     final json = jsonDecode(res.body) as Map<String, dynamic>;
     final tag = (json['tag_name'] as String? ?? '').replaceFirst('v', '');
-    if (!_isNewer(tag, info.version)) return null;
+    if (!isNewer(tag, info.version)) return null;
 
-    final assets = (json['assets'] as List<dynamic>? ?? [])
-        .cast<Map<String, dynamic>>();
-    final url = pickApkUrl(
-      {
-        for (final a in assets)
-          (a['name'] as String): (a['browser_download_url'] as String),
-      },
-      deviceAbi(),
-    );
+    final assets = {
+      for (final a in (json['assets'] as List<dynamic>? ?? [])
+          .cast<Map<String, dynamic>>())
+        (a['name'] as String): (a['browser_download_url'] as String),
+    };
+    final String? url;
+    if (Platform.isWindows) {
+      url = pickDesktopUrl(assets, kWindowsSetupSuffix);
+    } else if (Platform.isLinux) {
+      url = pickDesktopUrl(assets, kLinuxAppImageSuffix);
+    } else {
+      url = pickApkUrl(assets, deviceAbi());
+    }
     if (url == null) return null;
 
     return UpdateInfo(
       version: tag,
       notes: (json['body'] as String?)?.trim() ?? '',
-      apkUrl: url,
+      downloadUrl: url,
+      pageUrl: json['html_url'] as String? ??
+          'https://github.com/$kGithubOwner/$kGithubRepo/releases/latest',
     );
   }
 
-  /// Downloads the APK (reporting progress 0..1) and opens the installer.
+  /// Downloads the update (reporting progress 0..1) and installs it:
+  /// - Android: opens the APK installer.
+  /// - Windows: starts the setup and closes the app; the setup replaces
+  ///   the app and opens it again.
+  /// - Linux AppImage: replaces the AppImage file and restarts it. Other
+  ///   Linux installs (tar.gz) open the release page instead.
   static Future<void> downloadAndInstall(
     UpdateInfo update,
     void Function(double progress) onProgress,
   ) async {
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/pockettally-${update.version}.apk');
+    if (Platform.isLinux && Platform.environment['APPIMAGE'] == null) {
+      await Process.start('xdg-open', [update.pageUrl],
+          mode: ProcessStartMode.detached);
+      return;
+    }
 
+    final dir = await getTemporaryDirectory();
+    final name = Platform.isWindows
+        ? 'pockettally-${update.version}-setup.exe'
+        : Platform.isLinux
+            ? 'pockettally-${update.version}.AppImage'
+            : 'pockettally-${update.version}.apk';
+    final file = File('${dir.path}${Platform.pathSeparator}$name');
+    await _download(update.downloadUrl, file, onProgress);
+
+    if (Platform.isWindows) {
+      await Process.start(
+        file.path,
+        ['/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART'],
+        mode: ProcessStartMode.detached,
+      );
+      exit(0);
+    }
+
+    if (Platform.isLinux) {
+      final current = Platform.environment['APPIMAGE']!;
+      // Copy next to the running AppImage first, then swap in one step.
+      final next = '$current.new';
+      await file.copy(next);
+      await Process.run('chmod', ['+x', next]);
+      await File(next).rename(current);
+      await Process.start(current, [], mode: ProcessStartMode.detached);
+      exit(0);
+    }
+
+    final result = await OpenFilex.open(
+      file.path,
+      type: 'application/vnd.android.package-archive',
+    );
+    if (result.type != ResultType.done) {
+      throw Exception(result.message);
+    }
+  }
+
+  static Future<void> _download(
+    String url,
+    File file,
+    void Function(double progress) onProgress,
+  ) async {
     final client = http.Client();
     try {
-      final req = http.Request('GET', Uri.parse(update.apkUrl));
-      final res = await client.send(req);
+      final res = await client.send(http.Request('GET', Uri.parse(url)));
       if (res.statusCode != 200) {
         throw HttpException('Download failed (${res.statusCode})');
       }
@@ -91,14 +157,6 @@ class UpdateChecker {
     } finally {
       client.close();
     }
-
-    final result = await OpenFilex.open(
-      file.path,
-      type: 'application/vnd.android.package-archive',
-    );
-    if (result.type != ResultType.done) {
-      throw Exception(result.message);
-    }
   }
 
   /// The Android ABI this app runs as, matching the split APK names:
@@ -108,6 +166,15 @@ class UpdateChecker {
     if (abi == Abi.androidArm64) return 'arm64-v8a';
     if (abi == Abi.androidArm) return 'armeabi-v7a';
     if (abi == Abi.androidX64) return 'x86_64';
+    return null;
+  }
+
+  /// The release file whose name ends with [suffix] (any letter case),
+  /// e.g. "pockettally-v0.7.0-windows-setup.exe".
+  static String? pickDesktopUrl(Map<String, String> assets, String suffix) {
+    for (final e in assets.entries) {
+      if (e.key.toLowerCase().endsWith(suffix)) return e.value;
+    }
     return null;
   }
 
@@ -137,7 +204,8 @@ class UpdateChecker {
     return null;
   }
 
-  static bool _isNewer(String remote, String local) {
+  /// True when version [remote] (e.g. "0.7.0") is newer than [local].
+  static bool isNewer(String remote, String local) {
     final r = _parts(remote);
     final l = _parts(local);
     for (var i = 0; i < 3; i++) {

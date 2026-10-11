@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../app_state.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../photo_store.dart';
+import '../platform.dart';
 import '../theme.dart';
 import '../utils/amount_parser.dart' show isCalculation;
 import '../widgets/entry_tile.dart'
@@ -14,17 +16,24 @@ import 'photo_view_screen.dart';
 
 /// Add a new entry, or edit an existing one when [entry] is given.
 /// The amount is typed on the app's own keypad, which also calculates.
+/// On a computer the keyboard works too: digits, + - * /, Backspace and
+/// Enter to save.
 class EntryFormScreen extends StatefulWidget {
   const EntryFormScreen({
     super.key,
     required this.state,
     this.entry,
     this.initialType = EntryType.expense,
+    this.embedded = false,
   });
 
   final AppState state;
   final Entry? entry;
   final EntryType initialType;
+
+  /// Shown as the "quick add" panel next to Home on wide windows: it stays
+  /// open and clears itself after saving instead of closing.
+  final bool embedded;
 
   @override
   State<EntryFormScreen> createState() => _EntryFormScreenState();
@@ -64,12 +73,55 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       _input = widget.state.amountInput(e.amountMinor);
     }
     _noteController = TextEditingController(text: e?.note ?? '');
+    if (widget.embedded) widget.state.addListener(_onStateChanged);
+  }
+
+  final FocusNode _keysFocus = FocusNode(debugLabel: 'amount keys');
+
+  void _onStateChanged() {
+    // The panel stays open, so it follows category changes made elsewhere.
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    if (widget.embedded) widget.state.removeListener(_onStateChanged);
+    _keysFocus.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  /// Typing on a hardware keyboard. Keys typed into a text field (the
+  /// note) are left alone.
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final focused = FocusManager.instance.primaryFocus?.context;
+    if (focused != null &&
+        focused.findAncestorWidgetOfExactType<EditableText>() != null) {
+      return KeyEventResult.ignored;
+    }
+    final keyboard = HardwareKeyboard.instance;
+    if (keyboard.isControlPressed ||
+        keyboard.isAltPressed ||
+        keyboard.isMetaPressed) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.backspace) {
+      _press('⌫');
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter) {
+      _save();
+      return KeyEventResult.handled;
+    }
+    final mapped = keypadKeyFor(event.character);
+    if (mapped == null) return KeyEventResult.ignored;
+    _press(mapped);
+    return KeyEventResult.handled;
   }
 
   // ---- keypad ----
@@ -127,7 +179,10 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
 
   Future<void> _addPhoto() async {
     final l = context.l10n;
-    final camera = await showModalBottomSheet<bool>(
+    // Desktop has no camera: go straight to the file dialog.
+    final camera = isDesktop
+        ? false
+        : await showModalBottomSheet<bool>(
       context: context,
       builder: (ctx) => SafeArea(
         child: Column(
@@ -206,7 +261,19 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       await widget.state.addEntry(entry);
     }
     final warning = widget.state.budgetWarningFor(entry, l);
-    if (mounted) Navigator.of(context).pop();
+    if (widget.embedded) {
+      // Ready for the next entry; type, category and date stay.
+      if (mounted) {
+        setState(() {
+          _input = '';
+          _photo = null;
+          _noteController.clear();
+        });
+        _keysFocus.requestFocus();
+      }
+    } else if (mounted) {
+      Navigator.of(context).pop();
+    }
     if (warning != null) {
       messenger.showSnackBar(SnackBar(
         content: Row(
@@ -238,8 +305,15 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
         isCalculation(_input) ? widget.state.parseMinor(_input) : null;
     final photoFile = _photo == null ? null : PhotoStore.file(_photo!);
 
-    return Scaffold(
+    return Focus(
+      focusNode: _keysFocus,
+      autofocus: true,
+      onKeyEvent: _onKey,
+      child: Scaffold(
+      backgroundColor: widget.embedded ? theme.colorScheme.surface : null,
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.embedded,
+        backgroundColor: widget.embedded ? theme.colorScheme.surface : null,
         title: Text(_isEditing ? l.editEntry : l.newEntry),
         actions: [
           if (_isEditing)
@@ -448,8 +522,32 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
           ],
         ),
       ),
+      ),
     );
   }
+}
+
+/// Keypad key for a typed character, or null if it is not one.
+/// "x" and "*" multiply, "/" divides, "," and "." are the decimal point.
+String? keypadKeyFor(String? character) {
+  if (character == null || character.length != 1) return null;
+  if ('0123456789'.contains(character)) return character;
+  switch (character) {
+    case '.':
+    case ',':
+      return '.';
+    case '+':
+      return '+';
+    case '-':
+      return '-';
+    case '*':
+    case 'x':
+    case 'X':
+      return '×';
+    case '/':
+      return '÷';
+  }
+  return null;
 }
 
 class _Keypad extends StatelessWidget {

@@ -2,16 +2,17 @@ import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
-/// Bill photos are copied into the app's private folder, so they stay on
-/// the phone and disappear when the app is uninstalled.
+import 'platform.dart';
+
+/// Bill photos are copied into the app's own folder, so they stay on the
+/// device (on desktop: the per-user app data folder).
 class PhotoStore {
   static String? _dirPath;
 
   /// Call once at start-up.
   static Future<void> init() async {
-    final base = await getApplicationDocumentsDirectory();
+    final base = await appDataDirectory();
     final dir = Directory(p.join(base.path, 'receipts'));
     if (!await dir.exists()) await dir.create(recursive: true);
     _dirPath = dir.path;
@@ -21,11 +22,12 @@ class PhotoStore {
   static File? file(String name) =>
       _dirPath == null ? null : File(p.join(_dirPath!, name));
 
-  /// Opens the camera or gallery and stores the chosen photo.
+  /// Opens the camera or gallery (a file dialog on desktop) and stores the
+  /// chosen photo.
   /// Returns the stored file name, or null if the user cancelled.
   static Future<String?> pick({required bool camera}) async {
     final picked = await ImagePicker().pickImage(
-      source: camera ? ImageSource.camera : ImageSource.gallery,
+      source: camera && !isDesktop ? ImageSource.camera : ImageSource.gallery,
       maxWidth: 1600,
       imageQuality: 80,
     );

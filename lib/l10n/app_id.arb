@@ -249,5 +249,7 @@
   "pdfExpensesByCategory": "Pengeluaran per kategori",
   "pdfAllEntries": "Semua catatan ({count})",
   "pdfNoEntries": "Tidak ada catatan pada periode ini.",
-  "pdfFooter": "Dibuat dengan PocketTally. Semua data tetap di perangkat Anda."
+  "pdfFooter": "Dibuat dengan PocketTally. Semua data tetap di perangkat Anda.",
+  "offlineTitle": "100% offline",
+  "offlineBody": "Data Anda tetap di perangkat ini."
 }

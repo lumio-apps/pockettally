@@ -249,5 +249,7 @@
   "pdfExpensesByCategory": "Dépenses par catégorie",
   "pdfAllEntries": "Toutes les opérations ({count})",
   "pdfNoEntries": "Aucune opération sur cette période.",
-  "pdfFooter": "Créé avec PocketTally. Toutes les données restent sur votre appareil."
+  "pdfFooter": "Créé avec PocketTally. Toutes les données restent sur votre appareil.",
+  "offlineTitle": "100 % hors ligne",
+  "offlineBody": "Vos données restent sur cet appareil."
 }

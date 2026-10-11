@@ -249,5 +249,7 @@
   "pdfExpensesByCategory": "カテゴリ別の支出",
   "pdfAllEntries": "すべての記録（{count}）",
   "pdfNoEntries": "この期間の記録はありません。",
-  "pdfFooter": "PocketTally で作成。データはすべてお使いのデバイスに保存されています。"
+  "pdfFooter": "PocketTally で作成。データはすべてお使いのデバイスに保存されています。",
+  "offlineTitle": "100% オフライン",
+  "offlineBody": "データはこのデバイスにだけ保存されます。"
 }

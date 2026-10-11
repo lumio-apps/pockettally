@@ -249,5 +249,7 @@
   "pdfExpensesByCategory": "Despesas por categoria",
   "pdfAllEntries": "Todos os lançamentos ({count})",
   "pdfNoEntries": "Nenhum lançamento neste período.",
-  "pdfFooter": "Feito com o PocketTally. Todos os dados ficam no seu dispositivo."
+  "pdfFooter": "Feito com o PocketTally. Todos os dados ficam no seu dispositivo.",
+  "offlineTitle": "100% offline",
+  "offlineBody": "Seus dados ficam neste dispositivo."
 }

@@ -249,5 +249,7 @@
   "pdfExpensesByCategory": "زمرے کے لحاظ سے اخراجات",
   "pdfAllEntries": "تمام اندراجات ({count})",
   "pdfNoEntries": "اس مدت میں کوئی اندراج نہیں۔",
-  "pdfFooter": "PocketTally سے بنایا گیا۔ تمام ڈیٹا آپ کی ڈیوائس پر ہی رہتا ہے۔"
+  "pdfFooter": "PocketTally سے بنایا گیا۔ تمام ڈیٹا آپ کی ڈیوائس پر ہی رہتا ہے۔",
+  "offlineTitle": "100% آف لائن",
+  "offlineBody": "آپ کا ڈیٹا اسی ڈیوائس پر رہتا ہے۔"
 }

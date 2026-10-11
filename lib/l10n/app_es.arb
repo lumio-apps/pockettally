@@ -249,5 +249,7 @@
   "pdfExpensesByCategory": "Gastos por categoría",
   "pdfAllEntries": "Todos los movimientos ({count})",
   "pdfNoEntries": "No hay movimientos en este periodo.",
-  "pdfFooter": "Hecho con PocketTally. Todos los datos se quedan en tu dispositivo."
+  "pdfFooter": "Hecho con PocketTally. Todos los datos se quedan en tu dispositivo.",
+  "offlineTitle": "100 % sin conexión",
+  "offlineBody": "Tus datos se quedan en este dispositivo."
 }

@@ -249,5 +249,7 @@
   "pdfExpensesByCategory": "المصروفات حسب الفئة",
   "pdfAllEntries": "كل القيود ({count})",
   "pdfNoEntries": "لا توجد قيود في هذه الفترة.",
-  "pdfFooter": "صُنع باستخدام PocketTally. كل البيانات تبقى على جهازك."
+  "pdfFooter": "صُنع باستخدام PocketTally. كل البيانات تبقى على جهازك.",
+  "offlineTitle": "بدون إنترنت 100%",
+  "offlineBody": "تبقى بياناتك على هذا الجهاز."
 }

@@ -1,4 +1,4 @@
-name: Build APK
+name: Build and release
 
 on:
   push:
@@ -103,3 +103,123 @@ jobs:
             pockettally-*-arm64-v8a.apk
             pockettally-*-armeabi-v7a.apk
             pockettally-*-x86_64.apk
+
+  # ---------------- Windows: installer + portable zip ----------------
+  windows:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate Windows project
+        run: flutter create --org com.lumio --project-name pockettally --platforms windows .
+
+      - name: Window title and file details
+        run: python tool/prepare_desktop.py windows
+
+      - run: flutter pub get
+
+      - name: App icon
+        run: dart run flutter_launcher_icons -f tool/windows/launcher_icons.yaml
+
+      - run: flutter build windows --release
+
+      - name: Package installer and zip
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart('v')
+          if ($version -notmatch '^\d+\.\d+\.\d+') { $version = "0.0.0" }
+          $release = "$pwd\build\windows\x64\runner\Release"
+          Compress-Archive -Path "$release\*" -DestinationPath "pockettally-$tag-windows.zip"
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+          }
+          & $iscc "/DAppVersion=$version" "/DSourceDir=$release" "/DOutputName=pockettally-$tag-windows-setup" "/O$pwd" tool\windows\installer.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pockettally-windows
+          path: |
+            pockettally-*-windows-setup.exe
+            pockettally-*-windows.zip
+
+      - name: Add to the GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            pockettally-*-windows-setup.exe
+            pockettally-*-windows.zip
+
+  # ---------------- Linux: AppImage + tar.gz ----------------
+  linux:
+    needs: build
+    # The oldest supported runner, so the AppImage also runs on older Linux.
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libstdc++-12-dev file
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate Linux project
+        run: flutter create --org com.lumio --project-name pockettally --platforms linux .
+
+      - name: Window title
+        run: python3 tool/prepare_desktop.py linux
+
+      - run: flutter pub get
+
+      - run: flutter build linux --release
+
+      - name: Package AppImage and tar.gz
+        run: |
+          TAG="${{ github.ref_name }}"
+          BUNDLE=build/linux/x64/release/bundle
+
+          # tar.gz: unpack anywhere and run ./pockettally/pockettally
+          cp -r "$BUNDLE" pockettally
+          tar -czf "pockettally-$TAG-linux-x86_64.tar.gz" pockettally
+
+          # AppImage: one file, double-click to run, updates itself.
+          mkdir -p AppDir/usr/bin
+          cp -r "$BUNDLE"/. AppDir/usr/bin/
+          cp tool/linux/AppRun AppDir/AppRun
+          chmod +x AppDir/AppRun
+          cp tool/linux/pockettally.desktop AppDir/pockettally.desktop
+          cp assets/icon/icon.png AppDir/pockettally.png
+          wget -q https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage --appimage-extract-and-run \
+            AppDir "pockettally-$TAG-linux-x86_64.AppImage"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pockettally-linux
+          path: |
+            pockettally-*-linux-x86_64.AppImage
+            pockettally-*-linux-x86_64.tar.gz
+
+      - name: Add to the GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            pockettally-*-linux-x86_64.AppImage
+            pockettally-*-linux-x86_64.tar.gz

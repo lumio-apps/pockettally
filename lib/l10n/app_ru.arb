@@ -249,5 +249,7 @@
   "pdfExpensesByCategory": "Расходы по категориям",
   "pdfAllEntries": "Все записи ({count})",
   "pdfNoEntries": "За этот период записей нет.",
-  "pdfFooter": "Создано в PocketTally. Все данные остаются на вашем устройстве."
+  "pdfFooter": "Создано в PocketTally. Все данные остаются на вашем устройстве.",
+  "offlineTitle": "100% офлайн",
+  "offlineBody": "Ваши данные остаются на этом устройстве."
 }

@@ -5,7 +5,7 @@
 <h1 align="center">PocketTally</h1>
 
 <p align="center">
-  A simple, offline daily income and expense tracker for Android.<br>
+  A simple, offline daily income and expense tracker for Android, Windows and Linux.<br>
   Part of the Lumio Apps family. No account, no ads, no tracking.
 </p>
 
@@ -33,6 +33,27 @@
 - In-app "Check for updates" that downloads new releases from GitHub
 
 ## Download
+
+### Windows
+
+From [Releases](https://github.com/lumio-apps/pockettally/releases) take
+`…-windows-setup.exe` (installs for your user, no admin rights) or
+`…-windows.zip` (portable, unzip and run `pockettally.exe`).
+Windows may show "Windows protected your PC" because the app is not signed
+with a paid certificate: click **More info → Run anyway**.
+
+### Linux
+
+Take `…-linux-x86_64.AppImage`, make it executable
+(`chmod +x pockettally-*.AppImage`) and run it. It updates itself from
+Settings › Check for updates. A `…-linux-x86_64.tar.gz` is there too.
+
+Data on a computer is stored in your user's app data folder
+(`%APPDATA%\Lumio Apps\PocketTally` on Windows,
+`~/.local/share/com.lumio.pockettally` on Linux). Use Back up / Restore to
+move it between a phone and a computer.
+
+### Android
 
 Get the latest APK from [Releases](https://github.com/lumio-apps/pockettally/releases):
 
