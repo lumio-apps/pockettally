@@ -15,9 +15,8 @@ import 'categories_screen.dart';
 import 'photo_view_screen.dart';
 
 /// Add a new entry, or edit an existing one when [entry] is given.
-/// The amount is typed on the app's own keypad, which also calculates.
-/// On a computer the keyboard works too: digits, + - * /, Backspace and
-/// Enter to save.
+/// The amount is typed with the device's own keyboard (phone keyboard or
+/// computer keyboard). Simple math like 120+45 also works. Enter saves.
 class EntryFormScreen extends StatefulWidget {
   const EntryFormScreen({
     super.key,
@@ -25,6 +24,7 @@ class EntryFormScreen extends StatefulWidget {
     this.entry,
     this.initialType = EntryType.expense,
     this.embedded = false,
+    this.initialDate,
   });
 
   final AppState state;
@@ -34,6 +34,9 @@ class EntryFormScreen extends StatefulWidget {
   /// Shown as the "quick add" panel next to Home on wide windows: it stays
   /// open and clears itself after saving instead of closing.
   final bool embedded;
+
+  /// Date for a new entry (default today), e.g. from the calendar.
+  final DateTime? initialDate;
 
   @override
   State<EntryFormScreen> createState() => _EntryFormScreenState();
@@ -50,7 +53,8 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   late String _category;
   late DateTime _date;
   IncomePeriod _period = IncomePeriod.monthly;
-  String _input = '';
+  late final TextEditingController _amountController;
+  final FocusNode _amountFocus = FocusNode(debugLabel: 'amount');
   String? _photo;
 
   bool get _isEditing => widget.entry != null;
@@ -68,20 +72,17 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     super.initState();
     final e = widget.entry;
     _type = e?.type ?? widget.initialType;
-    _date = e?.date ?? DateTime.now();
+    _date = e?.date ?? widget.initialDate ?? DateTime.now();
     _category = e?.category ?? _categories.first;
     _period = e?.period ?? IncomePeriod.monthly;
     _photo = e?.photo;
-    if (e != null) {
-      // 320.00 -> "320", 12.50 -> "12.5" (or "12,5")
-      _input = widget.state.amountInput(e.amountMinor);
-    }
+    // 320.00 -> "320", 12.50 -> "12.5" (or "12,5")
+    _amountController = TextEditingController(
+        text: e == null ? '' : widget.state.amountInput(e.amountMinor));
     _noteController = TextEditingController(text: e?.note ?? '');
     _tagsController = TextEditingController(text: e?.tags.join(', ') ?? '');
     if (widget.embedded) widget.state.addListener(_onStateChanged);
   }
-
-  final FocusNode _keysFocus = FocusNode(debugLabel: 'amount keys');
 
   void _onStateChanged() {
     // The panel stays open, so it follows category changes made elsewhere.
@@ -91,84 +92,18 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   @override
   void dispose() {
     if (widget.embedded) widget.state.removeListener(_onStateChanged);
-    _keysFocus.dispose();
+    _amountFocus.dispose();
+    _amountController.dispose();
     _noteController.dispose();
     _tagsController.dispose();
     super.dispose();
   }
 
-  /// Typing on a hardware keyboard. Keys typed into a text field (the
-  /// note) are left alone.
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-    final focused = FocusManager.instance.primaryFocus?.context;
-    if (focused != null &&
-        focused.findAncestorWidgetOfExactType<EditableText>() != null) {
-      return KeyEventResult.ignored;
-    }
-    final keyboard = HardwareKeyboard.instance;
-    if (keyboard.isControlPressed ||
-        keyboard.isAltPressed ||
-        keyboard.isMetaPressed) {
-      return KeyEventResult.ignored;
-    }
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.backspace) {
-      _press('⌫');
-      return KeyEventResult.handled;
-    }
-    if (key == LogicalKeyboardKey.enter ||
-        key == LogicalKeyboardKey.numpadEnter) {
-      _save();
-      return KeyEventResult.handled;
-    }
-    final mapped = keypadKeyFor(event.character);
-    if (mapped == null) return KeyEventResult.ignored;
-    _press(mapped);
-    return KeyEventResult.handled;
-  }
-
-  // ---- keypad ----
-
-  static const _operators = ['+', '-', '×', '÷'];
-
-  /// "." or ",", following the number format setting.
-  String get _sep => widget.state.money.decimalSeparator;
-
-  void _press(String key) {
-    setState(() {
-      if (key == '⌫') {
-        if (_input.isNotEmpty) _input = _input.substring(0, _input.length - 1);
-        return;
-      }
-      final last = _input.isEmpty ? '' : _input[_input.length - 1];
-      if (_operators.contains(key)) {
-        if (_input.isEmpty) return;
-        // Replace a trailing operator instead of stacking two.
-        if (_operators.contains(last)) {
-          _input = _input.substring(0, _input.length - 1);
-        }
-        _input += key;
-        return;
-      }
-      if (key == '.') {
-        final lastNumber = _input.split(RegExp(r'[-+×÷]')).last;
-        if (lastNumber.contains(_sep)) return;
-        if (lastNumber.isEmpty) _input += '0';
-        key = _sep;
-      }
-      if (key == '00' && _input.split(RegExp(r'[-+×÷]')).last.isEmpty) return;
-      if (_input.length >= 24) return;
-      _input += key;
-    });
-  }
-
+  /// "120+45" -> "165" when the user taps the result.
   void _applyResult() {
-    final minor = widget.state.parseMinor(_input);
+    final minor = widget.state.parseMinor(_amountController.text);
     if (minor == null) return;
-    setState(() => _input = widget.state.amountInput(minor));
+    setState(() => _amountController.text = widget.state.amountInput(minor));
   }
 
   // ---- actions ----
@@ -244,7 +179,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   Future<void> _save() async {
     final messenger = ScaffoldMessenger.of(context);
     final l = context.l10n;
-    final amount = widget.state.parseMinor(_input);
+    final amount = widget.state.parseMinor(_amountController.text);
     if (amount == null || amount <= 0) {
       messenger
         ..hideCurrentSnackBar()
@@ -275,13 +210,13 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       // Ready for the next entry; type, category and date stay.
       if (mounted) {
         setState(() {
-          _input = '';
+          _amountController.clear();
           _photo = null;
           _repeat = null;
           _noteController.clear();
           _tagsController.clear();
         });
-        _keysFocus.requestFocus();
+        _amountFocus.requestFocus();
       }
     } else if (mounted) {
       Navigator.of(context).pop();
@@ -304,7 +239,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   Future<void> _saveFavorite() async {
     final messenger = ScaffoldMessenger.of(context);
     final l = context.l10n;
-    final amount = widget.state.parseMinor(_input);
+    final amount = widget.state.parseMinor(_amountController.text);
     if (amount == null || amount <= 0) {
       messenger
         ..hideCurrentSnackBar()
@@ -362,15 +297,19 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
           ? kOtherCategory
           : categoryNames.first;
     }
-    final result =
-        isCalculation(_input) ? widget.state.parseMinor(_input) : null;
+    final result = isCalculation(_amountController.text)
+        ? widget.state.parseMinor(_amountController.text)
+        : null;
     final photoFile = _photo == null ? null : PhotoStore.file(_photo!);
 
-    return Focus(
-      focusNode: _keysFocus,
-      autofocus: true,
-      onKeyEvent: _onKey,
-      child: Scaffold(
+    final amountStyle = TextStyle(
+      fontSize: 44,
+      fontWeight: FontWeight.w800,
+      letterSpacing: -1,
+      color: amountColor,
+    );
+
+    return Scaffold(
       backgroundColor: widget.embedded ? theme.colorScheme.surface : null,
       appBar: AppBar(
         automaticallyImplyLeading: !widget.embedded,
@@ -415,17 +354,30 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                   Center(
                     child: Text(l.amount, style: theme.textTheme.bodySmall),
                   ),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      '${widget.state.currency.symbol} ${_input.isEmpty ? '0' : _input}',
-                      style: TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -1,
-                        color: amountColor,
-                      ),
+                  // Typed with the device keyboard; a new entry starts here.
+                  TextField(
+                    controller: _amountController,
+                    focusNode: _amountFocus,
+                    autofocus: !_isEditing,
+                    textAlign: TextAlign.center,
+                    keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true, signed: true),
+                    textInputAction: TextInputAction.done,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r"[0-9.,+\-*/×÷xX() ']")),
+                    ],
+                    style: amountStyle,
+                    decoration: InputDecoration(
+                      hintText: '0',
+                      hintStyle: amountStyle.copyWith(
+                          color: amountColor.withValues(alpha: 0.35)),
+                      prefixText: '${widget.state.currency.symbol} ',
+                      prefixStyle: amountStyle,
+                      border: InputBorder.none,
                     ),
+                    onChanged: (_) => setState(() {}),
+                    onSubmitted: (_) => _save(),
                   ),
                   SizedBox(
                     height: 32,
@@ -616,11 +568,6 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                 ],
               ),
             ),
-            _Keypad(
-              onKey: _press,
-              decimalKey: widget.state.money.decimals == 0 ? '00' : _sep,
-              deleteDigitLabel: l.deleteDigit,
-            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
               child: SizedBox(
@@ -637,111 +584,6 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
             ),
           ],
         ),
-      ),
-      ),
-    );
-  }
-}
-
-/// Keypad key for a typed character, or null if it is not one.
-/// "x" and "*" multiply, "/" divides, "," and "." are the decimal point.
-String? keypadKeyFor(String? character) {
-  if (character == null || character.length != 1) return null;
-  if ('0123456789'.contains(character)) return character;
-  switch (character) {
-    case '.':
-    case ',':
-      return '.';
-    case '+':
-      return '+';
-    case '-':
-      return '-';
-    case '*':
-    case 'x':
-    case 'X':
-      return '×';
-    case '/':
-      return '÷';
-  }
-  return null;
-}
-
-class _Keypad extends StatelessWidget {
-  const _Keypad({
-    required this.onKey,
-    required this.decimalKey,
-    required this.deleteDigitLabel,
-  });
-
-  final ValueChanged<String> onKey;
-
-  /// Label of the bottom-left key: "." or "," — or "00" when the
-  /// currency is shown without decimals.
-  final String decimalKey;
-
-  /// Screen reader label of the backspace key.
-  final String deleteDigitLabel;
-
-  static const _rows = [
-    ['7', '8', '9', '÷'],
-    ['4', '5', '6', '×'],
-    ['1', '2', '3', '-'],
-    ['.', '0', '⌫', '+'],
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          for (final row in _rows)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                children: [
-                  for (var i = 0; i < row.length; i++) ...[
-                    if (i > 0) const SizedBox(width: 8),
-                    Expanded(child: _key(row[i], scheme)),
-                  ],
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _key(String k, ColorScheme scheme) {
-    final isOperator = ['+', '-', '×', '÷'].contains(k);
-    final label = k == '-'
-        ? '−'
-        : k == '.'
-            ? decimalKey
-            : k;
-    final sent = k == '.' && decimalKey == '00' ? '00' : k;
-    return SizedBox(
-      height: 50,
-      child: FilledButton.tonal(
-        style: FilledButton.styleFrom(
-          padding: EdgeInsets.zero,
-          minimumSize: const Size(0, 50),
-          backgroundColor: isOperator
-              ? scheme.primaryContainer
-              : scheme.surfaceContainerHighest,
-          foregroundColor:
-              isOperator ? scheme.onPrimaryContainer : scheme.onSurface,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        ),
-        onPressed: () => onKey(sent),
-        child: k == '⌫'
-            ? Icon(Icons.backspace_outlined,
-                semanticLabel: deleteDigitLabel)
-            : Text(label,
-                style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
       ),
     );
   }

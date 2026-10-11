@@ -192,6 +192,18 @@ class AppDatabase {
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
+  /// Adds many entries in one transaction (CSV import).
+  Future<void> insertAll(List<Entry> entries) async {
+    final db = await _database;
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+      for (final e in entries) {
+        batch.insert('entries', e.toMap()..remove('id'));
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
   Future<void> update(Entry e) async {
     final db = await _database;
     await db.update('entries', e.toMap(), where: 'id = ?', whereArgs: [e.id]);

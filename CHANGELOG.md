@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.0
+
+- Highlights on Insights (month view): spending compared with last month, the top category, which category went up, average per day and how much of your income you kept
+- Calendar: see every day of a month with its spending, tap a day for its entries or to add one on that date (Home > calendar button)
+- Upcoming bills on Home: recurring entries due in the next 7 days
+- Recurring entries show what they cost (and bring in) per month
+- CSV export and import (Settings): open your entries in Excel or Google Sheets, or add entries from a spreadsheet
+
+## 0.8.1
+
+- The amount is now typed with the device's own keyboard (the app's number keypad is gone); Enter or Done saves
+- Fix: budget warnings and the restore message could show their numbers in the wrong places
+
 ## 0.8.0
 
 - Recurring entries: choose Repeat (every day, week, month or year) when adding an entry, e.g. salary or rent. Due entries are added automatically when you open the app; pause or stop them in Settings > Recurring entries

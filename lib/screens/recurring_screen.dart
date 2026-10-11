@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../app_state.dart';
+import '../insights.dart' show monthlyAmount;
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
@@ -63,12 +64,48 @@ class RecurringScreen extends StatelessWidget {
               ),
             );
           }
+          final active = rules.where((r) => !r.paused);
+          final outMonthly = active
+              .where((r) => r.type == EntryType.expense)
+              .fold<int>(0, (s, r) => s + monthlyAmount(r));
+          final inMonthly = active
+              .where((r) => r.type == EntryType.income)
+              .fold<int>(0, (s, r) => s + monthlyAmount(r));
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-            itemCount: rules.length,
+            itemCount: rules.length + 1,
             separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (context, i) {
-              final r = rules[i];
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                // What subscriptions and bills cost each month.
+                return Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l.recurringMonthlyCost(state.formatMoney(outMonthly)),
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: kExpenseColor),
+                        ),
+                        if (inMonthly > 0) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            l.recurringMonthlyIncome(
+                                state.formatMoney(inMonthly)),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: kIncomeColor),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }
+              final r = rules[index - 1];
               final income = r.type == EntryType.income;
               final name = r.note.isNotEmpty
                   ? '${categoryLabel(l, r.category)} · ${r.note}'

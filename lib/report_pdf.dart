@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui' show Locale;
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
@@ -10,6 +9,7 @@ import 'package:pdf/widgets.dart' as pw;
 
 import 'app_state.dart';
 import 'l10n/l10n.dart';
+import 'utils/save_file.dart';
 
 /// Builds a PDF report of a period and saves it where the user chooses.
 /// Made entirely on the phone, nothing is uploaded.
@@ -44,12 +44,11 @@ class ReportPdf {
     );
     String two(int n) => n.toString().padLeft(2, '0');
     final stamp = '${start.year}-${two(start.month)}-${two(start.day)}';
-    final path = await FilePicker.platform.saveFile(
+    return saveBytesAs(
       dialogTitle: l.savePdfTitle,
       fileName: 'pockettally-report-$stamp.pdf',
       bytes: bytes,
     );
-    return path != null;
   }
 
   static Future<Uint8List> build({

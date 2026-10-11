@@ -214,6 +214,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: Text(l.restoreSubtitle),
                 onTap: _busy ? null : _restore,
               ),
+              ListTile(
+                leading: const Icon(Icons.table_view_outlined),
+                title: Text(l.exportCsv),
+                subtitle: Text(l.exportCsvSubtitle),
+                onTap: _busy || state.entries.isEmpty ? null : _exportCsv,
+              ),
+              ListTile(
+                leading: const Icon(Icons.post_add_outlined),
+                title: Text(l.importCsv),
+                subtitle: Text(l.importCsvSubtitle),
+                onTap: _busy ? null : _importCsv,
+              ),
               const Divider(),
               if (kUpdaterEnabled)
                 ListTile(
@@ -383,6 +395,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     } catch (_) {
       messenger.showSnackBar(SnackBar(content: Text(l.couldNotSaveBackup)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _exportCsv() async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      final saved =
+          await BackupService.exportCsv(state, dialogTitle: l.exportCsv);
+      if (saved) {
+        messenger.showSnackBar(
+            SnackBar(content: Text(l.csvExported(state.entries.length))));
+      }
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(l.couldNotSaveFile)));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _importCsv() async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _busy = true);
+    try {
+      final result = await BackupService.pickCsv(dialogTitle: l.importCsv);
+      if (result == null || !mounted) return;
+      if (result.entries.isEmpty) {
+        messenger.showSnackBar(SnackBar(content: Text(l.csvNoEntries)));
+        return;
+      }
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(l.csvImportQuestion(result.entries.length)),
+          content: Text(result.skipped > 0
+              ? '${l.csvImportNote}\n\n${l.csvSkipped(result.skipped)}'
+              : l.csvImportNote),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: Text(l.cancel)),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(l.add)),
+          ],
+        ),
+      );
+      if (ok != true) return;
+      await state.importEntries(result.entries);
+      messenger.showSnackBar(
+          SnackBar(content: Text(l.csvImported(result.entries.length))));
+    } on FormatException {
+      messenger.showSnackBar(SnackBar(content: Text(l.csvInvalid)));
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(l.csvInvalid)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

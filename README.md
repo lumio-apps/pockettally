@@ -18,9 +18,11 @@
 - **Categories:** create your own, rename, recolor, reorder, hide or delete them
 - **Stats:** totals for any day, week, month or year, a pie chart by category and a month-by-month bar chart
 - **PDF report** of any period, made on the phone
+- **Highlights** like "You spent 12% less than last month", a **calendar** view and **upcoming bills**
+- **CSV export/import** for Excel or Google Sheets
 - **Search and filter:** by text, type, category, date range and amount
 - **Budgets:** a monthly limit and a limit per category, with warnings
-- **Calculator** in the amount field (120+45)
+- Simple math in the amount field (120+45)
 - **Recurring entries** (salary, rent…) added automatically
 - **Favorites** for one-tap entries, and **tags** like #trip
 - Android **home screen widget** and app-icon shortcuts

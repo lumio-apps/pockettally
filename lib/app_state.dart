@@ -452,6 +452,28 @@ class AppState extends ChangeNotifier {
     return entries.firstWhere((x) => x.id == id, orElse: () => e);
   }
 
+  // ---- CSV import ----
+
+  /// Adds imported entries; categories they use that do not exist yet are
+  /// created. Existing data is kept.
+  Future<void> importEntries(List<Entry> list) async {
+    var colorIndex = categories.length;
+    for (final type in EntryType.values) {
+      final names = list.where((e) => e.type == type).map((e) => e.category);
+      for (final name in names.toSet()) {
+        if (!categoryNameTaken(name, type)) {
+          await AppDatabase.instance.insertCategory(EntryCategory(
+            name: name,
+            type: type,
+            colorValue: kCategoryPalette[colorIndex++ % kCategoryPalette.length],
+          ));
+        }
+      }
+    }
+    await AppDatabase.instance.insertAll(list);
+    await load();
+  }
+
   // ---- tags ----
 
   /// Every tag used so far, most used first.

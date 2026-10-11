@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../app_state.dart';
+import '../insights.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../report_pdf.dart';
@@ -113,6 +114,77 @@ class _StatsScreenState extends State<StatsScreen> {
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
+  }
+
+  String _insightText(AppLocalizations l, Insight i) {
+    final cat = i.category == null ? '' : categoryLabel(l, i.category!);
+    final amount = state.formatMoney(i.amountMinor);
+    switch (i.kind) {
+      case InsightKind.spentLess:
+        return l.insightSpentLess(i.percent.toString());
+      case InsightKind.spentMore:
+        return l.insightSpentMore(i.percent.toString());
+      case InsightKind.topCategory:
+        return l.insightTopCategory(cat, amount, i.percent.toString());
+      case InsightKind.categoryUp:
+        return l.insightCategoryUp(cat, amount);
+      case InsightKind.dailyAverage:
+        return l.insightDailyAverage(amount);
+      case InsightKind.savedShare:
+        return l.insightSaved(i.percent.toString());
+      case InsightKind.overspent:
+        return l.insightOverspent(amount);
+    }
+  }
+
+  IconData _insightIcon(InsightKind k) {
+    switch (k) {
+      case InsightKind.spentLess:
+        return Icons.trending_down;
+      case InsightKind.spentMore:
+        return Icons.trending_up;
+      case InsightKind.topCategory:
+        return Icons.pie_chart_outline;
+      case InsightKind.categoryUp:
+        return Icons.arrow_upward;
+      case InsightKind.dailyAverage:
+        return Icons.today_outlined;
+      case InsightKind.savedShare:
+        return Icons.savings_outlined;
+      case InsightKind.overspent:
+        return Icons.warning_amber_rounded;
+    }
+  }
+
+  /// "You spent 12% less than last month" and similar, for one month.
+  Widget _highlights(ThemeData theme, AppLocalizations l, DateTime month) {
+    final list = monthInsights(state.entries, month, DateTime.now());
+    if (list.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SizedBox(height: 24),
+        Text(l.highlights, style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Column(
+              children: [
+                for (final i in list)
+                  ListTile(
+                    dense: true,
+                    leading: Icon(_insightIcon(i.kind),
+                        color: theme.colorScheme.primary),
+                    title: Text(_insightText(l, i),
+                        style: theme.textTheme.bodyMedium),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   /// Bar chart of the selected month and the five before it.
@@ -311,6 +383,7 @@ class _StatsScreenState extends State<StatsScreen> {
                 ),
               ),
               if (_period == StatsPeriod.year) _yearSection(theme, start.year),
+              if (_period == StatsPeriod.month) _highlights(theme, l, start),
               if (_period == StatsPeriod.month) _lastSixMonths(theme, start),
               const SizedBox(height: 24),
               Text(l.byCategory, style: theme.textTheme.titleMedium),

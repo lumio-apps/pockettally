@@ -130,13 +130,13 @@
   "warningCategoryOver": "{name} is over its limit ({spent} of {limit})",
   "@warningCategoryOver": {
     "placeholders": {
-      "limit": {
-        "type": "String"
-      },
       "name": {
         "type": "String"
       },
       "spent": {
+        "type": "String"
+      },
+      "limit": {
         "type": "String"
       }
     }
@@ -144,10 +144,10 @@
   "warningMonthlyOver": "Monthly budget exceeded ({spent} of {limit})",
   "@warningMonthlyOver": {
     "placeholders": {
-      "limit": {
+      "spent": {
         "type": "String"
       },
-      "spent": {
+      "limit": {
         "type": "String"
       }
     }
@@ -435,10 +435,10 @@
   "restoreDetails": "Entries in the backup: {backupEntries}\nCategories in the backup: {backupCategories}\nEntries on this device now: {currentEntries}\n\nAll data on this device will be replaced. This cannot be undone.",
   "@restoreDetails": {
     "placeholders": {
-      "backupCategories": {
+      "backupEntries": {
         "type": "String"
       },
-      "backupEntries": {
+      "backupCategories": {
         "type": "String"
       },
       "currentEntries": {
@@ -585,5 +585,131 @@
     }
   },
   "addExpense": "Add expense",
-  "addIncome": "Add income"
+  "addIncome": "Add income",
+  "highlights": "Highlights",
+  "insightSpentLess": "You spent {percent}% less than last month",
+  "@insightSpentLess": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "insightSpentMore": "You spent {percent}% more than last month",
+  "@insightSpentMore": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "insightTopCategory": "Most spent on {category}: {amount} ({percent}%)",
+  "@insightTopCategory": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "insightCategoryUp": "{category} is up {amount} from last month",
+  "@insightCategoryUp": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "insightDailyAverage": "Average spending per day: {amount}",
+  "@insightDailyAverage": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "insightSaved": "You kept {percent}% of your income",
+  "@insightSaved": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "insightOverspent": "You spent {amount} more than you earned",
+  "@insightOverspent": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "calendar": "Calendar",
+  "noEntriesThisDay": "No entries on this day.",
+  "upcoming": "Upcoming",
+  "tomorrow": "Tomorrow",
+  "recurringMonthlyCost": "Repeating expenses: {amount} a month",
+  "@recurringMonthlyCost": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "recurringMonthlyIncome": "Repeating income: {amount} a month",
+  "@recurringMonthlyIncome": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "exportCsv": "Export to CSV",
+  "exportCsvSubtitle": "All entries as a spreadsheet file (Excel, Google Sheets)",
+  "importCsv": "Import from CSV",
+  "importCsvSubtitle": "Add entries from a spreadsheet file",
+  "csvExported": "{count, plural, =1{1 entry exported} other{{count} entries exported}}",
+  "@csvExported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "couldNotSaveFile": "Could not save the file.",
+  "csvNoEntries": "No entries found in this file.",
+  "csvImportQuestion": "{count, plural, =1{Add 1 entry from this file?} other{Add {count} entries from this file?}}",
+  "@csvImportQuestion": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "csvImportNote": "They are added to your data; nothing is replaced. Missing categories are created.",
+  "csvSkipped": "{count, plural, =1{1 row could not be read and is skipped.} other{{count} rows could not be read and are skipped.}}",
+  "@csvSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "csvImported": "{count, plural, =1{1 entry added} other{{count} entries added}}",
+  "@csvImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "csvInvalid": "This CSV file could not be read. It needs the columns date, type and amount."
 }

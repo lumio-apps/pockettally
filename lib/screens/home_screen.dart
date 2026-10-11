@@ -6,6 +6,7 @@ import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../widgets/entry_tile.dart';
+import 'calendar_screen.dart';
 import 'debts_screen.dart';
 import 'entry_form_screen.dart';
 import 'goals_screen.dart';
@@ -75,6 +76,13 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton.outlined(
+                      tooltip: l.calendar,
+                      icon: const Icon(Icons.calendar_month_outlined),
+                      onPressed: () =>
+                          _push(context, CalendarScreen(state: state)),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton.outlined(
                       tooltip: l.search,
                       icon: const Icon(Icons.search),
                       onPressed: () =>
@@ -128,6 +136,10 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+                if (_upcoming(state).isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  _UpcomingCard(state: state, rules: _upcoming(state)),
+                ],
                 if (state.favorites.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _FavoritesRow(state: state),
@@ -581,6 +593,88 @@ class _FavoritesRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Recurring entries due in the next 7 days, soonest first (at most 3).
+List<RecurringRule> _upcoming(AppState state) {
+  final now = DateTime.now();
+  final limit = DateTime(now.year, now.month, now.day + 8);
+  final list = state.recurring
+      .where((r) => !r.paused && r.nextDate.isBefore(limit))
+      .toList()
+    ..sort((a, b) => a.nextDate.compareTo(b.nextDate));
+  return list.take(3).toList();
+}
+
+/// "Upcoming: Rent, tomorrow" so bills are not a surprise.
+class _UpcomingCard extends StatelessWidget {
+  const _UpcomingCard({required this.state, required this.rules});
+
+  final AppState state;
+  final List<RecurringRule> rules;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.event_repeat,
+                    size: 18, color: theme.colorScheme.primary),
+                const SizedBox(width: 8),
+                Text(l.upcoming,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w800)),
+              ],
+            ),
+            const SizedBox(height: 6),
+            for (final r in rules)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        r.note.isNotEmpty
+                            ? r.note
+                            : categoryLabel(l, r.category),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      r.nextDate == tomorrow
+                          ? l.tomorrow
+                          : DateFormat.MMMEd().format(r.nextDate),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '${r.type == EntryType.income ? '+' : '-'} '
+                      '${state.formatMoney(r.amountMinor)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: r.type == EntryType.income
+                            ? kIncomeColor
+                            : kExpenseColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

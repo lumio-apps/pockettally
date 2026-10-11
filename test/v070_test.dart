@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pockettally/screens/entry_form_screen.dart' show keypadKeyFor;
 import 'package:pockettally/update_checker.dart';
 
 void main() {
@@ -35,18 +34,5 @@ void main() {
     expect(UpdateChecker.isNewer('0.7.0', '0.7.0'), isFalse);
     expect(UpdateChecker.isNewer('0.6.5', '0.7.0'), isFalse);
     expect(UpdateChecker.isNewer('1.0.0', '0.9.9+12'), isTrue);
-  });
-
-  test('hardware keyboard keys map to the keypad', () {
-    expect(keypadKeyFor('7'), '7');
-    expect(keypadKeyFor('.'), '.');
-    expect(keypadKeyFor(','), '.');
-    expect(keypadKeyFor('*'), '×');
-    expect(keypadKeyFor('x'), '×');
-    expect(keypadKeyFor('/'), '÷');
-    expect(keypadKeyFor('+'), '+');
-    expect(keypadKeyFor('-'), '-');
-    expect(keypadKeyFor('a'), isNull);
-    expect(keypadKeyFor(null), isNull);
   });
 }
