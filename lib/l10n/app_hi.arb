@@ -80,7 +80,6 @@
   "saveChanges": "बदलाव सहेजें",
   "saveIncome": "आय सहेजें",
   "saveExpense": "खर्च सहेजें",
-  "deleteDigit": "अंक मिटाएँ",
   "newCategory": "नई श्रेणी",
   "newExpenseCategory": "नई खर्च श्रेणी",
   "newIncomeCategory": "नई आय श्रेणी",
@@ -274,8 +273,6 @@
   "addedToFavorites": "पसंदीदा में जोड़ा गया",
   "favoriteAdded": "{name} जोड़ा गया",
   "removeFavoriteQuestion": "\"{name}\" को पसंदीदा से हटाएँ?",
-  "addExpense": "खर्च जोड़ें",
-  "addIncome": "आय जोड़ें",
   "highlights": "मुख्य बातें",
   "insightSpentLess": "आपने पिछले महीने से {percent}% कम खर्च किया",
   "insightSpentMore": "आपने पिछले महीने से {percent}% ज़्यादा खर्च किया",
@@ -301,5 +298,11 @@
   "csvImportNote": "ये आपके डेटा में जोड़ी जाएँगी; कुछ भी बदला नहीं जाएगा। जो श्रेणियाँ नहीं हैं वे बन जाएँगी।",
   "csvSkipped": "{count, plural, =1{1 पंक्ति पढ़ी नहीं जा सकी और छोड़ दी गई।} other{{count} पंक्तियाँ पढ़ी नहीं जा सकीं और छोड़ दी गईं।}}",
   "csvImported": "{count, plural, =1{1 एंट्री जोड़ी गई} other{{count} एंट्री जोड़ी गईं}}",
-  "csvInvalid": "यह CSV फ़ाइल पढ़ी नहीं जा सकी। इसमें date, type और amount कॉलम होने चाहिए।"
+  "csvInvalid": "यह CSV फ़ाइल पढ़ी नहीं जा सकी। इसमें date, type और amount कॉलम होने चाहिए।",
+  "profile": "प्रोफ़ाइल",
+  "profileSubtitle": "फ़ोटो, नाम और मुद्रा",
+  "changePhoto": "फ़ोटो बदलें",
+  "sectionAppearance": "दिखावट",
+  "sectionData": "डेटा",
+  "sectionAbout": "ऐप के बारे में"
 }

@@ -80,7 +80,6 @@
   "saveChanges": "変更を保存",
   "saveIncome": "収入を保存",
   "saveExpense": "支出を保存",
-  "deleteDigit": "1文字削除",
   "newCategory": "新しいカテゴリ",
   "newExpenseCategory": "新しい支出カテゴリ",
   "newIncomeCategory": "新しい収入カテゴリ",
@@ -274,8 +273,6 @@
   "addedToFavorites": "お気に入りに追加しました",
   "favoriteAdded": "{name} を追加しました",
   "removeFavoriteQuestion": "「{name}」をお気に入りから削除しますか？",
-  "addExpense": "支出を追加",
-  "addIncome": "収入を追加",
   "highlights": "ハイライト",
   "insightSpentLess": "先月より {percent}% 支出が減りました",
   "insightSpentMore": "先月より {percent}% 支出が増えました",
@@ -301,5 +298,11 @@
   "csvImportNote": "今のデータに追加されます。置き換えられるものはありません。ないカテゴリは作成されます。",
   "csvSkipped": "{count, plural, other{{count} 行を読み込めなかったため、スキップします。}}",
   "csvImported": "{count, plural, other{{count} 件の記録を追加しました}}",
-  "csvInvalid": "この CSV ファイルを読み込めませんでした。date、type、amount の列が必要です。"
+  "csvInvalid": "この CSV ファイルを読み込めませんでした。date、type、amount の列が必要です。",
+  "profile": "プロフィール",
+  "profileSubtitle": "写真、名前、通貨",
+  "changePhoto": "写真を変更",
+  "sectionAppearance": "表示",
+  "sectionData": "データ",
+  "sectionAbout": "このアプリについて"
 }

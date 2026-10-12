@@ -80,7 +80,6 @@
   "saveChanges": "تبدیلیاں محفوظ کریں",
   "saveIncome": "آمدنی محفوظ کریں",
   "saveExpense": "خرچ محفوظ کریں",
-  "deleteDigit": "ہندسہ مٹائیں",
   "newCategory": "نیا زمرہ",
   "newExpenseCategory": "خرچ کا نیا زمرہ",
   "newIncomeCategory": "آمدنی کا نیا زمرہ",
@@ -274,8 +273,6 @@
   "addedToFavorites": "پسندیدہ میں شامل ہو گیا",
   "favoriteAdded": "{name} شامل ہو گیا",
   "removeFavoriteQuestion": "\"{name}\" کو پسندیدہ سے ہٹائیں؟",
-  "addExpense": "خرچ شامل کریں",
-  "addIncome": "آمدنی شامل کریں",
   "highlights": "اہم باتیں",
   "insightSpentLess": "آپ نے پچھلے مہینے سے {percent}% کم خرچ کیا",
   "insightSpentMore": "آپ نے پچھلے مہینے سے {percent}% زیادہ خرچ کیا",
@@ -301,5 +298,11 @@
   "csvImportNote": "یہ آپ کے ڈیٹا میں شامل ہوں گے؛ کچھ بھی تبدیل نہیں ہوگا۔ جو زمرے موجود نہیں وہ بن جائیں گے۔",
   "csvSkipped": "{count, plural, =1{1 قطار پڑھی نہیں جا سکی اور چھوڑ دی گئی۔} other{{count} قطاریں پڑھی نہیں جا سکیں اور چھوڑ دی گئیں۔}}",
   "csvImported": "{count, plural, =1{1 اندراج شامل ہوا} other{{count} اندراجات شامل ہوئے}}",
-  "csvInvalid": "یہ CSV فائل پڑھی نہیں جا سکی۔ اس میں date، type اور amount کالم ہونے چاہییں۔"
+  "csvInvalid": "یہ CSV فائل پڑھی نہیں جا سکی۔ اس میں date، type اور amount کالم ہونے چاہییں۔",
+  "profile": "پروفائل",
+  "profileSubtitle": "تصویر، نام اور کرنسی",
+  "changePhoto": "تصویر بدلیں",
+  "sectionAppearance": "ظاہری شکل",
+  "sectionData": "ڈیٹا",
+  "sectionAbout": "ایپ کے بارے میں"
 }

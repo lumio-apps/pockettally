@@ -21,6 +21,7 @@ class BackupData {
     this.numberStyle,
     this.decimals,
     this.palette,
+    this.profilePhoto,
     DateTime? exportedAt,
   }) : exportedAt = exportedAt ?? DateTime.now();
 
@@ -46,6 +47,9 @@ class BackupData {
   final String? numberStyle;
   final int? decimals;
   final String? palette;
+
+  /// Profile photo (JPEG/PNG bytes), stored as base64; null if none.
+  final List<int>? profilePhoto;
   final DateTime exportedAt;
 
   String toJsonString() => const JsonEncoder.withIndent(' ').convert({
@@ -60,6 +64,8 @@ class BackupData {
           if (numberStyle != null) 'numberStyle': numberStyle,
           if (decimals != null) 'decimals': decimals,
           if (palette != null) 'palette': palette,
+          if (profilePhoto != null && profilePhoto!.isNotEmpty)
+            'profilePhoto': base64Encode(profilePhoto!),
         },
         'categories': [
           for (final c in categories)
@@ -237,12 +243,23 @@ class BackupData {
         numberStyle: settings['numberStyle'] as String?,
         decimals: settings['decimals'] as int?,
         palette: settings['palette'] as String?,
+        profilePhoto: _photo(settings['profilePhoto']),
         categories: categories,
         entries: entries,
         exportedAt: DateTime.tryParse(decoded['exportedAt'] as String? ?? ''),
       );
     } catch (_) {
       throw const FormatException('damaged');
+    }
+  }
+
+  /// A damaged photo never stops a restore: it is just left out.
+  static List<int>? _photo(Object? v) {
+    if (v is! String || v.isEmpty) return null;
+    try {
+      return base64Decode(v);
+    } on FormatException {
+      return null;
     }
   }
 

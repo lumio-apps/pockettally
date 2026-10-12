@@ -169,7 +169,6 @@
   "saveChanges": "Save changes",
   "saveIncome": "Save income",
   "saveExpense": "Save expense",
-  "deleteDigit": "Delete digit",
   "newCategory": "New category",
   "newExpenseCategory": "New expense category",
   "newIncomeCategory": "New income category",
@@ -584,8 +583,6 @@
       }
     }
   },
-  "addExpense": "Add expense",
-  "addIncome": "Add income",
   "highlights": "Highlights",
   "insightSpentLess": "You spent {percent}% less than last month",
   "@insightSpentLess": {
@@ -711,5 +708,11 @@
       }
     }
   },
-  "csvInvalid": "This CSV file could not be read. It needs the columns date, type and amount."
+  "csvInvalid": "This CSV file could not be read. It needs the columns date, type and amount.",
+  "profile": "Profile",
+  "profileSubtitle": "Photo, name and currency",
+  "changePhoto": "Change photo",
+  "sectionAppearance": "Appearance",
+  "sectionData": "Data",
+  "sectionAbout": "About"
 }

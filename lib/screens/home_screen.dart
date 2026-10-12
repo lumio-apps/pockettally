@@ -6,10 +6,12 @@ import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../widgets/entry_tile.dart';
+import '../widgets/profile_avatar.dart';
 import 'calendar_screen.dart';
 import 'debts_screen.dart';
 import 'entry_form_screen.dart';
 import 'goals_screen.dart';
+import 'profile_screen.dart';
 import 'search_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -49,32 +51,40 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundColor: BrandColors.of(context).brand,
-                      child: Text(
-                        name.isEmpty ? '?' : name[0].toUpperCase(),
-                        style: const TextStyle(
-                            color: kAccent,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 18),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_greeting(l), style: theme.textTheme.bodySmall),
-                          Text(
-                            name,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w800),
+                      child: Semantics(
+                        button: true,
+                        label: l.profile,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(28),
+                          onTap: () =>
+                              _push(context, ProfileScreen(state: state)),
+                          child: Row(
+                            children: [
+                              ProfileAvatar(state: state, radius: 22),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(_greeting(l),
+                                        style: theme.textTheme.bodySmall),
+                                    Text(
+                                      name,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.w800),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     IconButton.outlined(
                       tooltip: l.calendar,
                       icon: const Icon(Icons.calendar_month_outlined),

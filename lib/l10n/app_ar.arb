@@ -80,7 +80,6 @@
   "saveChanges": "حفظ التغييرات",
   "saveIncome": "حفظ الدخل",
   "saveExpense": "حفظ المصروف",
-  "deleteDigit": "حذف رقم",
   "newCategory": "فئة جديدة",
   "newExpenseCategory": "فئة مصروف جديدة",
   "newIncomeCategory": "فئة دخل جديدة",
@@ -274,8 +273,6 @@
   "addedToFavorites": "أُضيف إلى المفضلة",
   "favoriteAdded": "تمت إضافة {name}",
   "removeFavoriteQuestion": "إزالة «{name}» من المفضلة؟",
-  "addExpense": "إضافة مصروف",
-  "addIncome": "إضافة دخل",
   "highlights": "أبرز النقاط",
   "insightSpentLess": "أنفقت أقل بنسبة {percent}% من الشهر الماضي",
   "insightSpentMore": "أنفقت أكثر بنسبة {percent}% من الشهر الماضي",
@@ -301,5 +298,11 @@
   "csvImportNote": "ستُضاف إلى بياناتك ولن يُستبدل شيء. ستُنشأ الفئات غير الموجودة.",
   "csvSkipped": "{count, plural, =1{تعذّرت قراءة صف واحد وسيتم تخطيه.} other{تعذّرت قراءة {count} صف وسيتم تخطيها.}}",
   "csvImported": "{count, plural, =1{تمت إضافة قيد واحد} other{تمت إضافة {count} قيد}}",
-  "csvInvalid": "تعذّرت قراءة ملف CSV هذا. يجب أن يحتوي على الأعمدة date و type و amount."
+  "csvInvalid": "تعذّرت قراءة ملف CSV هذا. يجب أن يحتوي على الأعمدة date و type و amount.",
+  "profile": "الملف الشخصي",
+  "profileSubtitle": "الصورة والاسم والعملة",
+  "changePhoto": "تغيير الصورة",
+  "sectionAppearance": "المظهر",
+  "sectionData": "البيانات",
+  "sectionAbout": "حول التطبيق"
 }

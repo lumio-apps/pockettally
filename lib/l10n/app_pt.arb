@@ -80,7 +80,6 @@
   "saveChanges": "Salvar alterações",
   "saveIncome": "Salvar receita",
   "saveExpense": "Salvar despesa",
-  "deleteDigit": "Apagar dígito",
   "newCategory": "Nova categoria",
   "newExpenseCategory": "Nova categoria de despesa",
   "newIncomeCategory": "Nova categoria de receita",
@@ -274,8 +273,6 @@
   "addedToFavorites": "Adicionado aos favoritos",
   "favoriteAdded": "{name} adicionado",
   "removeFavoriteQuestion": "Remover \"{name}\" dos favoritos?",
-  "addExpense": "Adicionar despesa",
-  "addIncome": "Adicionar receita",
   "highlights": "Destaques",
   "insightSpentLess": "Você gastou {percent}% a menos que no mês passado",
   "insightSpentMore": "Você gastou {percent}% a mais que no mês passado",
@@ -301,5 +298,11 @@
   "csvImportNote": "Eles são adicionados aos seus dados; nada é substituído. Categorias que faltam são criadas.",
   "csvSkipped": "{count, plural, =1{1 linha não pôde ser lida e foi ignorada.} other{{count} linhas não puderam ser lidas e foram ignoradas.}}",
   "csvImported": "{count, plural, =1{1 lançamento adicionado} other{{count} lançamentos adicionados}}",
-  "csvInvalid": "Não foi possível ler este arquivo CSV. Ele precisa das colunas date, type e amount."
+  "csvInvalid": "Não foi possível ler este arquivo CSV. Ele precisa das colunas date, type e amount.",
+  "profile": "Perfil",
+  "profileSubtitle": "Foto, nome e moeda",
+  "changePhoto": "Alterar foto",
+  "sectionAppearance": "Aparência",
+  "sectionData": "Dados",
+  "sectionAbout": "Sobre"
 }

@@ -80,7 +80,6 @@
   "saveChanges": "পরিবর্তন সংরক্ষণ",
   "saveIncome": "আয় সংরক্ষণ",
   "saveExpense": "খরচ সংরক্ষণ",
-  "deleteDigit": "অঙ্ক মুছুন",
   "newCategory": "নতুন বিভাগ",
   "newExpenseCategory": "নতুন খরচের বিভাগ",
   "newIncomeCategory": "নতুন আয়ের বিভাগ",
@@ -274,8 +273,6 @@
   "addedToFavorites": "প্রিয়তে যোগ হয়েছে",
   "favoriteAdded": "{name} যোগ হয়েছে",
   "removeFavoriteQuestion": "\"{name}\" প্রিয় থেকে সরাবেন?",
-  "addExpense": "খরচ যোগ করুন",
-  "addIncome": "আয় যোগ করুন",
   "highlights": "মূল কথা",
   "insightSpentLess": "আপনি গত মাসের চেয়ে {percent}% কম খরচ করেছেন",
   "insightSpentMore": "আপনি গত মাসের চেয়ে {percent}% বেশি খরচ করেছেন",
@@ -301,5 +298,11 @@
   "csvImportNote": "এগুলো আপনার ডেটায় যোগ হবে; কিছুই বদলাবে না। না থাকা বিভাগগুলো তৈরি হবে।",
   "csvSkipped": "{count, plural, =1{1টি সারি পড়া যায়নি, বাদ দেওয়া হলো।} other{{count}টি সারি পড়া যায়নি, বাদ দেওয়া হলো।}}",
   "csvImported": "{count, plural, =1{1টি এন্ট্রি যোগ হয়েছে} other{{count}টি এন্ট্রি যোগ হয়েছে}}",
-  "csvInvalid": "এই CSV ফাইলটি পড়া যায়নি। এতে date, type ও amount কলাম থাকতে হবে।"
+  "csvInvalid": "এই CSV ফাইলটি পড়া যায়নি। এতে date, type ও amount কলাম থাকতে হবে।",
+  "profile": "প্রোফাইল",
+  "profileSubtitle": "ছবি, নাম ও মুদ্রা",
+  "changePhoto": "ছবি বদলান",
+  "sectionAppearance": "চেহারা",
+  "sectionData": "ডেটা",
+  "sectionAbout": "অ্যাপ সম্পর্কে"
 }

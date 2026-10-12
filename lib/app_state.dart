@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'backup.dart';
 import 'db.dart';
 import 'l10n/l10n.dart';
 import 'models.dart';
+import 'photo_store.dart';
 import 'theme.dart';
 import 'utils/money_format.dart';
 
@@ -25,6 +27,21 @@ class AppState extends ChangeNotifier {
 
   String get userName => _prefs.getString('user_name') ?? '';
   bool get onboarded => userName.isNotEmpty;
+
+  /// File name of the profile photo (see PhotoStore), or null.
+  String? get profilePhotoName => _prefs.getString('profile_photo');
+
+  /// The profile photo, or null when none is set or the file is gone.
+  File? get profilePhotoFile {
+    final name = profilePhotoName;
+    if (name == null) return null;
+    final f = PhotoStore.profileFile(name);
+    try {
+      return f != null && f.existsSync() ? f : null;
+    } catch (_) {
+      return null;
+    }
+  }
 
   Currency get currency =>
       currencyByCode(_prefs.getString('currency') ?? 'INR');
@@ -117,6 +134,21 @@ class AppState extends ChangeNotifier {
 
   Future<void> setUserName(String name) async {
     await _prefs.setString('user_name', name.trim());
+    notifyListeners();
+  }
+
+  /// Uses a photo stored by PhotoStore as the profile photo.
+  Future<void> setProfilePhoto(String name) async {
+    final old = profilePhotoName;
+    await _prefs.setString('profile_photo', name);
+    if (old != null && old != name) await PhotoStore.deleteProfile(old);
+    notifyListeners();
+  }
+
+  Future<void> removeProfilePhoto() async {
+    final old = profilePhotoName;
+    await _prefs.remove('profile_photo');
+    if (old != null) await PhotoStore.deleteProfile(old);
     notifyListeners();
   }
 
@@ -345,6 +377,7 @@ class AppState extends ChangeNotifier {
         numberStyle: numberStyleSetting.name,
         decimals: decimalsSetting,
         palette: palette.id,
+        profilePhoto: _profilePhotoBytes(),
         categories: categories,
         entries: entries,
         debts: debts,
@@ -352,6 +385,14 @@ class AppState extends ChangeNotifier {
         recurring: recurring,
         favorites: favorites,
       );
+
+  List<int>? _profilePhotoBytes() {
+    try {
+      return profilePhotoFile?.readAsBytesSync();
+    } catch (_) {
+      return null;
+    }
+  }
 
   /// Replaces all data and settings with the backup.
   Future<void> restoreBackup(BackupData b) async {
@@ -374,14 +415,34 @@ class AppState extends ChangeNotifier {
     }
     if (b.decimals != null) await _prefs.setInt('decimals', b.decimals!);
     if (b.palette != null) await _prefs.setString('palette', b.palette!);
+    // A backup without a photo keeps the photo already on this device.
+    final photo = b.profilePhoto;
+    if (photo != null && photo.isNotEmpty) {
+      try {
+        await setProfilePhoto(await PhotoStore.saveProfileBytes(photo));
+      } catch (_) {}
+    }
     await load();
   }
 
   // ---- recurring entries ----
 
+  /// The run in progress, so two calls (start-up and resume) never add
+  /// the same entries twice.
+  Future<int>? _recurringRun;
+
   /// Adds every entry that is due up to [today] and moves the rules on.
-  /// Returns how many entries were added. Safe to call often.
-  Future<int> runRecurring({DateTime? today}) async {
+  /// Returns how many entries were added. Safe to call often: a call made
+  /// while another is running waits for it instead of starting again.
+  Future<int> runRecurring({DateTime? today}) {
+    final running = _recurringRun;
+    if (running != null) return running;
+    final run = _runRecurring(today);
+    _recurringRun = run;
+    return run.whenComplete(() => _recurringRun = null);
+  }
+
+  Future<int> _runRecurring(DateTime? today) async {
     final now = today ?? DateTime.now();
     final end = DateTime(now.year, now.month, now.day);
     var added = 0;
@@ -407,6 +468,9 @@ class AppState extends ChangeNotifier {
   Future<void> addRecurringFrom(Entry e, RepeatEvery every) async {
     await AppDatabase.instance.saveRecurring(RecurringRule.fromEntry(e, every));
     recurring = await AppDatabase.instance.allRecurring();
+    // A run that started before this rule existed would not see it.
+    final running = _recurringRun;
+    if (running != null) await running;
     await runRecurring();
     notifyListeners();
   }

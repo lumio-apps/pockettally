@@ -254,26 +254,32 @@ class AppDatabase {
       await txn.update('categories', changed.toMap(),
           where: 'id = ?', whereArgs: [old.id]);
       if (old.name != changed.name) {
-        await txn.update(
-          'entries',
-          {'category': changed.name},
-          where: 'category = ? AND type = ?',
-          whereArgs: [old.name, old.type.name],
-        );
+        // Entries, repeating entries and favorites follow the rename.
+        for (final table in const ['entries', 'recurring', 'favorites']) {
+          await txn.update(
+            table,
+            {'category': changed.name},
+            where: 'category = ? AND type = ?',
+            whereArgs: [old.name, old.type.name],
+          );
+        }
       }
     });
   }
 
-  /// Deletes a category and moves its entries to "Other".
+  /// Deletes a category and moves its entries (and repeating entries and
+  /// favorites) to "Other".
   Future<void> deleteCategory(EntryCategory c) async {
     final db = await _database;
     await db.transaction((txn) async {
-      await txn.update(
-        'entries',
-        {'category': kOtherCategory},
-        where: 'category = ? AND type = ?',
-        whereArgs: [c.name, c.type.name],
-      );
+      for (final table in const ['entries', 'recurring', 'favorites']) {
+        await txn.update(
+          table,
+          {'category': kOtherCategory},
+          where: 'category = ? AND type = ?',
+          whereArgs: [c.name, c.type.name],
+        );
+      }
       await txn.delete('categories', where: 'id = ?', whereArgs: [c.id]);
     });
   }

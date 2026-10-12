@@ -80,7 +80,6 @@
   "saveChanges": "保存更改",
   "saveIncome": "保存收入",
   "saveExpense": "保存支出",
-  "deleteDigit": "删除数字",
   "newCategory": "新类别",
   "newExpenseCategory": "新支出类别",
   "newIncomeCategory": "新收入类别",
@@ -274,8 +273,6 @@
   "addedToFavorites": "已加入常用",
   "favoriteAdded": "已添加 {name}",
   "removeFavoriteQuestion": "从常用中移除“{name}”？",
-  "addExpense": "添加支出",
-  "addIncome": "添加收入",
   "highlights": "要点",
   "insightSpentLess": "你比上个月少花了 {percent}%",
   "insightSpentMore": "你比上个月多花了 {percent}%",
@@ -301,5 +298,11 @@
   "csvImportNote": "记录会添加到现有数据中，不会替换任何内容。缺少的类别会自动创建。",
   "csvSkipped": "{count, plural, other{有 {count} 行无法读取，已跳过。}}",
   "csvImported": "{count, plural, other{已添加 {count} 条记录}}",
-  "csvInvalid": "无法读取此 CSV 文件。文件需要包含 date、type 和 amount 列。"
+  "csvInvalid": "无法读取此 CSV 文件。文件需要包含 date、type 和 amount 列。",
+  "profile": "个人资料",
+  "profileSubtitle": "照片、姓名和货币",
+  "changePhoto": "更换照片",
+  "sectionAppearance": "外观",
+  "sectionData": "数据",
+  "sectionAbout": "关于"
 }

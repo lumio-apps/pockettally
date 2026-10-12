@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.3
+
+- Profile: tap your name or picture on Home to add a profile photo (camera or gallery) and change your name, currency and number format
+- Settings now holds only app settings, in three groups: Appearance, Data and About. Your profile is at the top
+- The profile photo is included in backups
+- Fix: renaming or deleting a category now also updates recurring entries and favorites
+- Fix: recurring entries could be added twice when the app was opened and resumed at the same moment
+
 ## 0.9.2
 
 - Fix: "PocketTally keeps stopping" on Android since 0.8.0. The home screen widget and the app-icon shortcuts are removed for now; they caused the crash and will come back once fixed. Your data is unchanged

@@ -80,7 +80,6 @@
   "saveChanges": "Պահպանել փոփոխությունները",
   "saveIncome": "Պահպանել եկամուտը",
   "saveExpense": "Պահպանել ծախսը",
-  "deleteDigit": "Ջնջել թվանշանը",
   "newCategory": "Նոր կատեգորիա",
   "newExpenseCategory": "Ծախսի նոր կատեգորիա",
   "newIncomeCategory": "Եկամտի նոր կատեգորիա",
@@ -274,8 +273,6 @@
   "addedToFavorites": "Ավելացվեց ընտրյալներին",
   "favoriteAdded": "{name}-ը ավելացվեց",
   "removeFavoriteQuestion": "Հեռացնե՞լ «{name}»-ը ընտրյալներից",
-  "addExpense": "Ավելացնել ծախս",
-  "addIncome": "Ավելացնել եկամուտ",
   "highlights": "Գլխավորը",
   "insightSpentLess": "Դուք ծախսել եք {percent}%-ով պակաս, քան անցյալ ամիս",
   "insightSpentMore": "Դուք ծախսել եք {percent}%-ով ավելի, քան անցյալ ամիս",
@@ -301,5 +298,11 @@
   "csvImportNote": "Դրանք կավելացվեն ձեր տվյալներին, ոչինչ չի փոխարինվի։ Բացակայող կատեգորիաները կստեղծվեն։",
   "csvSkipped": "{count, plural, =1{1 տող չհաջողվեց կարդալ, այն բաց է թողնվում։} other{{count} տող չհաջողվեց կարդալ, դրանք բաց են թողնվում։}}",
   "csvImported": "{count, plural, =1{Ավելացվեց 1 գրառում} other{Ավելացվեց {count} գրառում}}",
-  "csvInvalid": "Չհաջողվեց կարդալ այս CSV ֆայլը։ Անհրաժեշտ են date, type և amount սյունակները։"
+  "csvInvalid": "Չհաջողվեց կարդալ այս CSV ֆայլը։ Անհրաժեշտ են date, type և amount սյունակները։",
+  "profile": "Պրոֆիլ",
+  "profileSubtitle": "Լուսանկար, անուն և արժույթ",
+  "changePhoto": "Փոխել լուսանկարը",
+  "sectionAppearance": "Տեսք",
+  "sectionData": "Տվյալներ",
+  "sectionAbout": "Հավելվածի մասին"
 }

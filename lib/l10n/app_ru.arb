@@ -80,7 +80,6 @@
   "saveChanges": "Сохранить изменения",
   "saveIncome": "Сохранить доход",
   "saveExpense": "Сохранить расход",
-  "deleteDigit": "Стереть цифру",
   "newCategory": "Новая категория",
   "newExpenseCategory": "Новая категория расходов",
   "newIncomeCategory": "Новая категория доходов",
@@ -274,8 +273,6 @@
   "addedToFavorites": "Добавлено в избранное",
   "favoriteAdded": "Добавлено: {name}",
   "removeFavoriteQuestion": "Убрать «{name}» из избранного?",
-  "addExpense": "Добавить расход",
-  "addIncome": "Добавить доход",
   "highlights": "Главное",
   "insightSpentLess": "Вы потратили на {percent}% меньше, чем в прошлом месяце",
   "insightSpentMore": "Вы потратили на {percent}% больше, чем в прошлом месяце",
@@ -301,5 +298,11 @@
   "csvImportNote": "Они добавятся к вашим данным, ничего не заменится. Недостающие категории будут созданы.",
   "csvSkipped": "{count, plural, one{{count} строку не удалось прочитать, она пропущена.} few{{count} строки не удалось прочитать, они пропущены.} many{{count} строк не удалось прочитать, они пропущены.} other{{count} строки не удалось прочитать, они пропущены.}}",
   "csvImported": "{count, plural, one{Добавлена {count} запись} few{Добавлено {count} записи} many{Добавлено {count} записей} other{Добавлено {count} записи}}",
-  "csvInvalid": "Не удалось прочитать этот CSV-файл. Нужны столбцы date, type и amount."
+  "csvInvalid": "Не удалось прочитать этот CSV-файл. Нужны столбцы date, type и amount.",
+  "profile": "Профиль",
+  "profileSubtitle": "Фото, имя и валюта",
+  "changePhoto": "Сменить фото",
+  "sectionAppearance": "Оформление",
+  "sectionData": "Данные",
+  "sectionAbout": "О приложении"
 }

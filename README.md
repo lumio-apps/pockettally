@@ -31,7 +31,8 @@
 - **Backup and restore** to a file you choose, nothing is uploaded
 - Week starts on Monday or Sunday
 - Edit entries, swipe to delete with Undo
-- One app-wide currency (INR, USD, EUR, AMD and many more), changeable in Settings
+- One app-wide currency (INR, USD, EUR, AMD and many more), changeable in your Profile
+- A profile with your photo and name (tap your name on Home)
 - Number format (1,234.56, 1.234,56, 1 234,56, 1'234.56, 12,34,567.89) and decimals on or off
 - Light, dark or system theme, and five accent colors
 - In-app "Check for updates" that downloads new releases from GitHub
