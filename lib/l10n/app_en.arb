@@ -786,5 +786,19 @@
   "noBackupYet": "No backup yet",
   "includeBillPhotos": "Include bill photos",
   "includeBillPhotosHint": "Bigger backup file, but bill photos are saved too",
-  "autoBackupFailed": "The last auto backup could not be saved"
+  "autoBackupFailed": "The last auto backup could not be saved",
+  "paletteBlue": "Blue",
+  "entryTime": "Time",
+  "quickCategories": "Quick categories",
+  "privacyNote": "Your data is stored only on your device.",
+  "entries": "Entries",
+  "reports": "Reports",
+  "settings": "Settings",
+  "moreFilters": "More filters",
+  "seeAll": "See all",
+  "quickActions": "Quick actions",
+  "spendingOverview": "Spending overview",
+  "showBalance": "Show balance",
+  "hideBalance": "Hide balance",
+  "icon": "Icon"
 }

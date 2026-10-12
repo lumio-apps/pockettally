@@ -345,5 +345,19 @@
   "noBackupYet": "Ainda não há backup",
   "includeBillPhotos": "Incluir fotos de contas",
   "includeBillPhotosHint": "Arquivo maior, mas as fotos também são salvas",
-  "autoBackupFailed": "Não foi possível salvar o último backup automático"
+  "autoBackupFailed": "Não foi possível salvar o último backup automático",
+  "paletteBlue": "Azul",
+  "entryTime": "Hora",
+  "quickCategories": "Categorias rápidas",
+  "privacyNote": "Seus dados ficam só no seu dispositivo.",
+  "entries": "Registros",
+  "reports": "Relatórios",
+  "settings": "Configurações",
+  "moreFilters": "Mais filtros",
+  "seeAll": "Ver tudo",
+  "quickActions": "Ações rápidas",
+  "spendingOverview": "Visão geral dos gastos",
+  "showBalance": "Mostrar saldo",
+  "hideBalance": "Ocultar saldo",
+  "icon": "Ícone"
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_state.dart';
+import '../category_icons.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
 
@@ -99,7 +100,12 @@ class _CategoryList extends StatelessWidget {
       key: ValueKey(c.id ?? c.name),
       leading: Opacity(
         opacity: c.hidden ? 0.4 : 1,
-        child: CircleAvatar(backgroundColor: c.color, radius: 14),
+        child: CircleAvatar(
+          backgroundColor: c.color,
+          radius: 18,
+          child: Icon(categoryIcon(c.name, chosen: c.icon),
+              size: 19, color: Colors.white),
+        ),
       ),
       title: Text(
         categoryLabel(l, c.name),
@@ -179,6 +185,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   late final TextEditingController _name;
   late final TextEditingController _budget;
   late int _color;
+  late String _icon;
   String? _error;
   String? _budgetError;
 
@@ -198,6 +205,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
             : '');
     _color = widget.existing?.colorValue ??
         kCategoryPalette[widget.state.categories.length % kCategoryPalette.length];
+    _icon = widget.existing == null
+        ? 'other'
+        : categoryIconKey(widget.existing!.name, chosen: widget.existing!.icon);
   }
 
   @override
@@ -236,12 +246,14 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           name: name,
           colorValue: _color,
           budgetMinor: () => budgetMinor,
+          icon: _icon,
         ) ??
         EntryCategory(
           name: name,
           type: widget.type,
           colorValue: _color,
           budgetMinor: budgetMinor,
+          icon: _icon,
         );
     if (_isEditing) {
       await widget.state.updateCategory(widget.existing!, changed);
@@ -322,6 +334,34 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                       child: c == _color
                           ? const Icon(Icons.check, size: 18, color: Colors.white)
                           : null,
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(l.icon),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final e in kCategoryIcons.entries)
+                  InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () => setState(() => _icon = e.key),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 160),
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: e.key == _icon
+                            ? Color(_color)
+                            : Color(_color).withValues(alpha: 0.12),
+                      ),
+                      child: Icon(e.value,
+                          size: 20,
+                          color: e.key == _icon ? Colors.white : Color(_color)),
                     ),
                   ),
               ],

@@ -6,6 +6,7 @@ import '../auto_backup.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
+import 'app_page.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
 import 'debts_screen.dart';
@@ -22,9 +23,6 @@ const double kWideLayoutWidth = 900;
 /// From this width the Home screen also shows the quick add panel.
 const double kQuickAddPanelWidth = 1200;
 
-/// Pages of the app. Phones show the first three and Settings in the
-/// bottom bar; wide windows show all of them in the sidebar.
-enum AppPage { home, insights, budgets, goals, lendBorrow, categories, settings }
 
 /// The main screen: bottom bar on phones, sidebar on wide windows.
 class RootShell extends StatefulWidget {
@@ -77,18 +75,31 @@ class _RootShellState extends State<RootShell>
   /// True while the sidebar layout is shown.
   bool _wideLayout = false;
 
-  /// Used by Home: 1 = Insights, 2 = Budgets, 4 = Lend & Borrow. Phones
-  /// have no Budgets tab, so there it opens as its own screen.
-  void _openTab(int i) {
-    final p = AppPage.values[i];
-    if (!_wideLayout && p == AppPage.budgets) {
+  /// Used by Home. Pages without a tab on phones (Budgets, Lend & Borrow,
+  /// Goals…) open as their own screen there.
+  void _openTab(AppPage p) {
+    if (!_wideLayout && !_phoneTabs.contains(p)) {
       _closeMenu();
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => BudgetsScreen(state: state)));
+      final Widget screen = switch (p) {
+        AppPage.budgets => BudgetsScreen(state: state),
+        AppPage.goals => GoalsScreen(state: state),
+        AppPage.lendBorrow => DebtsScreen(state: state),
+        AppPage.categories => CategoriesScreen(state: state),
+        _ => SettingsScreen(state: state),
+      };
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
       return;
     }
     _go(p);
   }
+
+  /// The tabs of the phone layout, in bar order.
+  static const _phoneTabs = [
+    AppPage.home,
+    AppPage.entries,
+    AppPage.insights,
+    AppPage.settings,
+  ];
 
   void _add() {
     Navigator.of(context).push(MaterialPageRoute(
@@ -194,7 +205,7 @@ class _RootShellState extends State<RootShell>
 
   void _search() {
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => SearchScreen(state: state),
+      builder: (_) => EntriesScreen(state: state, searchFirst: true),
     ));
   }
 
@@ -221,13 +232,7 @@ class _RootShellState extends State<RootShell>
 
   Widget _narrow(BuildContext context) {
     final l = context.l10n;
-    // Settings live in the profile (tap the photo on Home) and Budgets
-    // open from Home or the profile.
-    const pages = [
-      AppPage.home,
-      AppPage.lendBorrow,
-      AppPage.insights,
-    ];
+    const pages = _phoneTabs;
     final index = pages.contains(_page) ? pages.indexOf(_page) : 0;
     return PopScope(
       // Back closes the + menu first.
@@ -242,8 +247,9 @@ class _RootShellState extends State<RootShell>
               index: index,
               children: [
                 HomeScreen(state: state, onOpenTab: _openTab),
-                DebtsScreen(state: state, showAddButton: false),
+                EntriesScreen(state: state),
                 StatsScreen(state: state),
+                SettingsScreen(state: state),
               ],
             ),
             _AddMenu(
@@ -254,6 +260,7 @@ class _RootShellState extends State<RootShell>
             ),
           ],
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: FloatingActionButton(
           tooltip: _menuOpen
               ? MaterialLocalizations.of(context).closeButtonTooltip
@@ -262,7 +269,7 @@ class _RootShellState extends State<RootShell>
           elevation: 4,
           backgroundColor: BrandColors.of(context).brand,
           foregroundColor: kAccent,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: const CircleBorder(),
           // + turns into x while the menu is open.
           child: RotationTransition(
             turns: Tween(begin: 0.0, end: 0.125).animate(
@@ -273,6 +280,8 @@ class _RootShellState extends State<RootShell>
         bottomNavigationBar: BottomAppBar(
           height: 72,
           padding: EdgeInsets.zero,
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 6,
           child: Row(
             children: [
               _NavItem(
@@ -283,18 +292,26 @@ class _RootShellState extends State<RootShell>
                 onTap: () => _go(AppPage.home),
               ),
               _NavItem(
-                icon: Icons.handshake_outlined,
-                selectedIcon: Icons.handshake_rounded,
-                label: l.lendBorrowShort,
+                icon: Icons.receipt_long_outlined,
+                selectedIcon: Icons.receipt_long,
+                label: l.entries,
                 selected: index == 1,
-                onTap: () => _go(AppPage.lendBorrow),
+                onTap: () => _go(AppPage.entries),
               ),
+              const SizedBox(width: 72),
               _NavItem(
-                icon: Icons.pie_chart_outline,
-                selectedIcon: Icons.pie_chart_rounded,
-                label: l.navInsights,
+                icon: Icons.bar_chart_outlined,
+                selectedIcon: Icons.bar_chart_rounded,
+                label: l.reports,
                 selected: index == 2,
                 onTap: () => _go(AppPage.insights),
+              ),
+              _NavItem(
+                icon: Icons.settings_outlined,
+                selectedIcon: Icons.settings_rounded,
+                label: l.settings,
+                selected: index == 3,
+                onTap: () => _go(AppPage.settings),
               ),
             ],
           ),
@@ -348,6 +365,7 @@ class _RootShellState extends State<RootShell>
               index: _page.index,
               children: [
                 home,
+                limit(EntriesScreen(state: state)),
                 limit(StatsScreen(state: state)),
                 limit(BudgetsScreen(state: state)),
                 limit(GoalsScreen(state: state)),
@@ -381,10 +399,16 @@ class _Sidebar extends StatelessWidget {
     final items = <(AppPage, IconData, IconData, String)>[
       (AppPage.home, Icons.home_outlined, Icons.home_rounded, l.navHome),
       (
+        AppPage.entries,
+        Icons.receipt_long_outlined,
+        Icons.receipt_long,
+        l.entries
+      ),
+      (
         AppPage.insights,
         Icons.pie_chart_outline,
         Icons.pie_chart_rounded,
-        l.navInsights
+        l.reports
       ),
       (
         AppPage.budgets,
@@ -412,9 +436,9 @@ class _Sidebar extends StatelessWidget {
       ),
       (
         AppPage.settings,
-        Icons.person_outline,
-        Icons.person_rounded,
-        l.profile
+        Icons.settings_outlined,
+        Icons.settings_rounded,
+        l.settings
       ),
     ];
 
@@ -711,13 +735,13 @@ class _AddMenu extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.45 * v)),
               ),
             ),
-            PositionedDirectional(
-              // Above the + button in the corner.
-              end: 16,
-              bottom: 88,
+            Positioned(
+              // Above the + button in the middle of the bar.
+              left: 0,
+              right: 0,
+              bottom: 44,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   for (var i = 0; i < n; i++)
                     Builder(builder: (context) {
@@ -732,10 +756,9 @@ class _AddMenu extends StatelessWidget {
                           offset: Offset(0, 18 * (1 - t)),
                           child: Transform.scale(
                             scale: 0.9 + 0.1 * t,
-                            alignment: AlignmentDirectional.centerEnd,
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 6),
-                              child: _AddMenuChip(
+                              child: _AddMenuButton(
                                 option: options[i],
                                 onTap: () => onPick(options[i]),
                               ),
@@ -750,53 +773,6 @@ class _AddMenu extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-}
-
-/// A label and a round colored icon, lined up above the + button.
-class _AddMenuChip extends StatelessWidget {
-  const _AddMenuChip({required this.option, required this.onTap});
-
-  final _AddOption option;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Material(
-            color: theme.colorScheme.surfaceContainerHigh,
-            elevation: 2,
-            borderRadius: BorderRadius.circular(10),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-              child: Text(
-                option.label,
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Material(
-            color: option.background,
-            elevation: 3,
-            shape: const CircleBorder(),
-            child: SizedBox(
-              width: 48,
-              height: 48,
-              child: Icon(option.icon, color: option.foreground),
-            ),
-          ),
-          // Lines the icons up with the middle of the + button.
-          const SizedBox(width: 4),
-        ],
-      ),
     );
   }
 }

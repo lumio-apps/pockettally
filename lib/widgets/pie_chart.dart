@@ -16,10 +16,14 @@ class PieChart extends StatelessWidget {
     required this.slices,
     this.size = 200,
     this.center,
+    this.animate = true,
   });
 
   final List<PieSlice> slices;
   final double size;
+
+  /// The ring draws itself in when it first appears.
+  final bool animate;
 
   /// Widget shown in the hole of the donut (e.g. the total).
   final Widget? center;
@@ -32,11 +36,17 @@ class PieChart extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          CustomPaint(
-            size: Size.square(size),
-            painter: _PiePainter(
-              slices,
-              Theme.of(context).colorScheme.surfaceContainerHighest,
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: animate ? 0 : 1, end: 1),
+            duration: const Duration(milliseconds: 700),
+            curve: Curves.easeOutCubic,
+            builder: (context, t, _) => CustomPaint(
+              size: Size.square(size),
+              painter: _PiePainter(
+                slices,
+                Theme.of(context).colorScheme.surfaceContainerHighest,
+                t,
+              ),
             ),
           ),
           if (center != null)
@@ -48,10 +58,13 @@ class PieChart extends StatelessWidget {
 }
 
 class _PiePainter extends CustomPainter {
-  _PiePainter(this.slices, this.emptyColor);
+  _PiePainter(this.slices, this.emptyColor, this.progress);
 
   final List<PieSlice> slices;
   final Color emptyColor;
+
+  /// 0..1, how much of the ring is drawn.
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -72,7 +85,7 @@ class _PiePainter extends CustomPainter {
     final gap = visible.length > 1 ? 0.03 : 0.0;
     var start = -math.pi / 2;
     for (final s in visible) {
-      final sweep = s.value / total * math.pi * 2;
+      final sweep = s.value / total * math.pi * 2 * progress;
       final drawn = math.max(sweep - gap, 0.005);
       canvas.drawArc(rect, start + gap / 2, drawn, false, paint..color = s.color);
       start += sweep;
@@ -81,5 +94,7 @@ class _PiePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _PiePainter old) =>
-      old.slices != slices || old.emptyColor != emptyColor;
+      old.slices != slices ||
+      old.emptyColor != emptyColor ||
+      old.progress != progress;
 }

@@ -345,5 +345,19 @@
   "noBackupYet": "Belum ada cadangan",
   "includeBillPhotos": "Sertakan foto struk",
   "includeBillPhotosHint": "File lebih besar, tetapi foto struk ikut tersimpan",
-  "autoBackupFailed": "Cadangan otomatis terakhir gagal disimpan"
+  "autoBackupFailed": "Cadangan otomatis terakhir gagal disimpan",
+  "paletteBlue": "Biru",
+  "entryTime": "Waktu",
+  "quickCategories": "Kategori cepat",
+  "privacyNote": "Data Anda hanya tersimpan di perangkat Anda.",
+  "entries": "Catatan",
+  "reports": "Laporan",
+  "settings": "Pengaturan",
+  "moreFilters": "Filter lainnya",
+  "seeAll": "Lihat semua",
+  "quickActions": "Aksi cepat",
+  "spendingOverview": "Ringkasan pengeluaran",
+  "showBalance": "Tampilkan saldo",
+  "hideBalance": "Sembunyikan saldo",
+  "icon": "Ikon"
 }

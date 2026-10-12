@@ -81,6 +81,7 @@ class BackupData {
               'budget': c.budgetMinor,
               'position': c.position,
               'hidden': c.hidden,
+              if (c.icon != null) 'icon': c.icon,
             },
         ],
         'entries': [
@@ -93,6 +94,7 @@ class BackupData {
               'note': e.note,
               'period': e.period?.name,
               if (e.tags.isNotEmpty) 'tags': e.tags,
+              if (e.minutes != null) 'time': e.minutes,
               if (e.photo != null && photos.containsKey(e.photo))
                 'photo': e.photo,
             },
@@ -177,6 +179,7 @@ class BackupData {
             budgetMinor: c['budget'] as int?,
             position: (c['position'] as int?) ?? 0,
             hidden: c['hidden'] == true,
+            icon: c['icon'] as String?,
           ),
       ];
       final entries = [
@@ -194,6 +197,7 @@ class BackupData {
               for (final t in (e['tags'] as List<dynamic>? ?? [])) t as String,
             ],
             photo: e['photo'] as String?,
+            minutes: e['time'] as int?,
           ),
       ];
       final photos = <String, List<int>>{};

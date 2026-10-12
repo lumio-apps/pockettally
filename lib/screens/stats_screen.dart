@@ -306,7 +306,7 @@ class _StatsScreenState extends State<StatsScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(l.navInsights),
+            title: Text(l.reports),
             actions: [
               IconButton(
                 tooltip: l.saveAsPdf,

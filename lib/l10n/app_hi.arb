@@ -345,5 +345,19 @@
   "noBackupYet": "अभी तक कोई बैकअप नहीं",
   "includeBillPhotos": "बिल फ़ोटो भी शामिल करें",
   "includeBillPhotosHint": "बैकअप फ़ाइल बड़ी होगी, पर बिल फ़ोटो भी बचेंगी",
-  "autoBackupFailed": "पिछला ऑटो बैकअप सेव नहीं हो सका"
+  "autoBackupFailed": "पिछला ऑटो बैकअप सेव नहीं हो सका",
+  "paletteBlue": "नीला",
+  "entryTime": "समय",
+  "quickCategories": "झटपट श्रेणियाँ",
+  "privacyNote": "आपका डेटा सिर्फ़ आपके डिवाइस पर रहता है।",
+  "entries": "एंट्री",
+  "reports": "रिपोर्ट",
+  "settings": "सेटिंग्स",
+  "moreFilters": "और फ़िल्टर",
+  "seeAll": "सब देखें",
+  "quickActions": "झटपट काम",
+  "spendingOverview": "खर्च की झलक",
+  "showBalance": "बैलेंस दिखाएँ",
+  "hideBalance": "बैलेंस छिपाएँ",
+  "icon": "आइकन"
 }

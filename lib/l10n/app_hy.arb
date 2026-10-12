@@ -345,5 +345,19 @@
   "noBackupYet": "Պահուստ դեռ չկա",
   "includeBillPhotos": "Ներառել հաշիվների լուսանկարները",
   "includeBillPhotosHint": "Ֆայլն ավելի մեծ է, բայց լուսանկարներն էլ են պահվում",
-  "autoBackupFailed": "Վերջին ավտոմատ պահուստը չհաջողվեց պահել"
+  "autoBackupFailed": "Վերջին ավտոմատ պահուստը չհաջողվեց պահել",
+  "paletteBlue": "Կապույտ",
+  "entryTime": "Ժամ",
+  "quickCategories": "Արագ կատեգորիաներ",
+  "privacyNote": "Ձեր տվյալները պահվում են միայն ձեր սարքում։",
+  "entries": "Գրառումներ",
+  "reports": "Հաշվետվություններ",
+  "settings": "Կարգավորումներ",
+  "moreFilters": "Այլ զտիչներ",
+  "seeAll": "Տեսնել բոլորը",
+  "quickActions": "Արագ գործողություններ",
+  "spendingOverview": "Ծախսերի ամփոփում",
+  "showBalance": "Ցույց տալ մնացորդը",
+  "hideBalance": "Թաքցնել մնացորդը",
+  "icon": "Պատկերակ"
 }

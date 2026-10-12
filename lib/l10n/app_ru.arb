@@ -345,5 +345,19 @@
   "noBackupYet": "Копий пока нет",
   "includeBillPhotos": "Включать фото чеков",
   "includeBillPhotosHint": "Файл больше, но фото чеков тоже сохраняются",
-  "autoBackupFailed": "Последнюю автокопию не удалось сохранить"
+  "autoBackupFailed": "Последнюю автокопию не удалось сохранить",
+  "paletteBlue": "Синий",
+  "entryTime": "Время",
+  "quickCategories": "Быстрые категории",
+  "privacyNote": "Ваши данные хранятся только на вашем устройстве.",
+  "entries": "Записи",
+  "reports": "Отчёты",
+  "settings": "Настройки",
+  "moreFilters": "Ещё фильтры",
+  "seeAll": "Все",
+  "quickActions": "Быстрые действия",
+  "spendingOverview": "Обзор расходов",
+  "showBalance": "Показать баланс",
+  "hideBalance": "Скрыть баланс",
+  "icon": "Значок"
 }

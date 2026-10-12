@@ -35,15 +35,19 @@ class EntryTile extends StatelessWidget {
     final sign = entry.isIncome ? '+' : '-';
     final categoryColor = state.colorFor(entry.category, entry.type);
     final dark = theme.brightness == Brightness.dark;
-    final letterColor = HSLColor.fromColor(categoryColor)
-        .withLightness(dark ? 0.75 : 0.28)
-        .toColor();
+    final time = entryTimeLabel(context, entry);
 
     final subtitleParts = <String>[
-      if (showDate) MaterialLocalizations.of(context).formatMediumDate(entry.date),
+      if (entry.note.isNotEmpty) entry.note,
       if (entry.isIncome && entry.period != null)
         periodIncomeLabel(l, entry.period!),
-      if (entry.note.isNotEmpty) entry.note,
+      if (showDate)
+        [
+          MaterialLocalizations.of(context).formatMediumDate(entry.date),
+          if (time != null) time,
+        ].join(', ')
+      else if (time != null)
+        time,
       if (entry.tags.isNotEmpty) entry.tags.map((t) => '#$t').join(' '),
     ];
 
@@ -66,20 +70,17 @@ class EntryTile extends StatelessWidget {
         onLongPress: () => _showActions(context),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14),
         leading: Container(
-          width: 44,
-          height: 44,
+          width: 42,
+          height: 42,
           decoration: BoxDecoration(
-            color: categoryColor.withValues(alpha: dark ? 0.28 : 0.22),
-            borderRadius: BorderRadius.circular(14),
+            color: categoryColor,
+            shape: BoxShape.circle,
           ),
           alignment: Alignment.center,
-          child: Text(
-            name.isEmpty ? '?' : name.characters.first.toUpperCase(),
-            style: TextStyle(
-              color: letterColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 17,
-            ),
+          child: Icon(
+            state.iconFor(entry.category, entry.type),
+            color: Colors.white,
+            size: 21,
           ),
         ),
         title: Row(
@@ -160,6 +161,17 @@ class EntryTile extends StatelessWidget {
       await deleteEntryWithUndo(messenger, l, state, entry);
     }
   }
+}
+
+/// "13:20" (or "1:20 PM", as the phone is set), or null for entries
+/// saved without a time.
+String? entryTimeLabel(BuildContext context, Entry entry) {
+  final m = entry.minutes;
+  if (m == null) return null;
+  return MaterialLocalizations.of(context).formatTimeOfDay(
+    TimeOfDay(hour: m ~/ 60, minute: m % 60),
+    alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
+  );
 }
 
 /// Deletes [entry] and shows "Entry deleted" with an Undo button.

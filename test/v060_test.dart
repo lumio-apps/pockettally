@@ -84,7 +84,7 @@ void main() {
     expect(state.formatMoney(150000), '¥ 1.500,00');
     expect(state.formatMoney(150000, symbol: 'JPY'), 'JPY 1.500,00');
 
-    expect(state.palette.id, 'forest');
+    expect(state.palette.id, 'blue'); // the default since 1.0.0
     await state.setPalette(paletteById('ocean'));
     expect(state.palette.name, 'Ocean');
   });

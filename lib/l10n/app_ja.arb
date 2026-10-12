@@ -345,5 +345,19 @@
   "noBackupYet": "まだバックアップはありません",
   "includeBillPhotos": "レシート写真も含める",
   "includeBillPhotosHint": "ファイルは大きくなりますが、写真も保存されます",
-  "autoBackupFailed": "前回の自動バックアップを保存できませんでした"
+  "autoBackupFailed": "前回の自動バックアップを保存できませんでした",
+  "paletteBlue": "ブルー",
+  "entryTime": "時刻",
+  "quickCategories": "よく使うカテゴリ",
+  "privacyNote": "データはこの端末にだけ保存されます。",
+  "entries": "記録",
+  "reports": "レポート",
+  "settings": "設定",
+  "moreFilters": "その他の絞り込み",
+  "seeAll": "すべて表示",
+  "quickActions": "クイック操作",
+  "spendingOverview": "支出の概要",
+  "showBalance": "残高を表示",
+  "hideBalance": "残高を隠す",
+  "icon": "アイコン"
 }

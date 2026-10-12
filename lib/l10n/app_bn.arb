@@ -345,5 +345,19 @@
   "noBackupYet": "এখনও কোনো ব্যাকআপ নেই",
   "includeBillPhotos": "বিলের ছবিও রাখুন",
   "includeBillPhotosHint": "ফাইল বড় হবে, তবে বিলের ছবিও থাকবে",
-  "autoBackupFailed": "শেষ অটো ব্যাকআপ সেভ করা যায়নি"
+  "autoBackupFailed": "শেষ অটো ব্যাকআপ সেভ করা যায়নি",
+  "paletteBlue": "নীল",
+  "entryTime": "সময়",
+  "quickCategories": "দ্রুত ক্যাটাগরি",
+  "privacyNote": "আপনার ডেটা শুধু আপনার ডিভাইসেই থাকে।",
+  "entries": "এন্ট্রি",
+  "reports": "রিপোর্ট",
+  "settings": "সেটিংস",
+  "moreFilters": "আরও ফিল্টার",
+  "seeAll": "সব দেখুন",
+  "quickActions": "দ্রুত কাজ",
+  "spendingOverview": "খরচের সারসংক্ষেপ",
+  "showBalance": "ব্যালান্স দেখান",
+  "hideBalance": "ব্যালান্স লুকান",
+  "icon": "আইকন"
 }

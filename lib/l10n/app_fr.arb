@@ -345,5 +345,19 @@
   "noBackupYet": "Pas encore de sauvegarde",
   "includeBillPhotos": "Inclure les photos de factures",
   "includeBillPhotosHint": "Fichier plus gros, mais les photos sont gardées aussi",
-  "autoBackupFailed": "La dernière sauvegarde auto n'a pas pu être enregistrée"
+  "autoBackupFailed": "La dernière sauvegarde auto n'a pas pu être enregistrée",
+  "paletteBlue": "Bleu",
+  "entryTime": "Heure",
+  "quickCategories": "Catégories rapides",
+  "privacyNote": "Vos données restent uniquement sur votre appareil.",
+  "entries": "Entrées",
+  "reports": "Rapports",
+  "settings": "Réglages",
+  "moreFilters": "Plus de filtres",
+  "seeAll": "Tout voir",
+  "quickActions": "Actions rapides",
+  "spendingOverview": "Aperçu des dépenses",
+  "showBalance": "Afficher le solde",
+  "hideBalance": "Masquer le solde",
+  "icon": "Icône"
 }

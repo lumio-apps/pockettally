@@ -345,5 +345,19 @@
   "noBackupYet": "Aún no hay copias",
   "includeBillPhotos": "Incluir fotos de facturas",
   "includeBillPhotosHint": "Archivo más grande, pero también guarda las fotos",
-  "autoBackupFailed": "No se pudo guardar la última copia automática"
+  "autoBackupFailed": "No se pudo guardar la última copia automática",
+  "paletteBlue": "Azul",
+  "entryTime": "Hora",
+  "quickCategories": "Categorías rápidas",
+  "privacyNote": "Tus datos se guardan solo en tu dispositivo.",
+  "entries": "Entradas",
+  "reports": "Informes",
+  "settings": "Ajustes",
+  "moreFilters": "Más filtros",
+  "seeAll": "Ver todo",
+  "quickActions": "Acciones rápidas",
+  "spendingOverview": "Resumen de gastos",
+  "showBalance": "Mostrar saldo",
+  "hideBalance": "Ocultar saldo",
+  "icon": "Icono"
 }

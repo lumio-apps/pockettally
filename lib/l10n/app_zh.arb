@@ -345,5 +345,19 @@
   "noBackupYet": "还没有备份",
   "includeBillPhotos": "包含账单照片",
   "includeBillPhotosHint": "备份文件更大，但账单照片也会保存",
-  "autoBackupFailed": "上次自动备份保存失败"
+  "autoBackupFailed": "上次自动备份保存失败",
+  "paletteBlue": "蓝色",
+  "entryTime": "时间",
+  "quickCategories": "常用分类",
+  "privacyNote": "你的数据只保存在本设备上。",
+  "entries": "记录",
+  "reports": "报表",
+  "settings": "设置",
+  "moreFilters": "更多筛选",
+  "seeAll": "查看全部",
+  "quickActions": "快捷操作",
+  "spendingOverview": "支出概览",
+  "showBalance": "显示余额",
+  "hideBalance": "隐藏余额",
+  "icon": "图标"
 }

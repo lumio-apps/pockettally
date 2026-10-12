@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.10 (new look, part 1)
+
+- New look in blue (the other colors are still in Settings › Accent color)
+- New bottom bar: Home, Entries, + , Reports, Settings
+- Home: balance card with an eye button to hide amounts, income and expense tiles, a spending overview donut with the budget, quick actions, and "See all"
+- Entries tab: search, All / Income / Expense chips, month by month, more filters (category, dates, amounts)
+- Entries now have a time (new entries get the current time; older ones show no time)
+- Categories have icons: chosen in the category editor, or picked from the name
+- Add entry: quick categories (the ones you use most) and a reminder that data stays on the device
+- Smooth animations: sections fade in, the balance counts up, the donut draws itself
+- Safety: the database is only extended (never rewritten), and an untouched copy from before this update is kept on the device
+
 ## 0.9.9
 
 - Auto backup (Profile › Data): a backup file every week or every day, made when you open the app. On Android it goes to Documents/PocketTally, which stays even if the app is removed (older phones: the app's folder on the phone storage). The last 5 are kept

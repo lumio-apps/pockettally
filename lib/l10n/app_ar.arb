@@ -345,5 +345,19 @@
   "noBackupYet": "لا توجد نسخة احتياطية بعد",
   "includeBillPhotos": "تضمين صور الفواتير",
   "includeBillPhotosHint": "ملف أكبر، لكن تُحفظ صور الفواتير أيضًا",
-  "autoBackupFailed": "تعذّر حفظ آخر نسخة احتياطية تلقائية"
+  "autoBackupFailed": "تعذّر حفظ آخر نسخة احتياطية تلقائية",
+  "paletteBlue": "أزرق",
+  "entryTime": "الوقت",
+  "quickCategories": "فئات سريعة",
+  "privacyNote": "تُحفظ بياناتك على جهازك فقط.",
+  "entries": "القيود",
+  "reports": "التقارير",
+  "settings": "الإعدادات",
+  "moreFilters": "مرشحات أخرى",
+  "seeAll": "عرض الكل",
+  "quickActions": "إجراءات سريعة",
+  "spendingOverview": "نظرة على الإنفاق",
+  "showBalance": "إظهار الرصيد",
+  "hideBalance": "إخفاء الرصيد",
+  "icon": "الأيقونة"
 }

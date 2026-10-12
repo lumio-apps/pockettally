@@ -20,6 +20,9 @@ class AppPalette {
     required this.brandSoft,
     required this.label,
     required this.light,
+    this.pageLight = const Color(0xFFF3F6F4),
+    this.pageDark = const Color(0xFF0B1714),
+    this.surfaceDark = const Color(0xFF13221D),
   });
 
   final String id;
@@ -36,9 +39,26 @@ class AppPalette {
 
   /// Main color in dark mode.
   final Color light;
+
+  /// Page backgrounds and the dark card color, lightly tinted.
+  final Color pageLight;
+  final Color pageDark;
+  final Color surfaceDark;
 }
 
+/// The first palette is the default for everyone who never picked one.
 const List<AppPalette> kPalettes = [
+  AppPalette(
+    id: 'blue',
+    name: 'Blue',
+    brand: Color(0xFF1565FF),
+    brandSoft: Color(0xFF3D7FFF),
+    label: Color(0xFFDCE7FF),
+    light: Color(0xFF8CB4FF),
+    pageLight: Color(0xFFF5F8FD),
+    pageDark: Color(0xFF0B1220),
+    surfaceDark: Color(0xFF141D2E),
+  ),
   AppPalette(
     id: 'forest',
     name: 'Forest',
@@ -117,9 +137,9 @@ ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
     primary: dark ? p.light : p.brand,
     onPrimary: dark ? p.brand : Colors.white,
     secondary: kAccent,
-    surface: dark ? const Color(0xFF13221D) : Colors.white,
+    surface: dark ? p.surfaceDark : Colors.white,
   );
-  final background = dark ? const Color(0xFF0B1714) : const Color(0xFFF3F6F4);
+  final background = dark ? p.pageDark : p.pageLight;
 
   return ThemeData(
     useMaterial3: true,
@@ -154,5 +174,11 @@ ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
     snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
+    // Smooth, light page changes on every platform.
+    pageTransitionsTheme: const PageTransitionsTheme(builders: {
+      TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+      TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+      TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+    }),
   );
 }

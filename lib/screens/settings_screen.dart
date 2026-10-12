@@ -19,6 +19,10 @@ import 'recurring_screen.dart';
 /// Name of a color palette in the app's language.
 String paletteName(AppLocalizations l, AppPalette p) {
   switch (p.id) {
+    case 'blue':
+      return l.paletteBlue;
+    case 'forest':
+      return l.paletteForest;
     case 'ocean':
       return l.paletteOcean;
     case 'plum':
@@ -28,7 +32,7 @@ String paletteName(AppLocalizations l, AppPalette p) {
     case 'graphite':
       return l.paletteGraphite;
     default:
-      return l.paletteForest;
+      return l.paletteBlue;
   }
 }
 
@@ -66,7 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, _) {
         final l = context.l10n;
         return Scaffold(
-          appBar: AppBar(title: Text(l.profile)),
+          appBar: AppBar(title: Text(l.settings)),
           body: ListView(
             padding: const EdgeInsets.only(bottom: 24),
             children: [

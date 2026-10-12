@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'backup.dart';
+import 'category_icons.dart';
 import 'db.dart';
 import 'l10n/l10n.dart';
 import 'models.dart';
@@ -432,6 +433,49 @@ class AppState extends ChangeNotifier {
   Future<void> setLastCategory(EntryType type, String name) =>
       _prefs.setString('last_category_${type.name}', name);
 
+  /// The category of this name and type, or null if it does not exist.
+  EntryCategory? categoryRecord(String name, EntryType type) {
+    for (final c in categories) {
+      if (c.name == name && c.type == type) return c;
+    }
+    return null;
+  }
+
+  /// The icon of a category: the one chosen for it, else one that fits
+  /// its name.
+  IconData iconFor(String categoryName, EntryType type) => categoryIcon(
+      categoryName,
+      chosen: categoryRecord(categoryName, type)?.icon);
+
+  /// The categories used most in the last 90 days, for one-tap picking.
+  /// Filled up with the user's category order when there are few entries.
+  List<String> topCategories(EntryType type, {int count = 6}) {
+    final since = DateTime.now().subtract(const Duration(days: 90));
+    final visible =
+        categoriesFor(type, includeHidden: false).map((c) => c.name).toList();
+    final uses = <String, int>{};
+    for (final e in entries) {
+      if (e.type != type || e.date.isBefore(since)) continue;
+      if (!visible.contains(e.category)) continue;
+      uses[e.category] = (uses[e.category] ?? 0) + 1;
+    }
+    final top = uses.keys.toList()
+      ..sort((a, b) => uses[b]!.compareTo(uses[a]!));
+    for (final name in visible) {
+      if (top.length >= count) break;
+      if (!top.contains(name)) top.add(name);
+    }
+    return top.take(count).toList();
+  }
+
+  /// Hide the balance on Home (the eye button), e.g. in public.
+  bool get hideBalance => _prefs.getBool('hide_balance') ?? false;
+
+  Future<void> setHideBalance(bool hide) async {
+    await _prefs.setBool('hide_balance', hide);
+    notifyListeners();
+  }
+
   Color colorFor(String categoryName, EntryType type) {
     for (final c in categories) {
       if (c.name == categoryName && c.type == type) return c.color;
@@ -723,7 +767,8 @@ class AppState extends ChangeNotifier {
 
   /// Adds the favorite as an entry for today and returns it (for Undo).
   Future<Entry> addFromFavorite(Favorite f) async {
-    final e = f.entryOn(DateTime.now());
+    final now = DateTime.now();
+    final e = f.entryOn(now, minutes: now.hour * 60 + now.minute);
     final id = await AppDatabase.instance.insert(e);
     await load();
     return entries.firstWhere((x) => x.id == id, orElse: () => e);
@@ -771,6 +816,7 @@ class AppState extends ChangeNotifier {
         period: e.period,
         photo: e.photo,
         tags: e.tags,
+        minutes: e.minutes,
       );
 
   // ---- tags ----

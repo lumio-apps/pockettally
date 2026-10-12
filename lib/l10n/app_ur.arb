@@ -345,5 +345,19 @@
   "noBackupYet": "ابھی تک کوئی بیک اپ نہیں",
   "includeBillPhotos": "بل کی تصاویر بھی شامل کریں",
   "includeBillPhotosHint": "فائل بڑی ہوگی، مگر بل کی تصاویر بھی محفوظ رہیں گی",
-  "autoBackupFailed": "پچھلا خودکار بیک اپ محفوظ نہیں ہو سکا"
+  "autoBackupFailed": "پچھلا خودکار بیک اپ محفوظ نہیں ہو سکا",
+  "paletteBlue": "نیلا",
+  "entryTime": "وقت",
+  "quickCategories": "فوری زمرے",
+  "privacyNote": "آپ کا ڈیٹا صرف آپ کی ڈیوائس پر رہتا ہے۔",
+  "entries": "اندراجات",
+  "reports": "رپورٹس",
+  "settings": "ترتیبات",
+  "moreFilters": "مزید فلٹر",
+  "seeAll": "سب دیکھیں",
+  "quickActions": "فوری کام",
+  "spendingOverview": "اخراجات کا جائزہ",
+  "showBalance": "بیلنس دکھائیں",
+  "hideBalance": "بیلنس چھپائیں",
+  "icon": "آئیکن"
 }

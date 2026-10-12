@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
@@ -13,6 +15,11 @@ import 'platform.dart';
 ///   v4 (app 0.5.0): entries.photo, debts, goals
 ///   v5 (app 0.6.0): categories.position, categories.hidden
 ///   v6 (app 0.8.0): entries.tags, recurring, favorites
+///   v7 (app 1.0.0): entries.time, categories.icon
+///
+/// Upgrades only ever ADD tables and columns; nothing is removed or
+/// rewritten, so an update never loses data. Before the first open with a
+/// new app version the file is also copied once (see [_safetyCopy]).
 class AppDatabase {
   AppDatabase._();
   static final AppDatabase instance = AppDatabase._();
@@ -32,14 +39,37 @@ class AppDatabase {
     final db = _db;
     _db = null;
     if (db != null) await db.close();
-    await deleteDatabase(await _path());
+    final path = await _path();
+    await deleteDatabase(path);
+    try {
+      final copy = File('$path.before-1.0');
+      if (await copy.exists()) await copy.delete();
+    } catch (_) {}
+  }
+
+  /// Keeps one untouched copy of the database from before app 1.0.0
+  /// ("pockettally.db.before-1.0" next to it, in the app's private
+  /// folder), in case an update ever went wrong. Made only once; never read
+  /// by the app.
+  static Future<void> _safetyCopy(String path) async {
+    try {
+      final file = File(path);
+      final copy = File('$path.before-1.0');
+      if (await file.exists() && !await copy.exists()) {
+        await file.copy(copy.path);
+      }
+    } catch (_) {
+      // A missing copy must never stop the app.
+    }
   }
 
   Future<Database> get _database async {
     if (_db != null) return _db!;
+    final path = await _path();
+    await _safetyCopy(path);
     _db = await openDatabase(
-      await _path(),
-      version: 6,
+      path,
+      version: 7,
       onCreate: (db, version) async {
         await _createEntries(db);
         await _createCategories(db);
@@ -65,6 +95,8 @@ class AppDatabase {
     await _addColumnIfMissing(db, 'entries', 'photo', 'TEXT');
     await _addColumnIfMissing(
         db, 'entries', 'tags', "TEXT NOT NULL DEFAULT ''");
+    await _addColumnIfMissing(db, 'entries', 'time', 'INTEGER');
+    await _addColumnIfMissing(db, 'categories', 'icon', 'TEXT');
     await _createDebtsAndGoals(db);
     await _createRecurringAndFavorites(db);
   }
@@ -94,7 +126,8 @@ class AppDatabase {
         note TEXT NOT NULL DEFAULT '',
         period TEXT,
         photo TEXT,
-        tags TEXT NOT NULL DEFAULT ''
+        tags TEXT NOT NULL DEFAULT '',
+        time INTEGER
       )
     ''');
     await db.execute('CREATE INDEX idx_entries_date ON entries(date)');
@@ -163,6 +196,7 @@ class AppDatabase {
         budget INTEGER,
         position INTEGER NOT NULL DEFAULT 0,
         hidden INTEGER NOT NULL DEFAULT 0,
+        icon TEXT,
         UNIQUE(name, type)
       )
     ''');
@@ -204,7 +238,8 @@ class AppDatabase {
 
   Future<List<Entry>> allEntries() async {
     final db = await _database;
-    final rows = await db.query('entries', orderBy: 'date DESC, id DESC');
+    final rows =
+        await db.query('entries', orderBy: 'date DESC, time DESC, id DESC');
     return rows.map(Entry.fromMap).toList();
   }
 
@@ -436,6 +471,7 @@ class AppDatabase {
             'budget': c.budgetMinor,
             'position': c.position,
             'hidden': c.isOther ? 0 : (c.hidden ? 1 : 0),
+            'icon': c.icon,
           },
           conflictAlgorithm: ConflictAlgorithm.ignore,
         );

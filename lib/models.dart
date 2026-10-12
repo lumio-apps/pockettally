@@ -133,12 +133,16 @@ class EntryCategory {
     this.budgetMinor,
     this.position = 0,
     this.hidden = false,
+    this.icon,
   });
 
   final int? id;
   final String name;
   final EntryType type;
   final int colorValue;
+
+  /// Icon key (see category_icons.dart); null = picked from the name.
+  final String? icon;
 
   /// Monthly spending limit in minor units (expense categories only).
   /// Null means no limit.
@@ -163,6 +167,7 @@ class EntryCategory {
     int? Function()? budgetMinor,
     int? position,
     bool? hidden,
+    String? icon,
   }) =>
       EntryCategory(
         id: id,
@@ -172,6 +177,7 @@ class EntryCategory {
         budgetMinor: budgetMinor != null ? budgetMinor() : this.budgetMinor,
         position: position ?? this.position,
         hidden: hidden ?? this.hidden,
+        icon: icon ?? this.icon,
       );
 
   Map<String, Object?> toMap() => {
@@ -182,6 +188,7 @@ class EntryCategory {
         'budget': budgetMinor,
         'position': position,
         'hidden': hidden ? 1 : 0,
+        'icon': icon,
       };
 
   static EntryCategory fromMap(Map<String, Object?> m) => EntryCategory(
@@ -192,6 +199,7 @@ class EntryCategory {
         budgetMinor: m['budget'] as int?,
         position: (m['position'] as int?) ?? 0,
         hidden: (m['hidden'] as int?) == 1,
+        icon: m['icon'] as String?,
       );
 }
 
@@ -208,6 +216,7 @@ class Entry {
     this.period,
     this.photo,
     this.tags = const [],
+    this.minutes,
   });
 
   final int? id;
@@ -216,6 +225,10 @@ class Entry {
   final String category;
   final DateTime date;
   final String note;
+
+  /// Time of day in minutes after midnight (null for entries made before
+  /// app 1.0.0, recurring entries and imports without a time).
+  final int? minutes;
 
   /// Free labels like "trip" or "office", lower case, without "#".
   final List<String> tags;
@@ -238,6 +251,7 @@ class Entry {
         'period': period?.name,
         'photo': photo,
         'tags': tags.join(','),
+        'time': minutes,
       };
 
   static Entry fromMap(Map<String, Object?> m) => Entry(
@@ -252,6 +266,7 @@ class Entry {
             : IncomePeriod.values.byName(m['period'] as String),
         photo: m['photo'] as String?,
         tags: parseTags((m['tags'] as String?) ?? ''),
+        minutes: m['time'] as int?,
       );
 }
 
@@ -409,13 +424,14 @@ class Favorite {
   final String note;
   final IncomePeriod? period;
 
-  Entry entryOn(DateTime date) => Entry(
+  Entry entryOn(DateTime date, {int? minutes}) => Entry(
         type: type,
         amountMinor: amountMinor,
         category: category,
         date: date,
         note: note,
         period: period,
+        minutes: minutes,
       );
 
   Map<String, Object?> toMap() => {

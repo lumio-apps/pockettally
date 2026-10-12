@@ -57,6 +57,9 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   late EntryType _type;
   late String _category;
   late DateTime _date;
+
+  /// Time of day in minutes; null for old entries saved without one.
+  int? _minutes;
   IncomePeriod _period = IncomePeriod.monthly;
   late final TextEditingController _amountController;
   final FocusNode _amountFocus = FocusNode(debugLabel: 'amount');
@@ -88,6 +91,10 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     _category = e?.category ?? _defaultCategory();
     _period = e?.period ?? IncomePeriod.monthly;
     _photo = widget.entry?.photo;
+    final now = DateTime.now();
+    _minutes = widget.entry != null
+        ? widget.entry!.minutes
+        : now.hour * 60 + now.minute;
     // 320.00 -> "320", 12.50 -> "12.5" (or "12,5")
     _amountController = TextEditingController(
         text: e == null ? '' : widget.state.amountInput(e.amountMinor));
@@ -119,6 +126,17 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   }
 
   // ---- actions ----
+
+  Future<void> _pickTime() async {
+    final m = _minutes ?? DateTime.now().hour * 60 + DateTime.now().minute;
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: m ~/ 60, minute: m % 60),
+    );
+    if (picked != null) {
+      setState(() => _minutes = picked.hour * 60 + picked.minute);
+    }
+  }
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -204,6 +222,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       amountMinor: amount,
       category: _category,
       date: _date,
+      minutes: _minutes,
       note: _noteController.text.trim(),
       period: _type == EntryType.income ? _period : null,
       photo: _photo,
@@ -450,11 +469,19 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                       decoration: InputDecoration(
                         labelText: l.category,
                         prefixIcon: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: CircleAvatar(
-                            radius: 9,
-                            backgroundColor:
-                                widget.state.colorFor(_category, _type),
+                          padding: const EdgeInsets.all(9),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              color: widget.state.colorFor(_category, _type),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                                widget.state.iconFor(_category, _type),
+                                size: 17,
+                                color: Colors.white),
                           ),
                         ),
                         suffixIcon: const Icon(Icons.arrow_drop_down),
@@ -468,6 +495,15 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                         style: theme.textTheme.titleMedium,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(l.quickCategories, style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 8),
+                  _QuickCategories(
+                    state: widget.state,
+                    type: _type,
+                    selected: _category,
+                    onPick: (c) => setState(() => _category = c),
                   ),
                   if (isIncome) ...[
                     const SizedBox(height: 14),
@@ -503,6 +539,29 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                         ),
                       ),
                       const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(0, 48)),
+                          icon: const Icon(Icons.schedule, size: 18),
+                          label: Text(_minutes == null
+                              ? l.entryTime
+                              : MaterialLocalizations.of(context)
+                                  .formatTimeOfDay(
+                                  TimeOfDay(
+                                      hour: _minutes! ~/ 60,
+                                      minute: _minutes! % 60),
+                                  alwaysUse24HourFormat: MediaQuery.of(context)
+                                      .alwaysUse24HourFormat,
+                                )),
+                          onPressed: _pickTime,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
                       Expanded(
                         child: photoFile == null
                             ? OutlinedButton.icon(
@@ -612,6 +671,8 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                       onChanged: (r) => setState(() => _repeat = r),
                     ),
                   ],
+                  const SizedBox(height: 14),
+                  const _PrivacyNote(),
                 ],
               ),
             ),
@@ -700,8 +761,10 @@ class _CategorySheetState extends State<_CategorySheet> {
                 for (final n in shown)
                   ListTile(
                     leading: CircleAvatar(
-                      radius: 10,
+                      radius: 17,
                       backgroundColor: widget.state.colorFor(n, widget.type),
+                      child: Icon(widget.state.iconFor(n, widget.type),
+                          size: 18, color: Colors.white),
                     ),
                     title: Text(categoryLabel(l, n)),
                     selected: n == widget.selected,
@@ -718,6 +781,141 @@ class _CategorySheetState extends State<_CategorySheet> {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The categories used most, as big buttons: one tap picks one.
+class _QuickCategories extends StatelessWidget {
+  const _QuickCategories({
+    required this.state,
+    required this.type,
+    required this.selected,
+    required this.onPick,
+  });
+
+  final AppState state;
+  final EntryType type;
+  final String selected;
+  final ValueChanged<String> onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final names = state.topCategories(type);
+    return LayoutBuilder(builder: (context, box) {
+      // Three per row on phones, more on wide windows.
+      final perRow = (box.maxWidth / 110).floor().clamp(3, 6).toInt();
+      final double width = (box.maxWidth - (perRow - 1) * 8) / perRow;
+      return Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final name in names)
+            SizedBox(
+              width: width,
+              child: _QuickCategory(
+                label: categoryLabel(l, name),
+                icon: state.iconFor(name, type),
+                color: state.colorFor(name, type),
+                selected: name == selected,
+                textStyle: theme.textTheme.bodySmall,
+                onTap: () => onPick(name),
+              ),
+            ),
+        ],
+      );
+    });
+  }
+}
+
+class _QuickCategory extends StatelessWidget {
+  const _QuickCategory({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+    this.textStyle,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+  final TextStyle? textStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Column(
+            children: [
+              AnimatedScale(
+                scale: selected ? 1.08 : 1,
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutBack,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: selected ? 1 : 0.18),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: selected ? color : Colors.transparent,
+                        width: 2),
+                  ),
+                  child: Icon(icon,
+                      size: 22,
+                      color: selected ? Colors.white : color),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: textStyle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "Your data is stored only on your device."
+class _PrivacyNote extends StatelessWidget {
+  const _PrivacyNote();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.verified_user_outlined, color: scheme.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(context.l10n.privacyNote,
+                style: TextStyle(color: scheme.primary, fontSize: 13)),
           ),
         ],
       ),
