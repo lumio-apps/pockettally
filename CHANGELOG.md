@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.0 (new look, part 2)
+
+- Lend & Borrow reminders (Android): "Remind me" on a record, with a day and time. A notification says who owes you, or whom you owe, and how much is still open. Change or remove it from the record's menu; it stops when the record is settled
+- People from earlier records can be picked with one tap
+- Split bill: when adding an expense, tap "Split bill" and add the people. Split equally or with your own amounts, paid by you or by someone else. Your share is saved as the expense; what others owe you (or what you owe) goes to Lend & Borrow
+- New Reports: week, month or year; net savings with the change from the period before; income and expenses with their change in percent; a donut and a bar per category; income vs expenses for the last 6 weeks or months, or month by month
+- New Settings: a profile card at the top (opens your profile), a privacy box, and settings in groups with colored icons
+- The photo on Home opens your profile
+- Safety: a new column for reminders is only added to the database; nothing is rewritten
+
 ## 0.9.11 (new icon)
 
 - New app icon in the app's blue

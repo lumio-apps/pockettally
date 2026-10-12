@@ -800,5 +800,156 @@
   "spendingOverview": "Spending overview",
   "showBalance": "Show balance",
   "hideBalance": "Hide balance",
-  "icon": "Icon"
+  "icon": "Icon",
+  "addPerson": "Add a person",
+  "billTotal": "Bill total",
+  "changeReminder": "Change reminder",
+  "changeVsLastWeek": "{change} vs last week",
+  "@changeVsLastWeek": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "changeVsLastMonth": "{change} vs last month",
+  "@changeVsLastMonth": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "changeVsLastYear": "{change} vs last year",
+  "@changeVsLastYear": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "debtReminderLent": "{person} owes you {amount}. Time to ask for it?",
+  "@debtReminderLent": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "debtReminderBorrowed": "You owe {person} {amount}. Time to pay it back?",
+  "@debtReminderBorrowed": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "debtReminders": "Lend & Borrow reminders",
+  "done": "Done",
+  "editProfile": "Edit profile",
+  "incomeVsExpenses": "Income vs expenses",
+  "lastSixWeeks": "Last 6 weeks",
+  "netSavings": "Net savings",
+  "othersOweYou": "Others owe you {amount}",
+  "@othersOweYou": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "paidBy": "Paid by",
+  "privacyBody": "No account, no ads, no tracking. Your data never leaves this device.",
+  "remindMe": "Remind me",
+  "remindMeHint": "Get a notification on the day you choose",
+  "reminderAt": "Reminder: {date}",
+  "@reminderAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderInPast": "Choose a time that is still to come",
+  "removeReminder": "Remove reminder",
+  "removeSplit": "Remove split",
+  "sectionBackup": "Backup",
+  "setReminder": "Set a reminder",
+  "splitAddPeopleHint": "Add the people you shared this bill with.",
+  "splitBill": "Split bill",
+  "splitCustom": "Custom",
+  "splitDebtNote": "Split bill: {what}",
+  "@splitDebtNote": {
+    "placeholders": {
+      "what": {
+        "type": "String"
+      }
+    }
+  },
+  "splitEntryNote": "Split bill, total {amount}",
+  "@splitEntryNote": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "splitEqually": "Equally",
+  "splitNoteIPaid": "Your share is saved as an expense. What the others owe you goes to Lend & Borrow.",
+  "splitNoteOtherPaid": "Your share is saved as an expense, and what you owe goes to Lend & Borrow.",
+  "splitSaved": "{count, plural, =1{1 record added to Lend & Borrow} other{{count} records added to Lend & Borrow}}",
+  "@splitSaved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "splitSharesMismatch": "The shares add up to {sum}, but the bill is {total}.",
+  "@splitSharesMismatch": {
+    "placeholders": {
+      "sum": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "splitSharesWrong": "The shares don't add up to the amount. Open the split to fix them.",
+  "splitWith": "Split with",
+  "splitWithNames": "Split with {names}",
+  "@splitWithNames": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "you": "You",
+  "youOwePerson": "You owe {person} {amount}",
+  "@youOwePerson": {
+    "placeholders": {
+      "person": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "yourShare": "Your share: {amount}",
+  "@yourShare": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

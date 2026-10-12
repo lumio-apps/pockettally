@@ -18,8 +18,8 @@ class AppLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     // Decoded at the size it is shown, not at the file's full size.
-    final px = math.min(
-        (size * MediaQuery.devicePixelRatioOf(context)).ceil(), _fileSize);
+    final ratio = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1.0;
+    final px = math.min((size * ratio).ceil(), _fileSize);
     return DecoratedBox(
       decoration: BoxDecoration(
         // Same corner as the rounded tile in the image.

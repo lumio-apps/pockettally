@@ -5,11 +5,27 @@ import 'package:timezone/timezone.dart' as tz;
 
 import 'utils/lock_guard.dart';
 
-/// The daily "Did you spend anything today?" notification (Android only).
+/// One planned Lend & Borrow notification.
+class DebtReminder {
+  const DebtReminder({
+    required this.debtId,
+    required this.at,
+    required this.title,
+    required this.body,
+  });
+
+  final int debtId;
+  final DateTime at;
+  final String title;
+  final String body;
+}
+
+/// The daily "Did you spend anything today?" notification and the
+/// Lend & Borrow reminders (Android only).
 ///
-/// Reminders are planned for the next [_days] days at the chosen time and
-/// planned again whenever data changes or the app opens, so a day with an
-/// entry gets no reminder. Everything runs on the phone; nothing is sent
+/// Daily reminders are planned for the next [_days] days at the chosen time
+/// and planned again whenever data changes or the app opens, so a day with
+/// an entry gets no reminder. Everything runs on the phone; nothing is sent
 /// anywhere.
 class ReminderService {
   static final FlutterLocalNotificationsPlugin _plugin =
@@ -19,6 +35,10 @@ class ReminderService {
   static const int _firstId = 9100;
   static const int _days = 7;
   static const String _channelId = 'daily_reminder';
+
+  /// Lend & Borrow reminders use this id plus the record's id.
+  static const int _debtBaseId = 1000000;
+  static const String _debtChannelId = 'debt_reminders';
 
   /// Reminders are offered on Android only.
   static bool get supported => Platform.isAndroid;
@@ -52,10 +72,60 @@ class ReminderService {
     return granted ?? true;
   }
 
-  static Future<void> cancelAll() async {
+  /// Cancels the planned daily reminders.
+  static Future<void> cancelDaily() async {
     if (!await _init()) return;
     for (var i = 0; i < _days; i++) {
       await _plugin.cancel(id: _firstId + i);
+    }
+  }
+
+  /// Cancels every planned notification of the app (used by "Reset").
+  static Future<void> cancelAll() async {
+    await cancelDaily();
+    await _cancelDebtReminders();
+  }
+
+  static Future<void> _cancelDebtReminders() async {
+    if (!await _init()) return;
+    try {
+      final pending = await _plugin.pendingNotificationRequests();
+      for (final p in pending) {
+        if (p.id >= _debtBaseId) await _plugin.cancel(id: p.id);
+      }
+    } catch (_) {
+      // Nothing planned, or the list could not be read.
+    }
+  }
+
+  /// Plans the Lend & Borrow reminders again: the old ones are cancelled
+  /// and every reminder in [reminders] that is still to come is planned.
+  static Future<void> syncDebts({
+    required List<DebtReminder> reminders,
+    required String channelName,
+  }) async {
+    if (!await _init()) return;
+    await _cancelDebtReminders();
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        _debtChannelId,
+        channelName,
+        importance: Importance.high,
+        priority: Priority.high,
+      ),
+    );
+    final now = DateTime.now();
+    for (final r in reminders) {
+      if (!r.at.isAfter(now)) continue;
+      await _plugin.zonedSchedule(
+        id: _debtBaseId + r.debtId,
+        scheduledDate: tz.TZDateTime.from(r.at.toUtc(), tz.UTC),
+        notificationDetails: details,
+        // No exact-alarm permission needed; a few minutes late is fine.
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        title: r.title,
+        body: r.body,
+      );
     }
   }
 
@@ -70,7 +140,7 @@ class ReminderService {
     required String channelName,
   }) async {
     if (!await _init()) return;
-    await cancelAll();
+    await cancelDaily();
     if (!on) return;
     final details = NotificationDetails(
       android: AndroidNotificationDetails(_channelId, channelName),

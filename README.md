@@ -24,7 +24,7 @@
 | 🪟 **Windows** | `pockettally-vX.Y.Z-windows-setup.exe` – installs for your user, no admin rights |
 | 🐧 **Linux** | `pockettally-vX.Y.Z-linux-x86_64.AppImage` – one file, no install |
 
-After the first install the app keeps itself up to date: **Profile › Check for updates**.
+After the first install the app keeps itself up to date: **Settings › Check for updates**.
 
 <details>
 <summary>Install notes</summary>
@@ -68,8 +68,8 @@ Use **Back up / Restore** to move it between a phone and a computer.
 
 **Understand**
 - Monthly balance, income and expenses on Home
-- **Insights** for any day, week, month or year, with a pie chart by category
-  and a month-by-month bar chart
+- **Reports** for any week, month or year: net savings, the change from the
+  period before, a donut by category and income vs expenses over time
 - **Highlights** like "You spent 12% less than last month"
 - **Calendar** view and **upcoming bills**
 - **Search and filter** by text, type, category, date and amount
@@ -77,7 +77,10 @@ Use **Back up / Restore** to move it between a phone and a computer.
 
 **Plan**
 - **Budgets:** a monthly limit and a limit per category, with warnings, and optional carry-over of what's left
-- **Lend & Borrow:** who owes you, whom you owe, part payments
+- **Lend & Borrow:** who owes you, whom you owe, part payments, and reminders
+  to ask for the money or pay it back (Android)
+- **Split bill:** share an expense with friends, equally or with your own
+  amounts; your share is the expense, the rest goes to Lend & Borrow
 - **Savings goals** with progress
 
 **Your data, your way**

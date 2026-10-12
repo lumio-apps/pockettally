@@ -467,6 +467,7 @@ class Debt {
     this.paidMinor = 0,
     required this.date,
     this.note = '',
+    this.remindAt,
   });
 
   final int? id;
@@ -479,8 +480,17 @@ class Debt {
   final DateTime date;
   final String note;
 
+  /// When to show a "time to ask / pay back" notification (date and time),
+  /// or null for none.
+  final DateTime? remindAt;
+
   int get remainingMinor => amountMinor - paidMinor > 0 ? amountMinor - paidMinor : 0;
   bool get isSettled => paidMinor >= amountMinor;
+
+  /// True when a reminder is set for a time still to come and the money is
+  /// still open.
+  bool hasUpcomingReminder(DateTime now) =>
+      !isSettled && remindAt != null && remindAt!.isAfter(now);
 
   Debt copyWith({
     String? person,
@@ -489,6 +499,7 @@ class Debt {
     int? paidMinor,
     DateTime? date,
     String? note,
+    DateTime? Function()? remindAt,
   }) =>
       Debt(
         id: id,
@@ -498,6 +509,7 @@ class Debt {
         paidMinor: paidMinor ?? this.paidMinor,
         date: date ?? this.date,
         note: note ?? this.note,
+        remindAt: remindAt != null ? remindAt() : this.remindAt,
       );
 
   Map<String, Object?> toMap() => {
@@ -508,6 +520,7 @@ class Debt {
         'paid_minor': paidMinor,
         'date': DateTime(date.year, date.month, date.day).millisecondsSinceEpoch,
         'note': note,
+        'remind_at': remindAt?.millisecondsSinceEpoch,
       };
 
   static Debt fromMap(Map<String, Object?> m) => Debt(
@@ -518,6 +531,9 @@ class Debt {
         paidMinor: (m['paid_minor'] as int?) ?? 0,
         date: DateTime.fromMillisecondsSinceEpoch(m['date'] as int),
         note: (m['note'] as String?) ?? '',
+        remindAt: m['remind_at'] == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(m['remind_at'] as int),
       );
 }
 

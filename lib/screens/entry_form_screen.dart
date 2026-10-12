@@ -7,12 +7,14 @@ import '../l10n/l10n.dart';
 import '../models.dart';
 import '../photo_store.dart';
 import '../platform.dart';
+import '../split.dart';
 import '../theme.dart';
 import '../utils/amount_parser.dart' show isCalculation;
 import '../widgets/entry_tile.dart'
     show kIncomeColor, kExpenseColor, deleteEntryWithUndo;
 import 'categories_screen.dart';
 import 'photo_view_screen.dart';
+import 'split_screen.dart';
 
 /// Add a new entry, or edit an existing one when [entry] is given.
 /// The amount is typed with the device's own keyboard (phone keyboard or
@@ -65,7 +67,17 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   final FocusNode _amountFocus = FocusNode(debugLabel: 'amount');
   String? _photo;
 
+  /// A new expense shared with other people (null = not split).
+  SplitPlan? _split;
+
   bool get _isEditing => widget.entry != null;
+
+  /// The split, when it applies: only new expenses are split.
+  SplitPlan? get _activeSplit =>
+      !_isEditing && _type == EntryType.expense ? _split : null;
+
+  /// Shares are whole units when amounts are shown without decimals.
+  int get _splitUnit => widget.state.money.decimals == 0 ? 100 : 1;
 
   List<String> get _categories {
     final names = widget.state
@@ -206,6 +218,40 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     await deleteEntryWithUndo(messenger, l, widget.state, widget.entry!);
   }
 
+  /// Opens the split screen for the amount typed so far.
+  Future<void> _openSplit() async {
+    final l = context.l10n;
+    final amount = widget.state.parseMinor(_amountController.text);
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l.enterAmountAboveZero)));
+      _amountFocus.requestFocus();
+      return;
+    }
+    final plan = await Navigator.of(context).push<SplitPlan>(
+      MaterialPageRoute(
+        builder: (_) => SplitBillScreen(
+          state: widget.state,
+          totalMinor: amount,
+          initial: _split,
+        ),
+      ),
+    );
+    if (plan == null || !mounted) return;
+    setState(() {
+      _split = plan;
+      // A split bill is not repeated.
+      _repeat = null;
+    });
+  }
+
+  /// "Dinner · Split bill, total ₹ 1,200".
+  String _splitEntryNote(AppLocalizations l, String note, int totalMinor) {
+    final split = l.splitEntryNote(widget.state.formatMoney(totalMinor));
+    return note.isEmpty ? split : '$note · $split';
+  }
+
   Future<void> _save() async {
     final messenger = ScaffoldMessenger.of(context);
     final l = context.l10n;
@@ -216,28 +262,51 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
         ..showSnackBar(SnackBar(content: Text(l.enterAmountAboveZero)));
       return;
     }
+    // A split bill keeps only the user's share as the expense; the rest
+    // goes to Lend & Borrow.
+    final split = _activeSplit;
+    List<int>? shares;
+    if (split != null) {
+      shares = split.sharesFor(amount, unit: _splitUnit);
+      if (shares == null) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(l.splitSharesWrong)));
+        return;
+      }
+    }
+    final note = _noteController.text.trim();
     final entry = Entry(
       id: widget.entry?.id,
       type: _type,
-      amountMinor: amount,
+      amountMinor: shares == null ? amount : shares[0],
       category: _category,
       date: _date,
       minutes: _minutes,
-      note: _noteController.text.trim(),
+      note: shares == null ? note : _splitEntryNote(l, note, amount),
       period: _type == EntryType.income ? _period : null,
       photo: _photo,
       tags: parseTags(_tagsController.text),
     );
+    var debtsAdded = 0;
     if (_isEditing) {
       await widget.state.updateEntry(entry);
     } else {
-      await widget.state.addEntry(entry);
+      // With a custom split the user's own share can be 0.
+      if (entry.amountMinor > 0) await widget.state.addEntry(entry);
       await widget.state.setLastCategory(_type, _category);
-      if (_repeat != null) {
+      if (split != null && shares != null) {
+        final what = note.isNotEmpty ? note : categoryLabel(l, _category);
+        final debts = split.debtsFor(shares, _date, l.splitDebtNote(what));
+        await widget.state.addDebts(debts);
+        debtsAdded = debts.length;
+      } else if (_repeat != null) {
         await widget.state.addRecurringFrom(entry, _repeat!);
       }
     }
-    final warning = widget.state.budgetWarningFor(entry, l);
+    final warning = entry.amountMinor > 0
+        ? widget.state.budgetWarningFor(entry, l)
+        : null;
     if (widget.embedded) {
       // Ready for the next entry; type, category and date stay.
       if (mounted) {
@@ -245,6 +314,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
           _amountController.clear();
           _photo = null;
           _repeat = null;
+          _split = null;
           _noteController.clear();
           _tagsController.clear();
         });
@@ -252,6 +322,9 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       }
     } else if (mounted) {
       Navigator.of(context).pop();
+    }
+    if (debtsAdded > 0) {
+      messenger.showSnackBar(SnackBar(content: Text(l.splitSaved(debtsAdded))));
     }
     if (warning != null) {
       messenger.showSnackBar(SnackBar(
@@ -359,6 +432,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
         ? widget.state.parseMinor(_amountController.text)
         : null;
     final photoFile = _photo == null ? null : PhotoStore.file(_photo!);
+    final canSplit = !_isEditing && !isIncome;
 
     final amountStyle = TextStyle(
       fontSize: 44,
@@ -417,6 +491,8 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                     onSelectionChanged: (s) => setState(() {
                       _type = s.first;
                       _category = _defaultCategory();
+                      // Only expenses are split.
+                      if (_type == EntryType.income) _split = null;
                     }),
                   ),
                   const SizedBox(height: 16),
@@ -608,8 +684,32 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                                 ],
                               ),
                       ),
+                      if (canSplit && _split == null) ...[
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                                minimumSize: const Size(0, 48)),
+                            icon: const Icon(Icons.call_split, size: 18),
+                            label: Text(l.splitBill),
+                            onPressed: _openSplit,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
+                  if (canSplit && _split != null) ...[
+                    const SizedBox(height: 10),
+                    _SplitCard(
+                      state: widget.state,
+                      plan: _split!,
+                      totalMinor:
+                          widget.state.parseMinor(_amountController.text),
+                      unit: _splitUnit,
+                      onEdit: _openSplit,
+                      onRemove: () => setState(() => _split = null),
+                    ),
+                  ],
                   const SizedBox(height: 10),
                   TextField(
                     controller: _noteController,
@@ -647,7 +747,8 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                       ],
                     ),
                   ],
-                  if (!_isEditing) ...[
+                  // A split bill is saved once, never repeated.
+                  if (!_isEditing && _activeSplit == null) ...[
                     const SizedBox(height: 10),
                     DropdownButtonFormField<RepeatEvery?>(
                       key: ValueKey('repeat-$_repeat'),
@@ -888,6 +989,93 @@ class _QuickCategory extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                   style: textStyle),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The chosen split in the entry form: who shares the bill and what that
+/// means. Tap to change it, x to remove it.
+class _SplitCard extends StatelessWidget {
+  const _SplitCard({
+    required this.state,
+    required this.plan,
+    required this.totalMinor,
+    required this.unit,
+    required this.onEdit,
+    required this.onRemove,
+  });
+
+  final AppState state;
+  final SplitPlan plan;
+
+  /// The amount typed in the form (null when empty or not valid).
+  final int? totalMinor;
+  final int unit;
+  final VoidCallback onEdit;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final total = totalMinor;
+    final shares =
+        total == null || total <= 0 ? null : plan.sharesFor(total, unit: unit);
+    final payer = plan.paidBy;
+    final String detail;
+    if (total == null || total <= 0) {
+      detail = l.enterAmountAboveZero;
+    } else if (shares == null) {
+      detail = l.splitSharesWrong;
+    } else {
+      final owe = payer == null
+          ? l.othersOweYou(state.formatMoney(SplitPlan.othersTotal(shares)))
+          : l.youOwePerson(payer, state.formatMoney(shares[0]));
+      detail = '${l.yourShare(state.formatMoney(shares[0]))} · $owe';
+    }
+    final color = shares == null ? scheme.error : scheme.primary;
+    return Material(
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(14),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onEdit,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 4, 8),
+          child: Row(
+            children: [
+              Icon(Icons.call_split, color: color),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l.splitWithNames(plan.people.join(', ')),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          TextStyle(color: color, fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      detail,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          color: shares == null ? scheme.error : null),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: l.removeSplit,
+                icon: const Icon(Icons.close),
+                onPressed: onRemove,
+              ),
             ],
           ),
         ),

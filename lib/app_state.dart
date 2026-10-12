@@ -126,6 +126,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     // A new entry for today means no reminder today.
     unawaited(syncReminder());
+    unawaited(syncDebtReminders());
   }
 
   // ---- app lock ----
@@ -204,6 +205,7 @@ class AppState extends ChangeNotifier {
   /// again with the welcome screen.
   Future<void> resetEverything() async {
     await ReminderService.cancelAll();
+    _plannedDebtReminders = null;
     await AppDatabase.instance.deleteEverything();
     await PhotoStore.deleteAll();
     await _prefs.clear();
@@ -849,6 +851,81 @@ class AppState extends ChangeNotifier {
   Future<void> saveDebt(Debt d) async {
     await AppDatabase.instance.saveDebt(d);
     await load();
+  }
+
+  /// Adds several records at once (split bill).
+  Future<void> addDebts(List<Debt> list) async {
+    for (final d in list) {
+      await AppDatabase.instance.saveDebt(d);
+    }
+    await load();
+  }
+
+  /// People from earlier Lend & Borrow records, most recent first, for
+  /// quick picking.
+  List<String> get knownPeople {
+    final seen = <String>{};
+    final names = <String>[];
+    for (final d in debts) {
+      final key = d.person.trim().toLowerCase();
+      if (key.isEmpty || !seen.add(key)) continue;
+      names.add(d.person.trim());
+    }
+    return names;
+  }
+
+  /// What was planned last time, so the same plan is not made again.
+  String? _plannedDebtReminders;
+
+  /// The planning in progress; a new one waits for it, so two never mix.
+  Future<void>? _debtSync;
+
+  /// Plans the Lend & Borrow notifications again (Android only). Cheap to
+  /// call often: nothing happens when the plan did not change.
+  Future<void> syncDebtReminders() {
+    if (!ReminderService.supported) return Future<void>.value();
+    final run = (_debtSync ?? Future<void>.value())
+        .then((_) => _syncDebtReminders());
+    _debtSync = run;
+    return run;
+  }
+
+  Future<void> _syncDebtReminders() async {
+    try {
+      final l = lookupAppLocalizations(Locale(languageCode));
+      final now = DateTime.now();
+      final list = <DebtReminder>[
+        for (final d in debts)
+          if (d.id != null && d.hasUpcomingReminder(now))
+            DebtReminder(
+              debtId: d.id!,
+              at: d.remindAt!,
+              title: l.lendAndBorrow,
+              body: debtReminderText(l, d),
+            ),
+      ];
+      final plan = [
+        l.debtReminders,
+        for (final r in list)
+          '${r.debtId}|${r.at.millisecondsSinceEpoch}|${r.body}',
+      ].join('\n');
+      if (plan == _plannedDebtReminders) return;
+      _plannedDebtReminders = plan;
+      await ReminderService.syncDebts(
+          reminders: list, channelName: l.debtReminders);
+    } catch (e) {
+      _plannedDebtReminders = null;
+      debugPrint('Lend & Borrow reminders not planned: $e');
+    }
+  }
+
+  /// "Rahul owes you ₹ 500. Time to ask for it?" (and the note, if any).
+  String debtReminderText(AppLocalizations l, Debt d) {
+    final amount = formatMoney(d.remainingMinor);
+    final text = d.type == DebtType.lent
+        ? l.debtReminderLent(d.person, amount)
+        : l.debtReminderBorrowed(d.person, amount);
+    return d.note.isEmpty ? text : '$text (${d.note})';
   }
 
   Future<void> deleteDebt(Debt d) async {

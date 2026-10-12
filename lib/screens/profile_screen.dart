@@ -8,8 +8,30 @@ import '../platform.dart';
 import '../utils/money_format.dart';
 import '../widgets/profile_avatar.dart';
 
-/// Top of the profile page (see SettingsScreen): the photo, name,
-/// currency and how amounts are written.
+/// The profile page: photo, name, currency and how amounts are written.
+/// Opened from the photo on Home and the profile card in Settings.
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key, required this.state});
+
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: state,
+      builder: (context, _) => Scaffold(
+        appBar: AppBar(title: Text(context.l10n.profile)),
+        body: ListView(
+          padding: const EdgeInsets.only(bottom: 24),
+          children: [ProfileSection(state: state)],
+        ),
+      ),
+    );
+  }
+}
+
+/// The content of the profile page: the photo, name, currency and how
+/// amounts are written.
 class ProfileSection extends StatelessWidget {
   const ProfileSection({super.key, required this.state});
 
@@ -74,68 +96,82 @@ class ProfileSection extends StatelessWidget {
             child: Text(l.changePhoto),
           ),
         ),
-        SectionTitle(l.profile),
-        ListTile(
-          leading: const Icon(Icons.person_outline),
-          title: Text(l.yourName),
-          subtitle: Text(state.userName),
-          trailing: const Icon(Icons.edit_outlined),
-          onTap: () => _editName(context),
-        ),
-        ListTile(
-          leading: const Icon(Icons.payments_outlined),
-          title: Text(l.currency),
-          subtitle: Text(
-              '${state.currency.code} ${state.currency.symbol} · ${state.currency.name}'),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => _pickCurrency(context),
-        ),
+        const SizedBox(height: 8),
         Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(72, 0, 16, 8),
-          child: Text(l.currencyNote,
-              style: const TextStyle(fontSize: 12)),
-        ),
-        ListTile(
-          leading: const Icon(Icons.pin_outlined),
-          title: Text(l.numberFormat),
-          trailing: DropdownButton<NumberStyle>(
-            value: state.numberStyleSetting,
-            underline: const SizedBox.shrink(),
-            items: [
-              for (final style in NumberStyle.values)
-                DropdownMenuItem(
-                  value: style,
-                  child: Text(_styleLabel(l, style)),
-                ),
-            ],
-            onChanged: (v) {
-              if (v != null) state.setNumberStyle(v);
-            },
-          ),
-        ),
-        ListTile(
-          leading: const Icon(Icons.exposure_outlined),
-          title: Text(l.decimals),
-          trailing: DropdownButton<int>(
-            value: state.decimalsSetting,
-            underline: const SizedBox.shrink(),
-            items: [
-              DropdownMenuItem(
-                value: -1,
-                child: Text(l.automaticWith(state.currency.decimals == 0
-                    ? '13'
-                    : '12${money.decimalSeparator}50')),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.person_outline),
+                    title: Text(l.yourName),
+                    subtitle: Text(state.userName),
+                    trailing: const Icon(Icons.edit_outlined),
+                    onTap: () => _editName(context),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.payments_outlined),
+                    title: Text(l.currency),
+                    subtitle: Text(
+                        '${state.currency.code} ${state.currency.symbol} · ${state.currency.name}'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _pickCurrency(context),
+                  ),
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(72, 0, 16, 8),
+                    child: Text(l.currencyNote,
+                        style: const TextStyle(fontSize: 12)),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.pin_outlined),
+                    title: Text(l.numberFormat),
+                    trailing: DropdownButton<NumberStyle>(
+                      value: state.numberStyleSetting,
+                      underline: const SizedBox.shrink(),
+                      items: [
+                        for (final style in NumberStyle.values)
+                          DropdownMenuItem(
+                            value: style,
+                            child: Text(_styleLabel(l, style)),
+                          ),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) state.setNumberStyle(v);
+                      },
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.exposure_outlined),
+                    title: Text(l.decimals),
+                    trailing: DropdownButton<int>(
+                      value: state.decimalsSetting,
+                      underline: const SizedBox.shrink(),
+                      items: [
+                        DropdownMenuItem(
+                          value: -1,
+                          child: Text(l.automaticWith(state.currency.decimals == 0
+                              ? '13'
+                              : '12${money.decimalSeparator}50')),
+                        ),
+                        DropdownMenuItem(
+                            value: 2,
+                            child: Text(
+                                l.decimalsTwo('12${money.decimalSeparator}50'))),
+                        DropdownMenuItem(
+                            value: 0, child: Text(l.decimalsNone('13'))),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) state.setDecimals(v);
+                      },
+                    ),
+                  ),
+                ],
               ),
-              DropdownMenuItem(
-                  value: 2,
-                  child: Text(
-                      l.decimalsTwo('12${money.decimalSeparator}50'))),
-              DropdownMenuItem(
-                  value: 0, child: Text(l.decimalsNone('13'))),
-            ],
-            onChanged: (v) {
-              if (v != null) state.setDecimals(v);
-            },
+            ),
           ),
         ),
       ],
@@ -257,27 +293,5 @@ class ProfileSection extends StatelessWidget {
       ),
     );
     if (picked != null) await state.setCurrency(picked);
-  }
-}
-
-/// A small colored heading above a group of settings.
-class SectionTitle extends StatelessWidget {
-  const SectionTitle(this.text, {super.key});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 20, 16, 4),
-      child: Text(
-        text,
-        style: theme.textTheme.labelLarge?.copyWith(
-          color: theme.colorScheme.primary,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
   }
 }

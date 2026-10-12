@@ -62,6 +62,7 @@ class _RootShellState extends State<RootShell>
       state.runRecurring().catchError((_) => 0);
       // A new day may need a new reminder plan and a backup.
       state.syncReminder();
+      state.syncDebtReminders();
       AutoBackup.runIfDue(state).catchError((_) => false);
     });
   }

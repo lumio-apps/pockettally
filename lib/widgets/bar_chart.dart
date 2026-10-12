@@ -22,6 +22,7 @@ class IncomeExpenseBarChart extends StatelessWidget {
     required this.expenseColor,
     required this.axisLabel,
     this.height = 200,
+    this.animate = true,
   });
 
   final List<BarGroup> groups;
@@ -31,6 +32,9 @@ class IncomeExpenseBarChart extends StatelessWidget {
   /// Formats a value (in minor units) for the axis, e.g. "12K".
   final String Function(int minor) axisLabel;
   final double height;
+
+  /// The bars grow in when the chart first appears.
+  final bool animate;
 
   @override
   Widget build(BuildContext context) {
@@ -44,18 +48,25 @@ class IncomeExpenseBarChart extends StatelessWidget {
       children: [
         SizedBox(
           height: height,
-          child: CustomPaint(
-            size: Size.infinite,
-            painter: _BarPainter(
-              groups: groups,
-              top: top,
-              incomeColor: incomeColor,
-              expenseColor: expenseColor,
-              gridColor: theme.colorScheme.outlineVariant,
-              labelStyle: theme.textTheme.bodySmall!
-                  .copyWith(color: theme.colorScheme.onSurfaceVariant),
-              axisLabel: axisLabel,
-              axisWidth: axisWidth,
+          // The bars grow up when the chart first appears.
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: animate ? 0 : 1, end: 1),
+            duration: const Duration(milliseconds: 700),
+            curve: Curves.easeOutCubic,
+            builder: (context, t, _) => CustomPaint(
+              size: Size.infinite,
+              painter: _BarPainter(
+                groups: groups,
+                top: top,
+                incomeColor: incomeColor,
+                expenseColor: expenseColor,
+                gridColor: theme.colorScheme.outlineVariant,
+                labelStyle: theme.textTheme.bodySmall!
+                    .copyWith(color: theme.colorScheme.onSurfaceVariant),
+                axisLabel: axisLabel,
+                axisWidth: axisWidth,
+                progress: t,
+              ),
             ),
           ),
         ),
@@ -65,10 +76,14 @@ class IncomeExpenseBarChart extends StatelessWidget {
             const SizedBox(width: axisWidth),
             for (final g in groups)
               Expanded(
-                child: Text(
-                  g.label,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.bodySmall,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    g.label,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall,
+                  ),
                 ),
               ),
           ],
@@ -121,6 +136,7 @@ class _BarPainter extends CustomPainter {
     required this.labelStyle,
     required this.axisLabel,
     required this.axisWidth,
+    this.progress = 1,
   });
 
   final List<BarGroup> groups;
@@ -131,6 +147,9 @@ class _BarPainter extends CustomPainter {
   final TextStyle labelStyle;
   final String Function(int minor) axisLabel;
   final double axisWidth;
+
+  /// 0..1, how far the bars have grown.
+  final double progress;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -162,8 +181,8 @@ class _BarPainter extends CustomPainter {
       final g = groups[i];
       final centerX = chartLeft + groupWidth * (i + 0.5);
       void bar(int value, double left, Color color) {
-        if (value <= 0) return;
-        final h = math.max(chartHeight * value / top, 2.0);
+        if (value <= 0 || progress <= 0) return;
+        final h = math.max(chartHeight * value / top * progress, 2.0);
         final rect = RRect.fromRectAndCorners(
           Rect.fromLTWH(left, size.height - h, barWidth, h),
           topLeft: radius,

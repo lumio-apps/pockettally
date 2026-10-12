@@ -4,8 +4,60 @@ import 'package:intl/intl.dart';
 import '../app_state.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
+import '../reminder.dart';
 import '../widgets/amount_dialog.dart';
 import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
+
+/// "Thu, Oct 15, 10:00" in the user's language and clock format (with the
+/// year when it is not this year).
+String reminderLabel(BuildContext context, DateTime at) {
+  final time = MaterialLocalizations.of(context).formatTimeOfDay(
+    TimeOfDay.fromDateTime(at),
+    alwaysUse24HourFormat: MediaQuery.of(context).alwaysUse24HourFormat,
+  );
+  final day = at.year == DateTime.now().year
+      ? DateFormat.MMMEd().format(at)
+      : DateFormat.yMMMEd().format(at);
+  return '$day, $time';
+}
+
+/// Asks for permission to show notifications (Android 13 and newer), then
+/// for a day and a time. Returns null when cancelled or not allowed.
+Future<DateTime?> pickReminderTime(
+    BuildContext context, DateTime? current) async {
+  final l = context.l10n;
+  final messenger = ScaffoldMessenger.of(context);
+  if (!await ReminderService.requestPermission()) {
+    messenger.showSnackBar(SnackBar(content: Text(l.notificationsBlocked)));
+    return null;
+  }
+  if (!context.mounted) return null;
+  final now = DateTime.now();
+  // Tomorrow at 10:00 unless a reminder is already set.
+  final start = current != null && current.isAfter(now)
+      ? current
+      : DateTime(now.year, now.month, now.day + 1, 10);
+  final day = await showDatePicker(
+    context: context,
+    helpText: l.remindMe,
+    initialDate: start,
+    firstDate: DateTime(now.year, now.month, now.day),
+    lastDate: DateTime(now.year + 5, 12, 31),
+  );
+  if (day == null || !context.mounted) return null;
+  final time = await showTimePicker(
+    context: context,
+    helpText: l.remindMe,
+    initialTime: TimeOfDay.fromDateTime(start),
+  );
+  if (time == null) return null;
+  final at = DateTime(day.year, day.month, day.day, time.hour, time.minute);
+  if (!at.isAfter(DateTime.now())) {
+    messenger.showSnackBar(SnackBar(content: Text(l.reminderInPast)));
+    return null;
+  }
+  return at;
+}
 
 /// Money lent to and borrowed from people, and how much is still open.
 class DebtsScreen extends StatelessWidget {
@@ -243,6 +295,27 @@ class _DebtCard extends StatelessWidget {
                       state.formatMoney(debt.amountMinor)),
                   style: theme.textTheme.bodySmall,
                 ),
+                if (debt.hasUpcomingReminder(DateTime.now())) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.notifications_active_outlined,
+                          size: 16, color: theme.colorScheme.primary),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          l.reminderAt(reminderLabel(context, debt.remindAt!)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -253,42 +326,62 @@ class _DebtCard extends StatelessWidget {
 
   Future<void> _showActions(BuildContext context) async {
     final l = context.l10n;
+    final hasReminder = debt.hasUpcomingReminder(DateTime.now());
     final action = await showModalBottomSheet<String>(
       context: context,
+      // Taller than usual on small phones, and scrolls if still too tall.
+      isScrollControlled: true,
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (!debt.isSettled) ...[
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!debt.isSettled) ...[
+                ListTile(
+                  leading: const Icon(Icons.payments_outlined),
+                  title: Text(l.addPayment),
+                  subtitle: Text(l.addPaymentHint),
+                  onTap: () => Navigator.pop(ctx, 'pay'),
+                ),
+                if (ReminderService.supported)
+                  ListTile(
+                    leading: const Icon(Icons.notifications_outlined),
+                    title: Text(hasReminder ? l.changeReminder : l.setReminder),
+                    subtitle: Text(hasReminder
+                        ? reminderLabel(ctx, debt.remindAt!)
+                        : l.remindMeHint),
+                    onTap: () => Navigator.pop(ctx, 'remind'),
+                  ),
+                if (hasReminder)
+                  ListTile(
+                    leading: const Icon(Icons.notifications_off_outlined),
+                    title: Text(l.removeReminder),
+                    onTap: () => Navigator.pop(ctx, 'unremind'),
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.check_circle_outline),
+                  title: Text(l.markSettled),
+                  onTap: () => Navigator.pop(ctx, 'settle'),
+                ),
+              ] else
+                ListTile(
+                  leading: const Icon(Icons.undo),
+                  title: Text(l.reopen),
+                  onTap: () => Navigator.pop(ctx, 'reopen'),
+                ),
               ListTile(
-                leading: const Icon(Icons.payments_outlined),
-                title: Text(l.addPayment),
-                subtitle: Text(l.addPaymentHint),
-                onTap: () => Navigator.pop(ctx, 'pay'),
+                leading: const Icon(Icons.edit_outlined),
+                title: Text(l.edit),
+                onTap: () => Navigator.pop(ctx, 'edit'),
               ),
               ListTile(
-                leading: const Icon(Icons.check_circle_outline),
-                title: Text(l.markSettled),
-                onTap: () => Navigator.pop(ctx, 'settle'),
+                leading: const Icon(Icons.delete_outline, color: kExpenseColor),
+                title: Text(l.delete,
+                    style: const TextStyle(color: kExpenseColor)),
+                onTap: () => Navigator.pop(ctx, 'delete'),
               ),
-            ] else
-              ListTile(
-                leading: const Icon(Icons.undo),
-                title: Text(l.reopen),
-                onTap: () => Navigator.pop(ctx, 'reopen'),
-              ),
-            ListTile(
-              leading: const Icon(Icons.edit_outlined),
-              title: Text(l.edit),
-              onTap: () => Navigator.pop(ctx, 'edit'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: kExpenseColor),
-              title: Text(l.delete,
-                  style: const TextStyle(color: kExpenseColor)),
-              onTap: () => Navigator.pop(ctx, 'delete'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -305,8 +398,15 @@ class _DebtCard extends StatelessWidget {
         if (paid != null) {
           await state.saveDebt(debt.copyWith(paidMinor: debt.paidMinor + paid));
         }
+      case 'remind':
+        final at = await pickReminderTime(context, debt.remindAt);
+        if (at != null) await state.saveDebt(debt.copyWith(remindAt: () => at));
+      case 'unremind':
+        await state.saveDebt(debt.copyWith(remindAt: () => null));
       case 'settle':
-        await state.saveDebt(debt.copyWith(paidMinor: debt.amountMinor));
+        // Nothing left to remind about.
+        await state.saveDebt(
+            debt.copyWith(paidMinor: debt.amountMinor, remindAt: () => null));
       case 'reopen':
         await state.saveDebt(debt.copyWith(paidMinor: 0));
       case 'edit':
@@ -359,6 +459,10 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
   String? _personError;
   String? _amountError;
 
+  /// When to remind (date and time), or null for no reminder.
+  DateTime? _remindAt;
+  String? _remindError;
+
   @override
   void initState() {
     super.initState();
@@ -368,6 +472,29 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
     _type = d?.type ?? widget.initialType;
     _date = d?.date ?? DateTime.now();
     _amountMinor = d?.amountMinor;
+    // A reminder that is over is not shown again.
+    _remindAt =
+        d != null && d.hasUpcomingReminder(DateTime.now()) ? d.remindAt : null;
+  }
+
+  Future<void> _setReminder(bool on) async {
+    if (!on) {
+      setState(() {
+        _remindAt = null;
+        _remindError = null;
+      });
+      return;
+    }
+    await _changeReminder();
+  }
+
+  Future<void> _changeReminder() async {
+    final at = await pickReminderTime(context, _remindAt);
+    if (at == null || !mounted) return;
+    setState(() {
+      _remindAt = at;
+      _remindError = null;
+    });
   }
 
   @override
@@ -401,11 +528,17 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
   Future<void> _save() async {
     final l = context.l10n;
     final person = _person.text.trim();
+    final remindAt = _remindAt;
     setState(() {
       _personError = person.isEmpty ? l.enterName : null;
       _amountError = _amountMinor == null ? l.enterTheAmount : null;
+      _remindError = remindAt != null && !remindAt.isAfter(DateTime.now())
+          ? l.reminderInPast
+          : null;
     });
-    if (_personError != null || _amountError != null) return;
+    if (_personError != null || _amountError != null || _remindError != null) {
+      return;
+    }
     final old = widget.debt;
     final debt = Debt(
       id: old?.id,
@@ -418,6 +551,7 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
           : (old.paidMinor > _amountMinor! ? _amountMinor! : old.paidMinor),
       date: _date,
       note: _note.text.trim(),
+      remindAt: remindAt,
     );
     await widget.state.saveDebt(debt);
     if (mounted) Navigator.of(context).pop();
@@ -451,6 +585,26 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
               border: const OutlineInputBorder(),
             ),
           ),
+          // People from earlier records, one tap away.
+          if (widget.debt == null && widget.state.knownPeople.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final p in widget.state.knownPeople.take(6))
+                  ActionChip(
+                    avatar: const Icon(Icons.person_outline, size: 18),
+                    label: Text(p),
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => setState(() {
+                      _person.text = p;
+                      _personError = null;
+                    }),
+                  ),
+              ],
+            ),
+          ],
           const SizedBox(height: 16),
           InkWell(
             onTap: _pickAmount,
@@ -487,6 +641,50 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
               border: const OutlineInputBorder(),
             ),
           ),
+          if (ReminderService.supported) ...[
+            const SizedBox(height: 16),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SwitchListTile(
+                    secondary: const Icon(Icons.notifications_outlined),
+                    title: Text(l.remindMe),
+                    subtitle: Text(_remindAt == null
+                        ? l.remindMeHint
+                        : reminderLabel(context, _remindAt!)),
+                    value: _remindAt != null,
+                    onChanged: _setReminder,
+                  ),
+                  if (_remindAt != null)
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                            end: 8, bottom: 4),
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.edit_calendar_outlined,
+                              size: 18),
+                          label: Text(l.changeReminder),
+                          onPressed: _changeReminder,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (_remindError != null)
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(16, 6, 16, 0),
+                child: Text(
+                  _remindError!,
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 12),
+                ),
+              ),
+          ],
           const SizedBox(height: 24),
           FilledButton(onPressed: _save, child: Text(l.save)),
         ],

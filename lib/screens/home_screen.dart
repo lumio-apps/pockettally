@@ -5,6 +5,7 @@ import '../app_state.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../widgets/appear.dart';
 import '../widgets/entry_tile.dart';
 import '../widgets/pie_chart.dart';
 import '../widgets/profile_avatar.dart';
@@ -12,7 +13,7 @@ import 'app_page.dart';
 import 'calendar_screen.dart';
 import 'entry_form_screen.dart';
 import 'goals_screen.dart';
-import 'settings_screen.dart';
+import 'profile_screen.dart';
 
 /// How many of the newest entries Home shows under "Recent".
 const int kRecentEntries = 50;
@@ -75,7 +76,7 @@ class HomeScreen extends StatelessWidget {
                 label: l.profile,
                 child: InkWell(
                   customBorder: const CircleBorder(),
-                  onTap: () => _push(context, SettingsScreen(state: state)),
+                  onTap: () => _push(context, ProfileScreen(state: state)),
                   child: ProfileAvatar(state: state, radius: 22),
                 ),
               ),
@@ -220,7 +221,7 @@ class HomeScreen extends StatelessWidget {
               itemCount: sections.length,
               // Sections slide in gently the first time Home is shown.
               itemBuilder: (context, i) =>
-                  _Appear(index: i, child: sections[i]),
+                  Appear(index: i, child: sections[i]),
             ),
           ),
         );
@@ -270,31 +271,6 @@ class HomeScreen extends StatelessWidget {
     if (day == t) return l.today;
     if (day == DateTime(t.year, t.month, t.day - 1)) return l.yesterday;
     return DateFormat.yMMMEd().format(day);
-  }
-}
-
-/// Fades and slides a Home section in, a little later for each one, the
-/// first time it is built.
-class _Appear extends StatelessWidget {
-  const _Appear({required this.index, required this.child});
-
-  final int index;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    // Only the first screenful animates; further down appears at once.
-    if (index > 8) return child;
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0, end: 1),
-      duration: Duration(milliseconds: 260 + index * 45),
-      curve: Curves.easeOutCubic,
-      child: child,
-      builder: (context, t, child) => Opacity(
-        opacity: t,
-        child: Transform.translate(offset: Offset(0, 14 * (1 - t)), child: child),
-      ),
-    );
   }
 }
 
@@ -359,7 +335,7 @@ class _BalanceCard extends StatelessWidget {
                                   fontSize: 30,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 2))
-                          : _CountUp(
+                          : CountUp(
                               key: const ValueKey('shown'),
                               value: balance,
                               format: state.formatMoney,
@@ -387,30 +363,6 @@ class _BalanceCard extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// A money amount that counts up to [value] when it changes.
-class _CountUp extends StatelessWidget {
-  const _CountUp(
-      {super.key, required this.value, required this.format, this.style});
-
-  final int value;
-  final String Function(int) format;
-  final TextStyle? style;
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(end: value.toDouble()),
-      duration: const Duration(milliseconds: 650),
-      curve: Curves.easeOutCubic,
-      builder: (context, v, _) => FittedBox(
-        fit: BoxFit.scaleDown,
-        alignment: AlignmentDirectional.centerStart,
-        child: Text(format(v.round()), style: style),
       ),
     );
   }

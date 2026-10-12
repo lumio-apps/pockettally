@@ -133,6 +133,8 @@ class BackupData {
               'paidMinor': d.paidMinor,
               'date': _dateString(d.date),
               'note': d.note,
+              // Local date and time, e.g. "2026-10-15T10:00:00.000".
+              if (d.remindAt != null) 'remindAt': d.remindAt!.toIso8601String(),
             },
         ],
         if (photos.isNotEmpty)
@@ -245,6 +247,9 @@ class BackupData {
             paidMinor: (d['paidMinor'] as int?) ?? 0,
             date: DateTime.parse(d['date'] as String),
             note: (d['note'] as String?) ?? '',
+            remindAt: d['remindAt'] is String
+                ? DateTime.tryParse(d['remindAt'] as String)
+                : null,
           ),
       ];
       final goals = [

@@ -15,7 +15,9 @@ import 'platform.dart';
 ///   v4 (app 0.5.0): entries.photo, debts, goals
 ///   v5 (app 0.6.0): categories.position, categories.hidden
 ///   v6 (app 0.8.0): entries.tags, recurring, favorites
-///   v7 (app 1.0.0): entries.time, categories.icon
+///   v7 (app 0.9.10): entries.time, categories.icon
+///   (app 1.0.0 adds debts.remind_at; it is added on open, so the
+///   version number stays 7 and an older app can still open the file)
 ///
 /// Upgrades only ever ADD tables and columns; nothing is removed or
 /// rewritten, so an update never loses data. Before the first open with a
@@ -98,6 +100,7 @@ class AppDatabase {
     await _addColumnIfMissing(db, 'entries', 'time', 'INTEGER');
     await _addColumnIfMissing(db, 'categories', 'icon', 'TEXT');
     await _createDebtsAndGoals(db);
+    await _addColumnIfMissing(db, 'debts', 'remind_at', 'INTEGER');
     await _createRecurringAndFavorites(db);
   }
 
@@ -142,7 +145,8 @@ class AppDatabase {
         amount_minor INTEGER NOT NULL,
         paid_minor INTEGER NOT NULL DEFAULT 0,
         date INTEGER NOT NULL,
-        note TEXT NOT NULL DEFAULT ''
+        note TEXT NOT NULL DEFAULT '',
+        remind_at INTEGER
       )
     ''');
     await db.execute('''

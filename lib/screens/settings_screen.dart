@@ -10,6 +10,7 @@ import '../l10n/l10n.dart';
 import '../reminder.dart';
 import '../theme.dart';
 import '../update_checker.dart';
+import '../widgets/profile_avatar.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
 import 'lock_screen.dart';
@@ -36,9 +37,9 @@ String paletteName(AppLocalizations l, AppPalette p) {
   }
 }
 
-/// The profile page: photo, name and money format at the top, then all
-/// app settings. Opened by tapping the photo on Home (Profile in the
-/// sidebar on wide windows).
+/// All app settings, in groups, with a card for the profile at the top
+/// and a reminder that everything stays on the device. A tab on phones,
+/// a page of the sidebar on wide windows.
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, required this.state});
 
@@ -72,232 +73,307 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return Scaffold(
           appBar: AppBar(title: Text(l.settings)),
           body: ListView(
-            padding: const EdgeInsets.only(bottom: 24),
+            // Room at the bottom for the + button.
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 56),
             children: [
-              ProfileSection(state: state),
-              SectionTitle(l.sectionAppearance),
-              ListTile(
-                leading: const Icon(Icons.translate),
-                title: Text(l.language),
-                subtitle: Text(languageByCode(state.languageCode).nativeName),
-                onTap: _pickLanguage,
+              _ProfileCard(
+                state: state,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => ProfileScreen(state: state),
+                )),
               ),
-              ListTile(
-                leading: const Icon(Icons.palette_outlined),
-                title: Text(l.accentColor),
-                subtitle: Text(paletteName(l, state.palette)),
-                trailing: CircleAvatar(
-                    radius: 14, backgroundColor: state.palette.brand),
-                onTap: _pickPalette,
-              ),
-              ListTile(
-                leading: const Icon(Icons.brightness_6_outlined),
-                title: Text(l.theme),
-                trailing: DropdownButton<ThemeMode>(
-                  value: state.themeMode,
-                  underline: const SizedBox.shrink(),
-                  items: [
-                    DropdownMenuItem(
-                        value: ThemeMode.system, child: Text(l.themeSystem)),
-                    DropdownMenuItem(
-                        value: ThemeMode.light, child: Text(l.themeLight)),
-                    DropdownMenuItem(
-                        value: ThemeMode.dark, child: Text(l.themeDark)),
-                  ],
-                  onChanged: (m) {
-                    if (m != null) state.setThemeMode(m);
-                  },
-                ),
-              ),
-              ListTile(
-                leading: const Icon(Icons.calendar_view_week_outlined),
-                title: Text(l.weekStartsOn),
-                trailing: DropdownButton<bool>(
-                  value: state.weekStartsOnSunday,
-                  underline: const SizedBox.shrink(),
-                  items: [
-                    DropdownMenuItem(value: false, child: Text(l.monday)),
-                    DropdownMenuItem(value: true, child: Text(l.sunday)),
-                  ],
-                  onChanged: (v) {
-                    if (v != null) state.setWeekStartsOnSunday(v);
-                  },
-                ),
-              ),
-              SectionTitle(l.security),
-              SwitchListTile(
-                secondary: const Icon(Icons.lock_outline),
-                title: Text(l.appLock),
-                subtitle: Text(l.appLockSubtitle),
-                value: state.appLockOn,
-                onChanged: (on) => on ? _turnLockOn() : _turnLockOff(),
-              ),
-              if (state.appLockOn) ...[
-                ListTile(
-                  leading: const Icon(Icons.password),
-                  title: Text(l.changePin),
-                  onTap: _changePin,
-                ),
-                ListTile(
-                  leading: const Icon(Icons.timer_outlined),
-                  title: Text(l.lockAfter),
-                  trailing: DropdownButton<int>(
-                    value: const [0, 60, 300].contains(state.lockAfterSeconds)
-                        ? state.lockAfterSeconds
-                        : 0,
-                    underline: const SizedBox.shrink(),
-                    items: [
-                      DropdownMenuItem(value: 0, child: Text(l.lockImmediately)),
-                      DropdownMenuItem(value: 60, child: Text(l.lockAfterMinutes(1))),
-                      DropdownMenuItem(value: 300, child: Text(l.lockAfterMinutes(5))),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) state.setLockAfter(v);
-                    },
-                  ),
-                ),
-              ],
-              if (ReminderService.supported) ...[
-                SectionTitle(l.reminder),
-                SwitchListTile(
-                  secondary: const Icon(Icons.notifications_none),
-                  title: Text(l.dailyReminder),
-                  subtitle: Text(l.dailyReminderSubtitle),
-                  value: state.reminderOn,
-                  onChanged: _setReminder,
-                ),
-                if (state.reminderOn)
+              const SizedBox(height: 12),
+              const _PrivacyBox(),
+              _Group(
+                title: l.sectionAppearance,
+                children: [
                   ListTile(
-                    leading: const Icon(Icons.schedule),
-                    title: Text(l.reminderTime),
-                    trailing: Text(
-                      MaterialLocalizations.of(context).formatTimeOfDay(
-                        TimeOfDay(
-                            hour: state.reminderMinutes ~/ 60,
-                            minute: state.reminderMinutes % 60),
-                        alwaysUse24HourFormat:
-                            MediaQuery.of(context).alwaysUse24HourFormat,
-                      ),
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    leading: const _SettingIcon(
+                        Icons.translate, Color(0xFF4C6FFF)),
+                    title: Text(l.language),
+                    subtitle:
+                        Text(languageByCode(state.languageCode).nativeName),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: _pickLanguage,
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.palette_outlined, Color(0xFFE0458B)),
+                    title: Text(l.accentColor),
+                    subtitle: Text(paletteName(l, state.palette)),
+                    trailing: CircleAvatar(
+                        radius: 12, backgroundColor: state.palette.brand),
+                    onTap: _pickPalette,
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.brightness_6_outlined, Color(0xFF8E59D8)),
+                    title: Text(l.theme),
+                    trailing: DropdownButton<ThemeMode>(
+                      value: state.themeMode,
+                      underline: const SizedBox.shrink(),
+                      items: [
+                        DropdownMenuItem(
+                            value: ThemeMode.system,
+                            child: Text(l.themeSystem)),
+                        DropdownMenuItem(
+                            value: ThemeMode.light, child: Text(l.themeLight)),
+                        DropdownMenuItem(
+                            value: ThemeMode.dark, child: Text(l.themeDark)),
+                      ],
+                      onChanged: (m) {
+                        if (m != null) state.setThemeMode(m);
+                      },
                     ),
-                    onTap: _pickReminderTime,
                   ),
-              ],
-              SectionTitle(l.sectionData),
-              ListTile(
-                leading: const Icon(Icons.category_outlined),
-                title: Text(l.categories),
-                subtitle: Text(l.categoriesSubtitle),
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => CategoriesScreen(state: state),
-                )),
-              ),
-              ListTile(
-                leading: const Icon(Icons.repeat),
-                title: Text(l.recurringEntries),
-                subtitle: Text(state.recurring.isEmpty
-                    ? l.recurringSubtitle
-                    : l.recurringCount(state.recurring.length)),
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => RecurringScreen(state: state),
-                )),
-              ),
-              ListTile(
-                leading: const Icon(Icons.savings_outlined),
-                title: Text(l.navBudgets),
-                subtitle: Text(state.monthlyBudgetMinor > 0
-                    ? l.monthlyLimitAmount(
-                        state.formatMoney(state.monthlyBudgetMinor))
-                    : l.budgetsSubtitle),
-                onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => BudgetsScreen(state: state),
-                )),
-              ),
-              SwitchListTile(
-                secondary: const Icon(Icons.cloud_done_outlined),
-                title: Text(l.autoBackup),
-                subtitle: Text(_autoBackupStatus(l)),
-                value: state.autoBackupOn,
-                onChanged: _setAutoBackup,
-              ),
-              if (state.autoBackupOn) ...[
-                ListTile(
-                  leading: const Icon(Icons.event_repeat),
-                  title: Text(l.howOften),
-                  trailing: DropdownButton<int>(
-                    value: state.autoBackupDays,
-                    underline: const SizedBox.shrink(),
-                    items: [
-                      DropdownMenuItem(value: 1, child: Text(l.everyDay)),
-                      DropdownMenuItem(value: 7, child: Text(l.everyWeek)),
-                    ],
-                    onChanged: (v) {
-                      if (v != null) state.setAutoBackup(days: v);
-                    },
-                  ),
-                ),
-                if (state.autoBackupFolder != null)
                   ListTile(
-                    leading: const Icon(Icons.folder_outlined),
-                    title: Text(l.savedIn),
-                    subtitle: Text(
-                        '${_shortFolder(state.autoBackupFolder!)}\n${l.keepsLastBackups}'),
-                    isThreeLine: true,
+                    leading: const _SettingIcon(
+                        Icons.calendar_view_week_outlined, Color(0xFF00A3A3)),
+                    title: Text(l.weekStartsOn),
+                    trailing: DropdownButton<bool>(
+                      value: state.weekStartsOnSunday,
+                      underline: const SizedBox.shrink(),
+                      items: [
+                        DropdownMenuItem(value: false, child: Text(l.monday)),
+                        DropdownMenuItem(value: true, child: Text(l.sunday)),
+                      ],
+                      onChanged: (v) {
+                        if (v != null) state.setWeekStartsOnSunday(v);
+                      },
+                    ),
                   ),
-              ],
-              SwitchListTile(
-                secondary: const Icon(Icons.photo_library_outlined),
-                title: Text(l.includeBillPhotos),
-                subtitle: Text(l.includeBillPhotosHint),
-                value: state.backupWithPhotos,
-                onChanged: (v) => state.setAutoBackup(withPhotos: v),
+                ],
               ),
-              ListTile(
-                leading: const Icon(Icons.upload_file_outlined),
-                title: Text(l.backUpData),
-                subtitle: Text(l.backUpSubtitle),
-                onTap: _busy ? null : _backup,
+              _Group(
+                title: l.security,
+                children: [
+                  SwitchListTile(
+                    secondary: const _SettingIcon(
+                        Icons.lock_outline, Color(0xFF2E9E5B)),
+                    title: Text(l.appLock),
+                    subtitle: Text(l.appLockSubtitle),
+                    value: state.appLockOn,
+                    onChanged: (on) => on ? _turnLockOn() : _turnLockOff(),
+                  ),
+                  if (state.appLockOn) ...[
+                    ListTile(
+                      leading: const _SettingIcon(
+                          Icons.password, Color(0xFF2E9E5B)),
+                      title: Text(l.changePin),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: _changePin,
+                    ),
+                    ListTile(
+                      leading: const _SettingIcon(
+                          Icons.timer_outlined, Color(0xFF2E9E5B)),
+                      title: Text(l.lockAfter),
+                      trailing: DropdownButton<int>(
+                        value: const [0, 60, 300]
+                                .contains(state.lockAfterSeconds)
+                            ? state.lockAfterSeconds
+                            : 0,
+                        underline: const SizedBox.shrink(),
+                        items: [
+                          DropdownMenuItem(
+                              value: 0, child: Text(l.lockImmediately)),
+                          DropdownMenuItem(
+                              value: 60, child: Text(l.lockAfterMinutes(1))),
+                          DropdownMenuItem(
+                              value: 300, child: Text(l.lockAfterMinutes(5))),
+                        ],
+                        onChanged: (v) {
+                          if (v != null) state.setLockAfter(v);
+                        },
+                      ),
+                    ),
+                  ],
+                ],
               ),
-              ListTile(
-                leading: const Icon(Icons.restore_outlined),
-                title: Text(l.restoreFromBackup),
-                subtitle: Text(l.restoreSubtitle),
-                onTap: _busy ? null : _restore,
-              ),
-              ListTile(
-                leading: const Icon(Icons.table_view_outlined),
-                title: Text(l.exportCsv),
-                subtitle: Text(l.exportCsvSubtitle),
-                onTap: _busy || state.entries.isEmpty ? null : _exportCsv,
-              ),
-              ListTile(
-                leading: const Icon(Icons.post_add_outlined),
-                title: Text(l.importCsv),
-                subtitle: Text(l.importCsvSubtitle),
-                onTap: _busy ? null : _importCsv,
-              ),
-              SectionTitle(l.sectionAbout),
-              if (kUpdaterEnabled)
-                ListTile(
-                  leading: _checking
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.system_update_outlined),
-                  title: Text(l.checkForUpdates),
-                  subtitle: Text(_version.isEmpty
-                      ? 'PocketTally'
-                      : l.installedVersion(_version)),
-                  onTap: _checking ? null : _checkForUpdates,
-                )
-              else
-                ListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: Text(l.version),
-                  subtitle: Text(_version),
+              if (ReminderService.supported)
+                _Group(
+                  title: l.reminder,
+                  children: [
+                    SwitchListTile(
+                      secondary: const _SettingIcon(
+                          Icons.notifications_none, Color(0xFFF08C00)),
+                      title: Text(l.dailyReminder),
+                      subtitle: Text(l.dailyReminderSubtitle),
+                      value: state.reminderOn,
+                      onChanged: _setReminder,
+                    ),
+                    if (state.reminderOn)
+                      ListTile(
+                        leading: const _SettingIcon(
+                            Icons.schedule, Color(0xFFF08C00)),
+                        title: Text(l.reminderTime),
+                        trailing: Text(
+                          MaterialLocalizations.of(context).formatTimeOfDay(
+                            TimeOfDay(
+                                hour: state.reminderMinutes ~/ 60,
+                                minute: state.reminderMinutes % 60),
+                            alwaysUse24HourFormat:
+                                MediaQuery.of(context).alwaysUse24HourFormat,
+                          ),
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        onTap: _pickReminderTime,
+                      ),
+                  ],
                 ),
+              _Group(
+                title: l.sectionData,
+                children: [
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.category_outlined, Color(0xFF4C6FFF)),
+                    title: Text(l.categories),
+                    subtitle: Text(l.categoriesSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => CategoriesScreen(state: state),
+                    )),
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.repeat, Color(0xFF00A3A3)),
+                    title: Text(l.recurringEntries),
+                    subtitle: Text(state.recurring.isEmpty
+                        ? l.recurringSubtitle
+                        : l.recurringCount(state.recurring.length)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => RecurringScreen(state: state),
+                    )),
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.savings_outlined, Color(0xFFD89B00)),
+                    title: Text(l.navBudgets),
+                    subtitle: Text(state.monthlyBudgetMinor > 0
+                        ? l.monthlyLimitAmount(
+                            state.formatMoney(state.monthlyBudgetMinor))
+                        : l.budgetsSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => BudgetsScreen(state: state),
+                    )),
+                  ),
+                ],
+              ),
+              _Group(
+                title: l.sectionBackup,
+                children: [
+                  SwitchListTile(
+                    secondary: const _SettingIcon(
+                        Icons.cloud_done_outlined, Color(0xFF1565FF)),
+                    title: Text(l.autoBackup),
+                    subtitle: Text(_autoBackupStatus(l)),
+                    value: state.autoBackupOn,
+                    onChanged: _setAutoBackup,
+                  ),
+                  if (state.autoBackupOn) ...[
+                    ListTile(
+                      leading: const _SettingIcon(
+                          Icons.event_repeat, Color(0xFF1565FF)),
+                      title: Text(l.howOften),
+                      trailing: DropdownButton<int>(
+                        value: state.autoBackupDays,
+                        underline: const SizedBox.shrink(),
+                        items: [
+                          DropdownMenuItem(value: 1, child: Text(l.everyDay)),
+                          DropdownMenuItem(value: 7, child: Text(l.everyWeek)),
+                        ],
+                        onChanged: (v) {
+                          if (v != null) state.setAutoBackup(days: v);
+                        },
+                      ),
+                    ),
+                    if (state.autoBackupFolder != null)
+                      ListTile(
+                        leading: const _SettingIcon(
+                            Icons.folder_outlined, Color(0xFF1565FF)),
+                        title: Text(l.savedIn),
+                        subtitle: Text(
+                            '${_shortFolder(state.autoBackupFolder!)}\n${l.keepsLastBackups}'),
+                        isThreeLine: true,
+                      ),
+                  ],
+                  SwitchListTile(
+                    secondary: const _SettingIcon(
+                        Icons.photo_library_outlined, Color(0xFF8E59D8)),
+                    title: Text(l.includeBillPhotos),
+                    subtitle: Text(l.includeBillPhotosHint),
+                    value: state.backupWithPhotos,
+                    onChanged: (v) => state.setAutoBackup(withPhotos: v),
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.upload_file_outlined, Color(0xFF2E9E5B)),
+                    title: Text(l.backUpData),
+                    subtitle: Text(l.backUpSubtitle),
+                    onTap: _busy ? null : _backup,
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.restore_outlined, Color(0xFFF08C00)),
+                    title: Text(l.restoreFromBackup),
+                    subtitle: Text(l.restoreSubtitle),
+                    onTap: _busy ? null : _restore,
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.table_view_outlined, Color(0xFF00A3A3)),
+                    title: Text(l.exportCsv),
+                    subtitle: Text(l.exportCsvSubtitle),
+                    onTap: _busy || state.entries.isEmpty ? null : _exportCsv,
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.post_add_outlined, Color(0xFF00A3A3)),
+                    title: Text(l.importCsv),
+                    subtitle: Text(l.importCsvSubtitle),
+                    onTap: _busy ? null : _importCsv,
+                  ),
+                ],
+              ),
+              _Group(
+                title: l.sectionAbout,
+                children: [
+                  if (kUpdaterEnabled)
+                    ListTile(
+                      leading: _checking
+                          ? const SizedBox(
+                              width: 34,
+                              height: 34,
+                              child: Padding(
+                                padding: EdgeInsets.all(7),
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            )
+                          : const _SettingIcon(Icons.system_update_outlined,
+                              Color(0xFF1565FF)),
+                      title: Text(l.checkForUpdates),
+                      subtitle: Text(_version.isEmpty
+                          ? 'PocketTally'
+                          : l.installedVersion(_version)),
+                      onTap: _checking ? null : _checkForUpdates,
+                    )
+                  else
+                    ListTile(
+                      leading: const _SettingIcon(
+                          Icons.info_outline, Color(0xFF1565FF)),
+                      title: Text(l.version),
+                      subtitle: Text(_version),
+                    ),
+                  const ListTile(
+                    leading:
+                        _SettingIcon(Icons.favorite_border, Color(0xFFE0458B)),
+                    title: Text('PocketTally'),
+                    subtitle: Text('by Lumio Apps'),
+                  ),
+                ],
+              ),
             ],
           ),
         );
@@ -670,6 +746,170 @@ class _UpdateDialogState extends State<_UpdateDialog> {
           child: Text(l.update),
         ),
       ],
+    );
+  }
+}
+
+/// The user's photo, name and money format; a tap opens the profile.
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({required this.state, required this.onTap});
+
+  final AppState state;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final l = context.l10n;
+    final c = state.currency;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              ProfileAvatar(state: state, radius: 28),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      state.userName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${c.code} ${c.symbol} · ${state.money.number(123456789)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l.editProfile,
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "100% offline": no account, no ads, nothing leaves the device.
+class _PrivacyBox extends StatelessWidget {
+  const _PrivacyBox();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l = context.l10n;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: scheme.primary.withValues(alpha: 0.14),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.verified_user_outlined, color: scheme.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l.offlineTitle,
+                    style: TextStyle(
+                        color: scheme.primary, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 2),
+                Text(l.privacyBody,
+                    style: TextStyle(color: scheme.onSurface, fontSize: 13)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A heading and a card holding a group of settings.
+class _Group extends StatelessWidget {
+  const _Group({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(4, 22, 4, 8),
+          child: Text(
+            title,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        Card(
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Column(children: children),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A small colored square with an icon, in front of a setting.
+class _SettingIcon extends StatelessWidget {
+  const _SettingIcon(this.icon, this.color);
+
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: 34,
+      height: 34,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: dark ? 0.26 : 0.13),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(icon,
+          size: 19, color: dark ? Color.lerp(color, Colors.white, 0.35) : color),
     );
   }
 }
