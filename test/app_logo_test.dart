@@ -7,6 +7,10 @@ import 'package:pockettally/widgets/app_logo.dart';
 void main() {
   Future<String> shownAsset(WidgetTester tester, Brightness brightness) async {
     await tester.pumpWidget(MaterialApp(
+      // A new key for each theme builds the app fresh. With the same app,
+      // the theme would fade from light to dark over a few frames and the
+      // first frame would still be light.
+      key: ValueKey(brightness),
       theme: ThemeData(brightness: brightness),
       home: const Scaffold(body: Center(child: AppLogo(size: 48))),
     ));
