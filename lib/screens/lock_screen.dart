@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../l10n/l10n.dart';
 import '../utils/lock_guard.dart';
+import '../widgets/app_logo.dart';
 import '../widgets/pin_pad.dart';
 
 /// Covers the app with the PIN screen when the app lock is on: at start and
@@ -208,11 +209,7 @@ class _LockScreenState extends State<LockScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Image.asset('assets/icon/logo.png',
-                        width: 56, height: 56),
-                  ),
+                  const AppLogo(size: 56),
                   const SizedBox(height: 20),
                   body,
                 ],

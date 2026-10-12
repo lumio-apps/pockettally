@@ -1,7 +1,7 @@
 name: pockettally
 description: Simple offline daily income and expense tracker.
 publish_to: "none"
-version: 0.9.10+21
+version: 0.9.11+22
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -42,31 +42,39 @@ flutter:
   uses-material-design: true
   generate: true # builds lib/l10n/app_localizations.dart from the .arb files
   assets:
-    - assets/icon/logo.png
+    - assets/icon/logo_light.png
+    - assets/icon/logo_dark.png
     - assets/fonts/DejaVuSans.ttf
     - assets/fonts/DejaVuSans-Bold.ttf
 
 # App icon. Generated in CI with: dart run flutter_launcher_icons
+# The pictures are drawn by: python3 tool/make_logo.py assets
 flutter_launcher_icons:
   android: true
   ios: false
   image_path: "assets/icon/icon.png"
-  adaptive_icon_background: "#0E3B30"
+  adaptive_icon_background: "assets/icon/icon_background.png"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  # Android 13+ "Themed icons": the phone colours this one itself,
+  # light in light mode and dark in dark mode.
+  adaptive_icon_monochrome: "assets/icon/icon_monochrome.png"
+  # The pictures already have the right margins, so no extra padding.
+  adaptive_icon_foreground_inset: 0
   min_sdk_android: 21
 
 # Launch screen. Generated in CI with: dart run flutter_native_splash:create
+# Light or dark with the phone's dark mode; the colours are the app's page colours.
 flutter_native_splash:
-  color: "#0E3B30"
+  color: "#F5F8FD"
   image: assets/splash/splash.png
-  color_dark: "#0A2620"
+  color_dark: "#0B1220"
   image_dark: assets/splash/splash.png
   android_12:
-    color: "#0E3B30"
+    color: "#F5F8FD"
     image: assets/splash/splash_android12.png
-    icon_background_color: "#0E3B30"
-    color_dark: "#0A2620"
+    icon_background_color: "#F5F8FD"
+    color_dark: "#0B1220"
     image_dark: assets/splash/splash_android12.png
-    icon_background_color_dark: "#0A2620"
+    icon_background_color_dark: "#0B1220"
   ios: false
   web: false

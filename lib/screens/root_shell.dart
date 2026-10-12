@@ -6,6 +6,7 @@ import '../auto_backup.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
+import '../widgets/app_logo.dart';
 import 'app_page.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
@@ -449,15 +450,11 @@ class _Sidebar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
+          const Row(
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.asset('assets/icon/logo.png',
-                    width: 40, height: 40),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
+              AppLogo(size: 40),
+              SizedBox(width: 12),
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

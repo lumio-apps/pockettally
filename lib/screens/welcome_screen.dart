@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
+import '../widgets/app_logo.dart';
 
 /// Shown on first launch, in three steps: language, name, currency.
 /// All three can be changed later in Settings.
@@ -71,7 +72,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                 child: Row(
                   children: [
-                    Image.asset('assets/icon/logo.png', width: 44, height: 44),
+                    const AppLogo(size: 44),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(

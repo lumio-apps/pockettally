@@ -3,8 +3,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/lumio-apps/pockettally/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/lumio-apps/pockettally?label=download&color=0E3B30"></a>
-  <img alt="Android, Windows, Linux" src="https://img.shields.io/badge/platforms-Android%20%7C%20Windows%20%7C%20Linux-1F7A63">
+  <a href="https://github.com/lumio-apps/pockettally/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/lumio-apps/pockettally?label=download&color=1565FF"></a>
+  <img alt="Android, Windows, Linux" src="https://img.shields.io/badge/platforms-Android%20%7C%20Windows%20%7C%20Linux-3D7FFF">
   <a href="LICENSE"><img alt="License GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-F2B33D"></a>
 </p>
 

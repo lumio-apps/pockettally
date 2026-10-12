@@ -3,5 +3,5 @@
 flutter_launcher_icons:
   windows:
     generate: true
-    image_path: "assets/icon/icon.png"
+    image_path: "assets/icon/logo.png" # rounded blue logo
     icon_size: 256

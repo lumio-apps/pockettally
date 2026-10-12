@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.11 (new icon)
+
+- New app icon in the app's blue
+- Android 13 and newer: with "Themed icons" on in the phone settings, the icon turns light in light mode and dark in dark mode
+- The opening screen is light or dark with the phone's dark mode
+- The logo inside the app (lock screen, welcome screen, sidebar) is light or dark with the app's theme
+- Windows and Linux use the new rounded blue icon
+
 ## 0.9.10 (new look, part 1)
 
 - New look in blue (the other colors are still in Settings › Accent color)
