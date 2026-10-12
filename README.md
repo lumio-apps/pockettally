@@ -1,67 +1,105 @@
 <p align="center">
-  <img src="assets/icon/logo.png" width="120" alt="PocketTally logo">
+  <img src="docs/banner.png" alt="PocketTally – every coin, counted. Offline income and expense tracker for Android, Windows and Linux.">
 </p>
-
-<h1 align="center">PocketTally</h1>
 
 <p align="center">
-  A simple, offline daily income and expense tracker for Android, Windows and Linux.<br>
-  Part of the Lumio Apps family. No account, no ads, no tracking.
+  <a href="https://github.com/lumio-apps/pockettally/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/lumio-apps/pockettally?label=download&color=0E3B30"></a>
+  <img alt="Android, Windows, Linux" src="https://img.shields.io/badge/platforms-Android%20%7C%20Windows%20%7C%20Linux-1F7A63">
+  <a href="LICENSE"><img alt="License GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-F2B33D"></a>
 </p>
 
-## Features
+<p align="center">
+  A simple daily income and expense tracker that works completely offline.<br>
+  No account, no ads, no tracking. Your money data never leaves your device.<br>
+  Part of the <b>Lumio Apps</b> family.
+</p>
 
-- **13 languages:** English, हिन्दी, Հայերեն, 中文, Español, العربية, Français, বাংলা, Português, Русский, اردو, Bahasa Indonesia, 日本語
-- Add income (daily, weekly or monthly) and daily expenses
-- Income and expenses in one list, each entry separate (income green, expense red)
-- Monthly balance, income and expenses on the home screen
-- **Categories:** create your own, rename, recolor, reorder, hide or delete them
-- **Stats:** totals for any day, week, month or year, a pie chart by category and a month-by-month bar chart
-- **PDF report** of any period, made on the phone
-- **Highlights** like "You spent 12% less than last month", a **calendar** view and **upcoming bills**
-- **CSV export/import** for Excel or Google Sheets
-- **Search and filter:** by text, type, category, date range and amount
-- **Budgets:** a monthly limit and a limit per category, with warnings
-- Simple math in the amount field (120+45)
-- **Recurring entries** (salary, rent…) added automatically
-- **Favorites** for one-tap entries, and **tags** like #trip
-- **Lend & Borrow:** who owes you, whom you owe, part payments
-- **Savings goals** with progress
-- **Bill photos** attached to entries, stored only in the app
-- **Backup and restore** to a file you choose, nothing is uploaded
-- Week starts on Monday or Sunday
-- Edit entries, swipe to delete with Undo
-- One app-wide currency (INR, USD, EUR, AMD and many more), changeable in your Profile
-- A profile with your photo and name (tap your name on Home)
-- Number format (1,234.56, 1.234,56, 1 234,56, 1'234.56, 12,34,567.89) and decimals on or off
-- Light, dark or system theme, and five accent colors
-- In-app "Check for updates" that downloads new releases from GitHub
+---
 
 ## Download
 
-### Windows
+| System | File to take from [the latest release](https://github.com/lumio-apps/pockettally/releases/latest) |
+|---|---|
+| 📱 **Android** | `pockettally-vX.Y.Z-android.apk` – works on every phone |
+| 🪟 **Windows** | `pockettally-vX.Y.Z-windows-setup.exe` – installs for your user, no admin rights |
+| 🐧 **Linux** | `pockettally-vX.Y.Z-linux-x86_64.AppImage` – one file, no install |
 
-From [Releases](https://github.com/lumio-apps/pockettally/releases) take
-`…-windows-setup.exe` (installs for your user, no admin rights).
-Windows may show "Windows protected your PC" because the app is not signed
-with a paid certificate: click **More info → Run anyway**.
+After the first install the app keeps itself up to date: **Profile › Check for updates**.
 
-### Linux
+<details>
+<summary>Install notes</summary>
 
-Take `…-linux-x86_64.AppImage`, make it executable
-(`chmod +x pockettally-*.AppImage`) and run it. It updates itself from
-Settings › Check for updates.
+- **Android:** allow "Install unknown apps" for your browser or file manager when asked.
+  The APK installs over any earlier PocketTally, your data stays.
+- **Windows:** Windows may say "Windows protected your PC" because the app is not
+  signed with a paid certificate. Click **More info → Run anyway**.
+- **Linux:** make the file executable (`chmod +x pockettally-*.AppImage`) and run it.
 
-Data on a computer is stored in your user's app data folder
+On a computer the data is kept in your user's app data folder
 (`%APPDATA%\Lumio Apps\PocketTally` on Windows,
-`~/.local/share/com.lumio.pockettally` on Linux). Use Back up / Restore to
-move it between a phone and a computer.
+`~/.local/share/com.lumio.pockettally` on Linux).
+Use **Back up / Restore** to move it between a phone and a computer.
 
-### Android
+</details>
 
-Take `…-android.apk` from [Releases](https://github.com/lumio-apps/pockettally/releases).
-It works on every phone and installs over any earlier PocketTally APK.
-After that, "Check for updates" in the app keeps it up to date.
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/home-light.png" width="220" alt="Home"><br><sub>Home</sub></td>
+    <td align="center"><img src="docs/screenshots/add-menu.png" width="220" alt="Add menu"><br><sub>Add anything with +</sub></td>
+    <td align="center"><img src="docs/screenshots/new-entry.png" width="220" alt="New entry"><br><sub>New entry</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/insights.png" width="220" alt="Insights"><br><sub>Insights and highlights</sub></td>
+    <td align="center"><img src="docs/screenshots/home-dark.png" width="220" alt="Dark theme"><br><sub>Dark theme</sub></td>
+    <td align="center"><img src="docs/screenshots/profile.png" width="220" alt="Profile"><br><sub>Profile and settings</sub></td>
+  </tr>
+</table>
+
+## Features
+
+**Track**
+- Income (daily, weekly or monthly) and expenses in one list
+- Quick add with the **+** button: expense, income, lend/borrow or savings goal
+- Simple math in the amount field (`120+45`)
+- **Recurring entries** like salary or rent, added automatically
+- **Favorites** for one-tap entries, **tags** like `#trip`, and **bill photos**
+
+**Understand**
+- Monthly balance, income and expenses on Home
+- **Insights** for any day, week, month or year, with a pie chart by category
+  and a month-by-month bar chart
+- **Highlights** like "You spent 12% less than last month"
+- **Calendar** view and **upcoming bills**
+- **Search and filter** by text, type, category, date and amount
+- **PDF report** of any period, made on the device
+
+**Plan**
+- **Budgets:** a monthly limit and a limit per category, with warnings
+- **Lend & Borrow:** who owes you, whom you owe, part payments
+- **Savings goals** with progress
+
+**Your data, your way**
+- **Backup and restore** to a file you choose
+- **CSV export and import** for Excel, LibreOffice or Google Sheets
+- **Categories:** add, rename, recolor, reorder, hide or delete
+
+**Make it yours**
+- A **profile** with your photo and name
+- **13 languages:** English, हिन्दी, Հայերեն, 中文, Español, العربية, Français, বাংলা, Português, Русский, اردو, Bahasa Indonesia, 日本語
+- **27 currencies** and number formats: 1,234.56 · 1.234,56 · 1 234,56 · 1'234.56 · 12,34,567.89
+- Light, dark or system theme and five accent colors
+- Week starts on Monday or Sunday
+- Wide layout with a sidebar on computers, keyboard shortcuts **Ctrl+N** (new entry) and **Ctrl+F** (search)
+
+## Privacy
+
+- Everything is stored on your device in a local database.
+- No account, no ads, no analytics, no tracking.
+- The only network use is **Check for updates**, which asks the GitHub Releases
+  page of this project for a newer version.
+- Backups, CSV files and PDF reports are saved only where you choose.
 
 ## Translations
 
@@ -69,13 +107,7 @@ Texts live in `lib/l10n/app_<language>.arb`. To fix a translation, edit the
 line in that file and open a pull request. The app code is generated from
 these files by `flutter pub get`.
 
-## Privacy
-
-All data stays on your phone in a local database.
-The `INTERNET` permission is used only when you tap "Check for updates",
-which contacts the GitHub Releases page of this project.
-
-## Build
+## Build from source
 
 ```
 flutter pub get
@@ -83,15 +115,20 @@ flutter analyze
 flutter test
 ```
 
-The `android/` folder, app icon and splash screen are generated by
-GitHub Actions. Release signing setup: see [SETUP_ANDROID.md](SETUP_ANDROID.md).
+The `android/`, `windows/` and `linux/` folders, the app icon and the splash
+screen are generated by GitHub Actions. Release signing setup: see
+[SETUP_ANDROID.md](SETUP_ANDROID.md).
 
-F-Droid build without the updater:
+Build without the in-app updater (for F-Droid):
 
 ```
 flutter build apk --dart-define=UPDATER=false
 ```
 
+Each `vX.Y.Z` tag builds the release files for Android, Windows and Linux.
+Before tagging, raise `version:` in `pubspec.yaml` to the same number.
+
 ## License
 
-[GPL-3.0](LICENSE). The bundled DejaVu fonts use their own free license, see `assets/fonts/DejaVu-LICENSE.txt`.
+[GPL-3.0](LICENSE). The bundled DejaVu fonts use their own free license, see
+`assets/fonts/DejaVu-LICENSE.txt`.
