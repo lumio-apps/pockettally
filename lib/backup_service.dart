@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'app_state.dart';
 import 'backup.dart';
 import 'csv_io.dart';
+import 'utils/lock_guard.dart';
 import 'utils/save_file.dart';
 
 /// Saves and opens backup files through the system file dialog.
@@ -44,11 +45,11 @@ class BackupService {
   /// Lets the user pick a CSV file and reads its entries. Returns null if
   /// cancelled; throws [FormatException] when it is not a usable CSV.
   static Future<CsvResult?> pickCsv({required String dialogTitle}) async {
-    final result = await FilePicker.platform.pickFiles(
-      dialogTitle: dialogTitle,
-      type: FileType.any,
-      withData: true,
-    );
+    final result = await LockGuard.around(() => FilePicker.platform.pickFiles(
+          dialogTitle: dialogTitle,
+          type: FileType.any,
+          withData: true,
+        ));
     if (result == null) return null;
     final bytes = result.files.single.bytes;
     if (bytes == null) throw const FormatException('unreadable');
@@ -58,11 +59,11 @@ class BackupService {
   /// Lets the user pick a backup file and parses it.
   /// Returns null if they cancelled; throws [FormatException] for a bad file.
   static Future<BackupData?> pick({required String dialogTitle}) async {
-    final result = await FilePicker.platform.pickFiles(
-      dialogTitle: dialogTitle,
-      type: FileType.any,
-      withData: true,
-    );
+    final result = await LockGuard.around(() => FilePicker.platform.pickFiles(
+          dialogTitle: dialogTitle,
+          type: FileType.any,
+          withData: true,
+        ));
     final bytes = result?.files.single.bytes;
     if (result == null) return null;
     if (bytes == null) {

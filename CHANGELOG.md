@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.8
+
+- App lock: turn it on in your profile (Security) and choose a 4-digit PIN. The app asks for it when it opens and after it was in the background (immediately, after 1 or 5 minutes). After 5 wrong PINs you wait 30 seconds. Forgot the PIN? The app can be reset (all data is deleted; restore a backup afterwards). The PIN is stored only as a salted hash
+- Daily reminder (Android): a notification at the time you choose, only on days you haven't added anything yet
+- Android 7.0 or newer is now needed (the reminder needs it)
+
 ## 0.9.7
 
 - CSV import: a category written in other letter case ("food") now goes to the existing category ("Food") instead of making a separate one

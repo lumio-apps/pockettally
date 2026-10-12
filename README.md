@@ -85,6 +85,10 @@ Use **Back up / Restore** to move it between a phone and a computer.
 - **CSV export and import** for Excel, LibreOffice or Google Sheets
 - **Categories:** add, rename, recolor, reorder, hide or delete
 
+**Private**
+- **App lock** with a 4-digit PIN
+- **Daily reminder** (Android) on days you haven't added anything
+
 **Make it yours**
 - A **profile** with your photo and name
 - **13 languages:** English, हिन्दी, Հայերեն, 中文, Español, العربية, Français, বাংলা, Português, Русский, اردو, Bahasa Indonesia, 日本語
@@ -99,6 +103,7 @@ Use **Back up / Restore** to move it between a phone and a computer.
 - No account, no ads, no analytics, no tracking.
 - The only network use is **Check for updates**, which asks the GitHub Releases
   page of this project for a newer version.
+- The app lock PIN is stored only as a salted hash, never as the PIN itself.
 - Backups, CSV files and PDF reports are saved only where you choose.
 
 ## Translations

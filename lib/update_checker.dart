@@ -7,6 +7,8 @@ import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'utils/lock_guard.dart';
+
 /// Set to false for the F-Droid build (it updates apps by itself):
 ///   flutter build apk --dart-define=UPDATER=false
 const bool kUpdaterEnabled = bool.fromEnvironment('UPDATER', defaultValue: true);
@@ -125,10 +127,10 @@ class UpdateChecker {
       exit(0);
     }
 
-    final result = await OpenFilex.open(
-      file.path,
-      type: 'application/vnd.android.package-archive',
-    );
+    final result = await LockGuard.around(() => OpenFilex.open(
+          file.path,
+          type: 'application/vnd.android.package-archive',
+        ));
     if (result.type != ResultType.done) {
       throw Exception(result.message);
     }

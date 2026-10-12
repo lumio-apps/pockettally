@@ -19,13 +19,26 @@ class AppDatabase {
 
   Database? _db;
 
-  Future<Database> get _database async {
-    if (_db != null) return _db!;
-    // Desktop: the user's app data folder. Phones: the usual database folder.
+  /// Desktop: the user's app data folder. Phones: the usual database folder.
+  static Future<String> _path() async {
     final dir =
         isDesktop ? (await appDataDirectory()).path : await getDatabasesPath();
+    return p.join(dir, 'pockettally.db');
+  }
+
+  /// Deletes the whole database file (used by "Reset the app"). It is
+  /// created again, with the default categories, on next use.
+  Future<void> deleteEverything() async {
+    final db = _db;
+    _db = null;
+    if (db != null) await db.close();
+    await deleteDatabase(await _path());
+  }
+
+  Future<Database> get _database async {
+    if (_db != null) return _db!;
     _db = await openDatabase(
-      p.join(dir, 'pockettally.db'),
+      await _path(),
       version: 6,
       onCreate: (db, version) async {
         await _createEntries(db);

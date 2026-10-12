@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 
 import 'platform.dart';
+import 'utils/lock_guard.dart';
 
 /// Bill photos are copied into the app's own folder, so they stay on the
 /// device (on desktop: the per-user app data folder).
@@ -32,13 +33,14 @@ class PhotoStore {
   /// photo, stores a small copy and returns its file name, or null if the
   /// user cancelled.
   static Future<String?> pickProfile({required bool camera}) async {
-    final picked = await ImagePicker().pickImage(
-      source: camera && !isDesktop ? ImageSource.camera : ImageSource.gallery,
-      preferredCameraDevice: CameraDevice.front,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 85,
-    );
+    final picked = await LockGuard.around(() => ImagePicker().pickImage(
+          source:
+              camera && !isDesktop ? ImageSource.camera : ImageSource.gallery,
+          preferredCameraDevice: CameraDevice.front,
+          maxWidth: 512,
+          maxHeight: 512,
+          imageQuality: 85,
+        ));
     if (picked == null) return null;
     return saveProfileBytes(await File(picked.path).readAsBytes(),
         extension: p.extension(picked.path));
@@ -53,6 +55,19 @@ class PhotoStore {
     final name = 'profile_${DateTime.now().millisecondsSinceEpoch}$ext';
     await File(p.join(_profileDirPath!, name)).writeAsBytes(bytes, flush: true);
     return name;
+  }
+
+  /// Deletes every bill photo and the profile photo (used by "Reset the
+  /// app").
+  static Future<void> deleteAll() async {
+    for (final path in [_dirPath, _profileDirPath]) {
+      if (path == null) continue;
+      final dir = Directory(path);
+      try {
+        if (await dir.exists()) await dir.delete(recursive: true);
+        await dir.create(recursive: true);
+      } catch (_) {}
+    }
   }
 
   /// Deletes a stored profile photo; a missing file is fine.
@@ -71,11 +86,12 @@ class PhotoStore {
   /// chosen photo.
   /// Returns the stored file name, or null if the user cancelled.
   static Future<String?> pick({required bool camera}) async {
-    final picked = await ImagePicker().pickImage(
-      source: camera && !isDesktop ? ImageSource.camera : ImageSource.gallery,
-      maxWidth: 1600,
-      imageQuality: 80,
-    );
+    final picked = await LockGuard.around(() => ImagePicker().pickImage(
+          source:
+              camera && !isDesktop ? ImageSource.camera : ImageSource.gallery,
+          maxWidth: 1600,
+          imageQuality: 80,
+        ));
     if (picked == null) return null;
     if (_dirPath == null) await init();
     final ext = p.extension(picked.path).isEmpty ? '.jpg' : p.extension(picked.path);

@@ -1,5 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui' show PlatformDispatcher;
+
+import 'package:crypto/crypto.dart';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +14,7 @@ import 'db.dart';
 import 'l10n/l10n.dart';
 import 'models.dart';
 import 'photo_store.dart';
+import 'reminder.dart';
 import 'theme.dart';
 import 'utils/money_format.dart';
 
@@ -117,6 +123,125 @@ class AppState extends ChangeNotifier {
     recurring = await AppDatabase.instance.allRecurring();
     favorites = await AppDatabase.instance.allFavorites();
     notifyListeners();
+    // A new entry for today means no reminder today.
+    unawaited(syncReminder());
+  }
+
+  // ---- app lock ----
+
+  /// True when the app asks for a PIN.
+  bool get appLockOn => _prefs.getString('pin_hash') != null;
+
+  /// Seconds in the background before the PIN is asked again (0 = always).
+  int get lockAfterSeconds => _prefs.getInt('lock_after') ?? 0;
+
+  Future<void> setLockAfter(int seconds) async {
+    await _prefs.setInt('lock_after', seconds);
+    notifyListeners();
+  }
+
+  /// Wrong PINs in a row allowed before a pause.
+  static const int pinTriesBeforeWait = 5;
+  static const Duration pinWait = Duration(seconds: 30);
+
+  /// The PIN is never stored, only a salted, repeated SHA-256 of it.
+  static String hashPin(String pin, String salt) {
+    List<int> bytes = utf8.encode('$salt:$pin');
+    for (var i = 0; i < 10000; i++) {
+      bytes = sha256.convert(bytes).bytes;
+    }
+    return base64Encode(bytes);
+  }
+
+  Future<void> setPin(String pin) async {
+    final random = Random.secure();
+    final salt = base64Encode(List<int>.generate(16, (_) => random.nextInt(256)));
+    await _prefs.setString('pin_salt', salt);
+    await _prefs.setString('pin_hash', hashPin(pin, salt));
+    await _prefs.remove('pin_failures');
+    await _prefs.remove('pin_wait_until');
+    notifyListeners();
+  }
+
+  Future<void> removePin() async {
+    await _prefs.remove('pin_hash');
+    await _prefs.remove('pin_salt');
+    await _prefs.remove('pin_failures');
+    await _prefs.remove('pin_wait_until');
+    notifyListeners();
+  }
+
+  /// How long to wait before the next try (zero when trying is allowed).
+  Duration get pinWaitLeft {
+    final until = _prefs.getInt('pin_wait_until') ?? 0;
+    final left = until - DateTime.now().millisecondsSinceEpoch;
+    return left > 0 ? Duration(milliseconds: left) : Duration.zero;
+  }
+
+  /// Checks [pin]. After [pinTriesBeforeWait] wrong ones in a row the next
+  /// try has to wait [pinWait]. Returns false while waiting.
+  Future<bool> tryPin(String pin) async {
+    if (pinWaitLeft > Duration.zero) return false;
+    final salt = _prefs.getString('pin_salt') ?? '';
+    final ok = hashPin(pin, salt) == _prefs.getString('pin_hash');
+    if (ok) {
+      await _prefs.remove('pin_failures');
+      return true;
+    }
+    final failures = (_prefs.getInt('pin_failures') ?? 0) + 1;
+    if (failures >= pinTriesBeforeWait) {
+      await _prefs.setInt('pin_failures', 0);
+      await _prefs.setInt('pin_wait_until',
+          DateTime.now().add(pinWait).millisecondsSinceEpoch);
+    } else {
+      await _prefs.setInt('pin_failures', failures);
+    }
+    return false;
+  }
+
+  /// "Forgot PIN": deletes all data, photos and settings. The app starts
+  /// again with the welcome screen.
+  Future<void> resetEverything() async {
+    await ReminderService.cancelAll();
+    await AppDatabase.instance.deleteEverything();
+    await PhotoStore.deleteAll();
+    await _prefs.clear();
+    await load();
+  }
+
+  // ---- daily reminder ----
+
+  bool get reminderOn => _prefs.getBool('reminder_on') ?? false;
+
+  /// Minutes after midnight, 21:00 by default.
+  int get reminderMinutes => _prefs.getInt('reminder_minutes') ?? 21 * 60;
+
+  Future<void> setReminder({bool? on, int? minutes}) async {
+    if (on != null) await _prefs.setBool('reminder_on', on);
+    if (minutes != null) await _prefs.setInt('reminder_minutes', minutes);
+    notifyListeners();
+    await syncReminder();
+  }
+
+  /// Plans the reminders for the next days again (Android only).
+  Future<void> syncReminder() async {
+    try {
+      final l = lookupAppLocalizations(Locale(languageCode));
+      final now = DateTime.now();
+      await ReminderService.sync(
+        on: reminderOn && onboarded,
+        minutes: reminderMinutes,
+        doneToday: entries.any((e) =>
+            e.date.year == now.year &&
+            e.date.month == now.month &&
+            e.date.day == now.day),
+        title: 'PocketTally',
+        body: l.reminderBody,
+        channelName: l.dailyReminder,
+      );
+    } catch (e) {
+      debugPrint('Reminder not planned: $e');
+    }
   }
 
   // ---- settings ----

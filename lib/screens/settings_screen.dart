@@ -4,11 +4,13 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../app_state.dart';
 import '../backup.dart';
 import '../backup_service.dart';
+import '../reminder.dart';
 import '../l10n/l10n.dart';
 import '../theme.dart';
 import '../update_checker.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
+import 'lock_screen.dart';
 import 'profile_screen.dart';
 import 'recurring_screen.dart';
 
@@ -116,6 +118,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
               ),
+              SectionTitle(l.security),
+              SwitchListTile(
+                secondary: const Icon(Icons.lock_outline),
+                title: Text(l.appLock),
+                subtitle: Text(l.appLockSubtitle),
+                value: state.appLockOn,
+                onChanged: (on) => on ? _turnLockOn() : _turnLockOff(),
+              ),
+              if (state.appLockOn) ...[
+                ListTile(
+                  leading: const Icon(Icons.password),
+                  title: Text(l.changePin),
+                  onTap: _changePin,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.timer_outlined),
+                  title: Text(l.lockAfter),
+                  trailing: DropdownButton<int>(
+                    value: const [0, 60, 300].contains(state.lockAfterSeconds)
+                        ? state.lockAfterSeconds
+                        : 0,
+                    underline: const SizedBox.shrink(),
+                    items: [
+                      DropdownMenuItem(value: 0, child: Text(l.lockImmediately)),
+                      DropdownMenuItem(value: 60, child: Text(l.lockAfterMinutes(1))),
+                      DropdownMenuItem(value: 300, child: Text(l.lockAfterMinutes(5))),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) state.setLockAfter(v);
+                    },
+                  ),
+                ),
+              ],
+              if (ReminderService.supported) ...[
+                SectionTitle(l.reminder),
+                SwitchListTile(
+                  secondary: const Icon(Icons.notifications_none),
+                  title: Text(l.dailyReminder),
+                  subtitle: Text(l.dailyReminderSubtitle),
+                  value: state.reminderOn,
+                  onChanged: _setReminder,
+                ),
+                if (state.reminderOn)
+                  ListTile(
+                    leading: const Icon(Icons.schedule),
+                    title: Text(l.reminderTime),
+                    trailing: Text(
+                      MaterialLocalizations.of(context).formatTimeOfDay(
+                        TimeOfDay(
+                            hour: state.reminderMinutes ~/ 60,
+                            minute: state.reminderMinutes % 60),
+                        alwaysUse24HourFormat:
+                            MediaQuery.of(context).alwaysUse24HourFormat,
+                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    onTap: _pickReminderTime,
+                  ),
+              ],
               SectionTitle(l.sectionData),
               ListTile(
                 leading: const Icon(Icons.category_outlined),
@@ -197,6 +258,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       },
     );
+  }
+
+  Future<void> _turnLockOn() async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final pin = await Navigator.of(context).push<String>(MaterialPageRoute(
+      builder: (_) => PinSetupScreen(state: state, mode: PinSetupMode.create),
+    ));
+    if (pin == null) return;
+    await state.setPin(pin);
+    messenger.showSnackBar(SnackBar(content: Text(l.pinSet)));
+  }
+
+  /// Asks for the current PIN; true when it was typed right.
+  Future<bool> _verifyPin() async {
+    final ok = await Navigator.of(context).push<String>(MaterialPageRoute(
+      builder: (_) => PinSetupScreen(state: state, mode: PinSetupMode.verify),
+    ));
+    return ok == 'ok';
+  }
+
+  Future<void> _turnLockOff() async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    if (!await _verifyPin()) return;
+    await state.removePin();
+    messenger.showSnackBar(SnackBar(content: Text(l.pinOff)));
+  }
+
+  Future<void> _changePin() async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    if (!await _verifyPin()) return;
+    final pin = await navigator.push<String>(MaterialPageRoute(
+      builder: (_) => PinSetupScreen(state: state, mode: PinSetupMode.create),
+    ));
+    if (pin == null) return;
+    await state.setPin(pin);
+    messenger.showSnackBar(SnackBar(content: Text(l.pinSet)));
+  }
+
+  Future<void> _setReminder(bool on) async {
+    final l = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
+    if (on && !await ReminderService.requestPermission()) {
+      messenger.showSnackBar(
+          SnackBar(content: Text(l.notificationsBlocked)));
+      return;
+    }
+    await state.setReminder(on: on);
+  }
+
+  Future<void> _pickReminderTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(
+          hour: state.reminderMinutes ~/ 60,
+          minute: state.reminderMinutes % 60),
+    );
+    if (picked != null) {
+      await state.setReminder(minutes: picked.hour * 60 + picked.minute);
+    }
   }
 
   Future<void> _pickLanguage() async {

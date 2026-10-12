@@ -8,6 +8,7 @@ import 'app_state.dart';
 import 'l10n/l10n.dart';
 import 'photo_store.dart';
 import 'platform.dart';
+import 'screens/lock_screen.dart';
 import 'screens/root_shell.dart';
 import 'screens/startup_error_screen.dart';
 import 'screens/welcome_screen.dart';
@@ -58,6 +59,9 @@ class PocketTallyApp extends StatelessWidget {
         // Dates (DateFormat) follow the app language.
         Intl.defaultLocale = language;
         return MaterialApp(
+          // A fresh start (welcome screen, or after "Reset the app") also
+          // clears every open page.
+          key: ValueKey(state.onboarded),
           title: 'PocketTally',
           debugShowCheckedModeBanner: false,
           locale: Locale(language),
@@ -74,6 +78,9 @@ class PocketTallyApp extends StatelessWidget {
           home: state.onboarded
               ? RootShell(state: state)
               : WelcomeScreen(state: state),
+          // The PIN screen covers every page while the app is locked.
+          builder: (context, child) =>
+              AppLockGate(state: state, child: child ?? const SizedBox()),
         );
       },
     );

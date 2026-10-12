@@ -713,5 +713,47 @@
   "sectionAppearance": "Appearance",
   "sectionData": "Data",
   "sectionAbout": "About",
-  "seeAllEntries": "See all entries"
+  "seeAllEntries": "See all entries",
+  "security": "Security",
+  "appLock": "App lock",
+  "appLockSubtitle": "Ask for a 4-digit PIN when the app opens",
+  "changePin": "Change PIN",
+  "lockAfter": "Lock after",
+  "lockImmediately": "Immediately",
+  "lockAfterMinutes": "{count, plural, =1{After 1 minute} other{After {count} minutes}}",
+  "@lockAfterMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "enterPin": "Enter your PIN",
+  "appLocked": "PocketTally is locked",
+  "wrongPin": "Wrong PIN",
+  "tooManyTries": "Too many tries. Try again in {seconds} s.",
+  "@tooManyTries": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "createPin": "Choose a 4-digit PIN",
+  "confirmPin": "Enter the PIN again",
+  "pinsDontMatch": "The PINs don't match. Try again.",
+  "currentPin": "Enter your current PIN",
+  "pinSet": "App lock is on",
+  "pinOff": "App lock is off",
+  "forgotPin": "Forgot PIN?",
+  "resetAppTitle": "Reset the app?",
+  "resetAppBody": "Without the PIN, the only way back in is to delete everything on this device: entries, categories, photos and settings. You can restore a backup file afterwards. This cannot be undone.",
+  "resetApp": "Delete everything",
+  "pinForgetNote": "If you forget the PIN, the app can only be reset, which deletes all data. Keep a backup.",
+  "reminder": "Reminder",
+  "dailyReminder": "Daily reminder",
+  "dailyReminderSubtitle": "Only on days you haven't added anything",
+  "reminderTime": "Time",
+  "reminderBody": "Did you spend anything today? Add it in a few seconds.",
+  "notificationsBlocked": "Notifications are turned off for PocketTally. Allow them in your phone's settings."
 }
