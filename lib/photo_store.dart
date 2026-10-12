@@ -57,6 +57,37 @@ class PhotoStore {
     return name;
   }
 
+  /// Bill photo bytes for a backup, or null when the file is gone.
+  static List<int>? readBill(String name) {
+    final f = file(name);
+    try {
+      return f != null && f.existsSync() ? f.readAsBytesSync() : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Puts a bill photo from a backup back (keeps an existing file).
+  static Future<void> writeBill(String name, List<int> bytes) async {
+    if (_dirPath == null) await init();
+    final f = File(p.join(_dirPath!, name));
+    if (!await f.exists()) await f.writeAsBytes(bytes, flush: true);
+  }
+
+  /// Deletes bill photos no entry uses any more (after a delete, a changed
+  /// photo or a restore). Runs at start-up, so Undo still finds its photo.
+  static Future<void> cleanOrphans(Set<String> used) async {
+    final path = _dirPath;
+    if (path == null) return;
+    try {
+      await for (final f in Directory(path).list()) {
+        if (f is File && !used.contains(p.basename(f.path))) {
+          await f.delete();
+        }
+      }
+    } catch (_) {}
+  }
+
   /// Deletes every bill photo and the profile photo (used by "Reset the
   /// app").
   static Future<void> deleteAll() async {

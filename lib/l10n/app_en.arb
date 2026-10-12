@@ -755,5 +755,36 @@
   "dailyReminderSubtitle": "Only on days you haven't added anything",
   "reminderTime": "Time",
   "reminderBody": "Did you spend anything today? Add it in a few seconds.",
-  "notificationsBlocked": "Notifications are turned off for PocketTally. Allow them in your phone's settings."
+  "notificationsBlocked": "Notifications are turned off for PocketTally. Allow them in your phone's settings.",
+  "duplicate": "Duplicate",
+  "duplicateHint": "Same amount, category and note, dated today",
+  "carryOver": "Carry over what's left",
+  "carryOverHint": "Unused monthly budget is added to the next month",
+  "carriedOver": "{amount} left over from {month}",
+  "@carriedOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "autoBackup": "Auto backup",
+  "howOften": "How often",
+  "savedIn": "Saved in",
+  "keepsLastBackups": "The last 5 backups are kept",
+  "lastBackupAt": "Last backup: {date}",
+  "@lastBackupAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noBackupYet": "No backup yet",
+  "includeBillPhotos": "Include bill photos",
+  "includeBillPhotosHint": "Bigger backup file, but bill photos are saved too",
+  "autoBackupFailed": "The last auto backup could not be saved"
 }

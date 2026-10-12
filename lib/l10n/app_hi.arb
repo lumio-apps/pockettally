@@ -331,5 +331,19 @@
   "dailyReminderSubtitle": "सिर्फ़ उन दिनों जब आपने कुछ नहीं जोड़ा",
   "reminderTime": "समय",
   "reminderBody": "आज कुछ खर्च किया? कुछ ही सेकंड में जोड़ दें।",
-  "notificationsBlocked": "PocketTally के लिए सूचनाएँ बंद हैं। फ़ोन की सेटिंग्स में इन्हें चालू करें।"
+  "notificationsBlocked": "PocketTally के लिए सूचनाएँ बंद हैं। फ़ोन की सेटिंग्स में इन्हें चालू करें।",
+  "duplicate": "डुप्लिकेट",
+  "duplicateHint": "वही राशि, श्रेणी और नोट, आज की तारीख़ के साथ",
+  "carryOver": "बचा हुआ आगे ले जाएँ",
+  "carryOverHint": "महीने का बचा बजट अगले महीने में जुड़ जाता है",
+  "carriedOver": "{month} से {amount} बचा",
+  "autoBackup": "ऑटो बैकअप",
+  "howOften": "कितनी बार",
+  "savedIn": "कहाँ सेव होता है",
+  "keepsLastBackups": "आख़िरी 5 बैकअप रखे जाते हैं",
+  "lastBackupAt": "आख़िरी बैकअप: {date}",
+  "noBackupYet": "अभी तक कोई बैकअप नहीं",
+  "includeBillPhotos": "बिल फ़ोटो भी शामिल करें",
+  "includeBillPhotosHint": "बैकअप फ़ाइल बड़ी होगी, पर बिल फ़ोटो भी बचेंगी",
+  "autoBackupFailed": "पिछला ऑटो बैकअप सेव नहीं हो सका"
 }

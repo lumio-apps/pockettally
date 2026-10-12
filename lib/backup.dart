@@ -22,6 +22,7 @@ class BackupData {
     this.decimals,
     this.palette,
     this.profilePhoto,
+    this.photos = const {},
     DateTime? exportedAt,
   }) : exportedAt = exportedAt ?? DateTime.now();
 
@@ -50,6 +51,10 @@ class BackupData {
 
   /// Profile photo (JPEG/PNG bytes), stored as base64; null if none.
   final List<int>? profilePhoto;
+
+  /// Bill photos by file name (only in backups made "with bill photos").
+  /// Entries keep their photo name only when the photo is included.
+  final Map<String, List<int>> photos;
   final DateTime exportedAt;
 
   String toJsonString() => const JsonEncoder.withIndent(' ').convert({
@@ -88,6 +93,8 @@ class BackupData {
               'note': e.note,
               'period': e.period?.name,
               if (e.tags.isNotEmpty) 'tags': e.tags,
+              if (e.photo != null && photos.containsKey(e.photo))
+                'photo': e.photo,
             },
         ],
         'recurring': [
@@ -126,6 +133,10 @@ class BackupData {
               'note': d.note,
             },
         ],
+        if (photos.isNotEmpty)
+          'photos': {
+            for (final p in photos.entries) p.key: base64Encode(p.value),
+          },
         'goals': [
           for (final g in goals)
             {
@@ -182,8 +193,18 @@ class BackupData {
             tags: [
               for (final t in (e['tags'] as List<dynamic>? ?? [])) t as String,
             ],
+            photo: e['photo'] as String?,
           ),
       ];
+      final photos = <String, List<int>>{};
+      final rawPhotos = decoded['photos'];
+      if (rawPhotos is Map<String, dynamic>) {
+        for (final p in rawPhotos.entries) {
+          final bytes = _photo(p.value);
+          // Only plain file names, never a path.
+          if (bytes != null && _safeName(p.key)) photos[p.key] = bytes;
+        }
+      }
       IncomePeriod? period(Object? v) =>
           v == null ? null : IncomePeriod.values.byName(v as String);
       final recurring = [
@@ -244,6 +265,7 @@ class BackupData {
         decimals: settings['decimals'] as int?,
         palette: settings['palette'] as String?,
         profilePhoto: _photo(settings['profilePhoto']),
+        photos: photos,
         categories: categories,
         entries: entries,
         exportedAt: DateTime.tryParse(decoded['exportedAt'] as String? ?? ''),
@@ -252,6 +274,9 @@ class BackupData {
       throw const FormatException('damaged');
     }
   }
+
+  static bool _safeName(String name) =>
+      RegExp(r'^[A-Za-z0-9_.-]+$').hasMatch(name) && !name.startsWith('.');
 
   /// A damaged photo never stops a restore: it is just left out.
   static List<int>? _photo(Object? v) {

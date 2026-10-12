@@ -62,7 +62,7 @@ Use **Back up / Restore** to move it between a phone and a computer.
 **Track**
 - Income (daily, weekly or monthly) and expenses in one list
 - Quick add with the **+** button: expense, income, lend/borrow or savings goal
-- Simple math in the amount field (`120+45`)
+- Simple math in the amount field (`120+45`), and **duplicate** any entry
 - **Recurring entries** like salary or rent, added automatically
 - **Favorites** for one-tap entries, **tags** like `#trip`, and **bill photos**
 
@@ -76,12 +76,13 @@ Use **Back up / Restore** to move it between a phone and a computer.
 - **PDF report** of any period, made on the device
 
 **Plan**
-- **Budgets:** a monthly limit and a limit per category, with warnings
+- **Budgets:** a monthly limit and a limit per category, with warnings, and optional carry-over of what's left
 - **Lend & Borrow:** who owes you, whom you owe, part payments
 - **Savings goals** with progress
 
 **Your data, your way**
-- **Backup and restore** to a file you choose
+- **Backup and restore** to a file you choose, with or without bill photos
+- **Auto backup** every day or week, the last 5 kept
 - **CSV export and import** for Excel, LibreOffice or Google Sheets
 - **Categories:** add, rename, recolor, reorder, hide or delete
 

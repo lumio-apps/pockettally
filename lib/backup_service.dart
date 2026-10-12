@@ -18,7 +18,9 @@ class BackupService {
     final stamp = '${now.year}-${now.month.toString().padLeft(2, '0')}-'
         '${now.day.toString().padLeft(2, '0')}';
     final bytes =
-        Uint8List.fromList(utf8.encode(state.createBackup().toJsonString()));
+        Uint8List.fromList(utf8.encode(state
+            .createBackup(withPhotos: state.backupWithPhotos)
+            .toJsonString()));
     return saveBytesAs(
       dialogTitle: dialogTitle,
       fileName: 'pockettally-backup-$stamp.json',

@@ -294,7 +294,8 @@ class _BalanceCard extends StatelessWidget {
     final income = state.incomeIn(month);
     final expense = state.expenseIn(month);
     final balance = income - expense;
-    final limit = state.monthlyBudgetMinor;
+    final limit = state.monthlyLimitFor(month);
+    final carried = state.carriedOverInto(month);
     final over = state.overBudgetCategories(month);
     final brand = BrandColors.of(context);
     final l = context.l10n;
@@ -361,8 +362,11 @@ class _BalanceCard extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                    l.monthlyBudgetAmount(
-                                        state.formatMoney(limit)),
+                                    carried > 0
+                                        ? '${l.monthlyBudgetAmount(state.formatMoney(limit))}'
+                                            ' (+${state.formatMoney(carried)})'
+                                        : l.monthlyBudgetAmount(
+                                            state.formatMoney(limit)),
                                     style: label),
                               ),
                               Text(

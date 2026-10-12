@@ -22,7 +22,10 @@ class BudgetsScreen extends StatelessWidget {
         final theme = Theme.of(context);
         final l = context.l10n;
         final now = DateTime.now();
-        final limit = state.monthlyBudgetMinor;
+        final base = state.monthlyBudgetMinor;
+        final limit = state.monthlyLimitFor(now);
+        final carried = state.carriedOverInto(now);
+        final prevMonth = DateTime(now.year, now.month - 1, 1);
         final categories = state.categoriesFor(EntryType.expense);
 
         return Scaffold(
@@ -41,20 +44,37 @@ class BudgetsScreen extends StatelessWidget {
                     children: [
                       Text(l.monthlyBudget, style: theme.textTheme.titleMedium),
                       const SizedBox(height: 12),
-                      if (limit > 0)
+                      if (limit > 0) ...[
+                        if (carried > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              l.carriedOver(state.formatMoney(carried),
+                                  DateFormat.MMMM().format(prevMonth)),
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          ),
                         BudgetBar(
                           state: state,
                           spent: state.expenseIn(now),
                           limit: limit,
-                        )
-                      else
+                        ),
+                      ] else
                         Text(l.noMonthlyLimit),
+                      if (base > 0)
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l.carryOver),
+                          subtitle: Text(l.carryOverHint),
+                          value: state.budgetRollover,
+                          onChanged: state.setBudgetRollover,
+                        ),
                       const SizedBox(height: 8),
                       Align(
                         alignment: AlignmentDirectional.centerEnd,
                         child: TextButton(
                           onPressed: () => showMonthlyBudgetDialog(context, state),
-                          child: Text(limit > 0 ? l.change : l.setMonthlyBudget),
+                          child: Text(base > 0 ? l.change : l.setMonthlyBudget),
                         ),
                       ),
                     ],

@@ -209,6 +209,44 @@ class AppState extends ChangeNotifier {
     await load();
   }
 
+  // ---- auto backup ----
+
+  bool get autoBackupOn => _prefs.getBool('auto_backup_on') ?? false;
+
+  /// 1 = every day, 7 = every week (default).
+  int get autoBackupDays => _prefs.getInt('auto_backup_days') == 1 ? 1 : 7;
+
+  /// Backups (manual and automatic) also carry the bill photos.
+  bool get backupWithPhotos => _prefs.getBool('backup_photos') ?? false;
+
+  DateTime? get lastAutoBackup {
+    final ms = _prefs.getInt('auto_backup_last');
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  /// Where automatic backups go on this device (shown in the profile).
+  String? get autoBackupFolder => _prefs.getString('auto_backup_dir');
+
+  /// True when the last automatic backup could not be written.
+  bool get autoBackupFailed => _prefs.getBool('auto_backup_failed') ?? false;
+
+  Future<void> setAutoBackup({bool? on, int? days, bool? withPhotos}) async {
+    if (on != null) await _prefs.setBool('auto_backup_on', on);
+    if (days != null) await _prefs.setInt('auto_backup_days', days);
+    if (withPhotos != null) await _prefs.setBool('backup_photos', withPhotos);
+    notifyListeners();
+  }
+
+  Future<void> markAutoBackup({required bool ok, String? folder}) async {
+    await _prefs.setBool('auto_backup_failed', !ok);
+    if (ok) {
+      await _prefs.setInt(
+          'auto_backup_last', DateTime.now().millisecondsSinceEpoch);
+    }
+    if (folder != null) await _prefs.setString('auto_backup_dir', folder);
+    notifyListeners();
+  }
+
   // ---- daily reminder ----
 
   bool get reminderOn => _prefs.getBool('reminder_on') ?? false;
@@ -477,6 +515,30 @@ class AppState extends ChangeNotifier {
       .where((c) => expenseForCategory(c.name, month) > c.budgetMinor!)
       .toList();
 
+  /// Whether unused monthly budget is added to the next month.
+  bool get budgetRollover => _prefs.getBool('budget_rollover') ?? false;
+
+  Future<void> setBudgetRollover(bool on) async {
+    await _prefs.setBool('budget_rollover', on);
+    notifyListeners();
+  }
+
+  /// Monthly budget left unused in the month before [month], added to
+  /// [month] when carry-over is on. Only the month just before counts (no
+  /// piling up), and only if the app was used in it.
+  int carriedOverInto(DateTime month) {
+    final base = monthlyBudgetMinor;
+    if (!budgetRollover || base <= 0) return 0;
+    final prev = DateTime(month.year, month.month - 1, 1);
+    if (entriesInMonth(prev).isEmpty) return 0;
+    final left = base - expenseIn(prev);
+    return left > 0 ? left : 0;
+  }
+
+  /// The monthly limit for [month], with any carried-over budget.
+  int monthlyLimitFor(DateTime month) =>
+      monthlyBudgetMinor <= 0 ? 0 : monthlyBudgetMinor + carriedOverInto(month);
+
   /// A short warning when [e] (just saved) pushed a budget over its limit.
   String? budgetWarningFor(Entry e, AppLocalizations l) {
     if (e.isIncome) return null;
@@ -489,7 +551,7 @@ class AppState extends ChangeNotifier {
             formatMoney(spent), formatMoney(c.budgetMinor!)));
       }
     }
-    final limit = monthlyBudgetMinor;
+    final limit = monthlyLimitFor(e.date);
     if (limit > 0) {
       final spent = expenseIn(e.date);
       if (spent > limit) {
@@ -502,7 +564,9 @@ class AppState extends ChangeNotifier {
 
   // ---- backup / restore ----
 
-  BackupData createBackup() => BackupData(
+  /// Everything for a backup file; [withPhotos] also packs the bill photos.
+  BackupData createBackup({bool withPhotos = false}) => BackupData(
+        photos: withPhotos ? _billPhotos() : const {},
         userName: userName,
         currencyCode: currency.code,
         weekStartsOnSunday: weekStartsOnSunday,
@@ -519,6 +583,17 @@ class AppState extends ChangeNotifier {
         favorites: favorites,
       );
 
+  Map<String, List<int>> _billPhotos() {
+    final photos = <String, List<int>>{};
+    for (final e in entries) {
+      final name = e.photo;
+      if (name == null || photos.containsKey(name)) continue;
+      final bytes = PhotoStore.readBill(name);
+      if (bytes != null) photos[name] = bytes;
+    }
+    return photos;
+  }
+
   List<int>? _profilePhotoBytes() {
     try {
       return profilePhotoFile?.readAsBytesSync();
@@ -529,6 +604,11 @@ class AppState extends ChangeNotifier {
 
   /// Replaces all data and settings with the backup.
   Future<void> restoreBackup(BackupData b) async {
+    for (final p in b.photos.entries) {
+      try {
+        await PhotoStore.writeBill(p.key, p.value);
+      } catch (_) {}
+    }
     await AppDatabase.instance
         .replaceAll(b.categories, b.entries, b.debts, b.goals,
             recurring: b.recurring, favorites: b.favorites);

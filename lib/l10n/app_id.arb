@@ -331,5 +331,19 @@
   "dailyReminderSubtitle": "Hanya pada hari Anda belum menambahkan apa pun",
   "reminderTime": "Waktu",
   "reminderBody": "Ada pengeluaran hari ini? Tambahkan dalam beberapa detik.",
-  "notificationsBlocked": "Notifikasi PocketTally dimatikan. Izinkan di pengaturan ponsel."
+  "notificationsBlocked": "Notifikasi PocketTally dimatikan. Izinkan di pengaturan ponsel.",
+  "duplicate": "Duplikat",
+  "duplicateHint": "Jumlah, kategori, dan catatan sama, dengan tanggal hari ini",
+  "carryOver": "Bawa sisa ke bulan depan",
+  "carryOverHint": "Anggaran bulanan yang tidak terpakai ditambahkan ke bulan berikutnya",
+  "carriedOver": "Sisa {amount} dari {month}",
+  "autoBackup": "Cadangan otomatis",
+  "howOften": "Seberapa sering",
+  "savedIn": "Disimpan di",
+  "keepsLastBackups": "5 cadangan terakhir disimpan",
+  "lastBackupAt": "Cadangan terakhir: {date}",
+  "noBackupYet": "Belum ada cadangan",
+  "includeBillPhotos": "Sertakan foto struk",
+  "includeBillPhotosHint": "File lebih besar, tetapi foto struk ikut tersimpan",
+  "autoBackupFailed": "Cadangan otomatis terakhir gagal disimpan"
 }

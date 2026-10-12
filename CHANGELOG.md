@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.9
+
+- Auto backup (Profile › Data): a backup file every week or every day, made when you open the app. On Android it goes to Documents/PocketTally, which stays even if the app is removed (older phones: the app's folder on the phone storage). The last 5 are kept
+- Backups can include bill photos ("Include bill photos"); restore brings them back
+- Duplicate an entry: long-press it, or open it and tap the copy button. The copy is dated today
+- Budgets: "Carry over what's left" adds last month's unused monthly budget to this month
+- Bill photos of deleted entries (or replaced photos) are removed from the phone
+
 ## 0.9.8
 
 - App lock: turn it on in your profile (Security) and choose a 4-digit PIN. The app asks for it when it opens and after it was in the background (immediately, after 1 or 5 minutes). After 5 wrong PINs you wait 30 seconds. Forgot the PIN? The app can be reset (all data is deleted; restore a backup afterwards). The PIN is stored only as a salted hash

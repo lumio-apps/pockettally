@@ -331,5 +331,19 @@
   "dailyReminderSubtitle": "Seulement les jours où vous n'avez rien ajouté",
   "reminderTime": "Heure",
   "reminderBody": "Avez-vous dépensé quelque chose aujourd'hui ? Ajoutez-le en quelques secondes.",
-  "notificationsBlocked": "Les notifications de PocketTally sont désactivées. Autorisez-les dans les réglages du téléphone."
+  "notificationsBlocked": "Les notifications de PocketTally sont désactivées. Autorisez-les dans les réglages du téléphone.",
+  "duplicate": "Dupliquer",
+  "duplicateHint": "Même montant, catégorie et note, à la date du jour",
+  "carryOver": "Reporter le reste",
+  "carryOverHint": "Le budget mensuel non utilisé s'ajoute au mois suivant",
+  "carriedOver": "{amount} restant de {month}",
+  "autoBackup": "Sauvegarde auto",
+  "howOften": "Fréquence",
+  "savedIn": "Enregistrée dans",
+  "keepsLastBackups": "Les 5 dernières sauvegardes sont gardées",
+  "lastBackupAt": "Dernière sauvegarde : {date}",
+  "noBackupYet": "Pas encore de sauvegarde",
+  "includeBillPhotos": "Inclure les photos de factures",
+  "includeBillPhotosHint": "Fichier plus gros, mais les photos sont gardées aussi",
+  "autoBackupFailed": "La dernière sauvegarde auto n'a pas pu être enregistrée"
 }

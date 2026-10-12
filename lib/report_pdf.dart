@@ -93,7 +93,7 @@ class ReportPdf {
 
     final isWholeMonth = start.day == 1 &&
         end == DateTime(start.year, start.month + 1, 1);
-    final budget = state.monthlyBudgetMinor;
+    final budget = state.monthlyLimitFor(start);
 
     const small = pw.TextStyle(fontSize: 9, color: _muted);
     const headerStyle =

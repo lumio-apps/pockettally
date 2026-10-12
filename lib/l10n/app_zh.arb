@@ -331,5 +331,19 @@
   "dailyReminderSubtitle": "仅在当天没有添加任何记录时",
   "reminderTime": "时间",
   "reminderBody": "今天有花钱吗？几秒钟就能记下来。",
-  "notificationsBlocked": "PocketTally 的通知已关闭。请在手机设置中开启。"
+  "notificationsBlocked": "PocketTally 的通知已关闭。请在手机设置中开启。",
+  "duplicate": "复制",
+  "duplicateHint": "相同金额、分类和备注，日期为今天",
+  "carryOver": "结转剩余预算",
+  "carryOverHint": "未用完的月度预算会加到下个月",
+  "carriedOver": "{month}剩余 {amount}",
+  "autoBackup": "自动备份",
+  "howOften": "频率",
+  "savedIn": "保存位置",
+  "keepsLastBackups": "保留最近 5 份备份",
+  "lastBackupAt": "上次备份：{date}",
+  "noBackupYet": "还没有备份",
+  "includeBillPhotos": "包含账单照片",
+  "includeBillPhotosHint": "备份文件更大，但账单照片也会保存",
+  "autoBackupFailed": "上次自动备份保存失败"
 }

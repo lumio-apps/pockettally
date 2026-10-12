@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_state.dart';
+import 'auto_backup.dart';
 import 'l10n/l10n.dart';
 import 'photo_store.dart';
 import 'platform.dart';
@@ -39,10 +40,18 @@ Future<void> main() async {
   }
   try {
     await PhotoStore.init();
+    // Bill photos of deleted entries (kept until now for Undo).
+    // Skipped when there are no entries at all, to be safe.
+    if (state.entries.isNotEmpty) {
+      await PhotoStore.cleanOrphans(
+          state.entries.map((e) => e.photo).whereType<String>().toSet());
+    }
   } catch (e) {
     debugPrint('Photo folder not ready: $e');
   }
   runApp(PocketTallyApp(state: state));
+  // Weekly (or daily) backup file, if it is due.
+  AutoBackup.runIfDue(state).catchError((_) => false);
 }
 
 class PocketTallyApp extends StatelessWidget {

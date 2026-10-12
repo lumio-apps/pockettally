@@ -331,5 +331,19 @@
   "dailyReminderSubtitle": "何も追加していない日だけ",
   "reminderTime": "時刻",
   "reminderBody": "今日は何か使いましたか？数秒で記録できます。",
-  "notificationsBlocked": "PocketTally の通知がオフになっています。スマホの設定で許可してください。"
+  "notificationsBlocked": "PocketTally の通知がオフになっています。スマホの設定で許可してください。",
+  "duplicate": "複製",
+  "duplicateHint": "同じ金額・カテゴリ・メモで今日の日付",
+  "carryOver": "残りを繰り越す",
+  "carryOverHint": "使わなかった月の予算を翌月に加えます",
+  "carriedOver": "{month}からの繰越 {amount}",
+  "autoBackup": "自動バックアップ",
+  "howOften": "頻度",
+  "savedIn": "保存先",
+  "keepsLastBackups": "最新 5 件のバックアップを保持します",
+  "lastBackupAt": "前回のバックアップ：{date}",
+  "noBackupYet": "まだバックアップはありません",
+  "includeBillPhotos": "レシート写真も含める",
+  "includeBillPhotosHint": "ファイルは大きくなりますが、写真も保存されます",
+  "autoBackupFailed": "前回の自動バックアップを保存できませんでした"
 }

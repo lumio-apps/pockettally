@@ -331,5 +331,19 @@
   "dailyReminderSubtitle": "فقط في الأيام التي لم تضف فيها شيئًا",
   "reminderTime": "الوقت",
   "reminderBody": "هل صرفت شيئًا اليوم؟ أضفه في ثوانٍ.",
-  "notificationsBlocked": "إشعارات PocketTally متوقفة. فعّلها من إعدادات الهاتف."
+  "notificationsBlocked": "إشعارات PocketTally متوقفة. فعّلها من إعدادات الهاتف.",
+  "duplicate": "تكرار",
+  "duplicateHint": "نفس المبلغ والفئة والملاحظة بتاريخ اليوم",
+  "carryOver": "ترحيل المتبقي",
+  "carryOverHint": "تُضاف الميزانية الشهرية غير المستخدمة إلى الشهر التالي",
+  "carriedOver": "تبقّى {amount} من {month}",
+  "autoBackup": "نسخ احتياطي تلقائي",
+  "howOften": "كم مرة",
+  "savedIn": "يُحفظ في",
+  "keepsLastBackups": "يُحتفظ بآخر 5 نسخ احتياطية",
+  "lastBackupAt": "آخر نسخة: {date}",
+  "noBackupYet": "لا توجد نسخة احتياطية بعد",
+  "includeBillPhotos": "تضمين صور الفواتير",
+  "includeBillPhotosHint": "ملف أكبر، لكن تُحفظ صور الفواتير أيضًا",
+  "autoBackupFailed": "تعذّر حفظ آخر نسخة احتياطية تلقائية"
 }

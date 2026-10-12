@@ -25,7 +25,12 @@ class EntryFormScreen extends StatefulWidget {
     this.initialType = EntryType.expense,
     this.embedded = false,
     this.initialDate,
+    this.template,
   });
+
+  /// "Duplicate": a new entry filled in like this one (dated today, without
+  /// its bill photo).
+  final Entry? template;
 
   final AppState state;
   final Entry? entry;
@@ -77,12 +82,12 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
   @override
   void initState() {
     super.initState();
-    final e = widget.entry;
+    final e = widget.entry ?? widget.template;
     _type = e?.type ?? widget.initialType;
-    _date = e?.date ?? widget.initialDate ?? DateTime.now();
+    _date = widget.entry?.date ?? widget.initialDate ?? DateTime.now();
     _category = e?.category ?? _defaultCategory();
     _period = e?.period ?? IncomePeriod.monthly;
-    _photo = e?.photo;
+    _photo = widget.entry?.photo;
     // 320.00 -> "320", 12.50 -> "12.5" (or "12,5")
     _amountController = TextEditingController(
         text: e == null ? '' : widget.state.amountInput(e.amountMinor));
@@ -355,6 +360,17 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
             icon: const Icon(Icons.star_outline),
             onPressed: _saveFavorite,
           ),
+          if (_isEditing)
+            IconButton(
+              tooltip: l.duplicate,
+              icon: const Icon(Icons.copy_outlined),
+              onPressed: () => Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (_) => EntryFormScreen(
+                      state: widget.state, template: widget.entry),
+                ),
+              ),
+            ),
           if (_isEditing)
             IconButton(
               tooltip: l.delete,

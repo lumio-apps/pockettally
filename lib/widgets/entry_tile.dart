@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
+import '../screens/entry_form_screen.dart';
 
 const Color kIncomeColor = Color(0xFF1B7A4C);
 const Color kExpenseColor = Color(0xFFC0392B);
@@ -134,6 +135,12 @@ class EntryTile extends StatelessWidget {
               onTap: () => Navigator.pop(ctx, 'edit'),
             ),
             ListTile(
+              leading: const Icon(Icons.copy_outlined),
+              title: Text(l.duplicate),
+              subtitle: Text(l.duplicateHint),
+              onTap: () => Navigator.pop(ctx, 'duplicate'),
+            ),
+            ListTile(
               leading: const Icon(Icons.delete_outline, color: kExpenseColor),
               title: Text(l.delete,
                   style: const TextStyle(color: kExpenseColor)),
@@ -144,6 +151,11 @@ class EntryTile extends StatelessWidget {
       ),
     );
     if (action == 'edit') onTap();
+    if (action == 'duplicate' && context.mounted) {
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => EntryFormScreen(state: state, template: entry),
+      ));
+    }
     if (action == 'delete') {
       await deleteEntryWithUndo(messenger, l, state, entry);
     }

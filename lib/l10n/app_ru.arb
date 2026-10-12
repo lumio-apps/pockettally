@@ -331,5 +331,19 @@
   "dailyReminderSubtitle": "Только в дни, когда вы ничего не добавили",
   "reminderTime": "Время",
   "reminderBody": "Потратили что-то сегодня? Добавьте за пару секунд.",
-  "notificationsBlocked": "Уведомления PocketTally выключены. Разрешите их в настройках телефона."
+  "notificationsBlocked": "Уведомления PocketTally выключены. Разрешите их в настройках телефона.",
+  "duplicate": "Дублировать",
+  "duplicateHint": "Та же сумма, категория и заметка, сегодняшней датой",
+  "carryOver": "Переносить остаток",
+  "carryOverHint": "Неиспользованный месячный бюджет добавляется к следующему месяцу",
+  "carriedOver": "{amount} осталось с {month}",
+  "autoBackup": "Автокопия",
+  "howOften": "Как часто",
+  "savedIn": "Сохраняется в",
+  "keepsLastBackups": "Хранятся последние 5 копий",
+  "lastBackupAt": "Последняя копия: {date}",
+  "noBackupYet": "Копий пока нет",
+  "includeBillPhotos": "Включать фото чеков",
+  "includeBillPhotosHint": "Файл больше, но фото чеков тоже сохраняются",
+  "autoBackupFailed": "Последнюю автокопию не удалось сохранить"
 }

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../app_state.dart';
+import '../auto_backup.dart';
 import '../backup.dart';
 import '../backup_service.dart';
-import '../reminder.dart';
 import '../l10n/l10n.dart';
+import '../reminder.dart';
 import '../theme.dart';
 import '../update_checker.dart';
 import 'budgets_screen.dart';
@@ -207,6 +209,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   builder: (_) => BudgetsScreen(state: state),
                 )),
               ),
+              SwitchListTile(
+                secondary: const Icon(Icons.cloud_done_outlined),
+                title: Text(l.autoBackup),
+                subtitle: Text(_autoBackupStatus(l)),
+                value: state.autoBackupOn,
+                onChanged: _setAutoBackup,
+              ),
+              if (state.autoBackupOn) ...[
+                ListTile(
+                  leading: const Icon(Icons.event_repeat),
+                  title: Text(l.howOften),
+                  trailing: DropdownButton<int>(
+                    value: state.autoBackupDays,
+                    underline: const SizedBox.shrink(),
+                    items: [
+                      DropdownMenuItem(value: 1, child: Text(l.everyDay)),
+                      DropdownMenuItem(value: 7, child: Text(l.everyWeek)),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) state.setAutoBackup(days: v);
+                    },
+                  ),
+                ),
+                if (state.autoBackupFolder != null)
+                  ListTile(
+                    leading: const Icon(Icons.folder_outlined),
+                    title: Text(l.savedIn),
+                    subtitle: Text(
+                        '${_shortFolder(state.autoBackupFolder!)}\n${l.keepsLastBackups}'),
+                    isThreeLine: true,
+                  ),
+              ],
+              SwitchListTile(
+                secondary: const Icon(Icons.photo_library_outlined),
+                title: Text(l.includeBillPhotos),
+                subtitle: Text(l.includeBillPhotosHint),
+                value: state.backupWithPhotos,
+                onChanged: (v) => state.setAutoBackup(withPhotos: v),
+              ),
               ListTile(
                 leading: const Icon(Icons.upload_file_outlined),
                 title: Text(l.backUpData),
@@ -258,6 +299,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       },
     );
+  }
+
+  String _autoBackupStatus(AppLocalizations l) {
+    if (state.autoBackupOn && state.autoBackupFailed) return l.autoBackupFailed;
+    final last = state.lastAutoBackup;
+    if (last == null) return l.noBackupYet;
+    return l.lastBackupAt(DateFormat.yMMMd().add_Hm().format(last));
+  }
+
+  /// "/storage/emulated/0/Documents/PocketTally" -> "Documents/PocketTally".
+  String _shortFolder(String path) {
+    const phone = '/storage/emulated/0/';
+    return path.startsWith(phone) ? path.substring(phone.length) : path;
+  }
+
+  Future<void> _setAutoBackup(bool on) async {
+    await state.setAutoBackup(on: on);
+    // Make the first one right away, so the user sees where it went.
+    if (on) await AutoBackup.runIfDue(state, force: true);
   }
 
   Future<void> _turnLockOn() async {

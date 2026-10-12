@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../app_state.dart';
+import '../auto_backup.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
@@ -60,6 +61,9 @@ class _RootShellState extends State<RootShell>
     // Coming back to the app on a new day adds due recurring entries.
     _lifecycle = AppLifecycleListener(onResume: () {
       state.runRecurring().catchError((_) => 0);
+      // A new day may need a new reminder plan and a backup.
+      state.syncReminder();
+      AutoBackup.runIfDue(state).catchError((_) => false);
     });
   }
 

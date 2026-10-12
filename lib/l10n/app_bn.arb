@@ -331,5 +331,19 @@
   "dailyReminderSubtitle": "শুধু সেই দিনগুলোতে যেদিন কিছু যোগ করেননি",
   "reminderTime": "সময়",
   "reminderBody": "আজ কিছু খরচ করেছেন? কয়েক সেকেন্ডে যোগ করুন।",
-  "notificationsBlocked": "PocketTally-র নোটিফিকেশন বন্ধ। ফোনের সেটিংসে চালু করুন।"
+  "notificationsBlocked": "PocketTally-র নোটিফিকেশন বন্ধ। ফোনের সেটিংসে চালু করুন।",
+  "duplicate": "ডুপ্লিকেট",
+  "duplicateHint": "একই পরিমাণ, ক্যাটাগরি ও নোট, আজকের তারিখে",
+  "carryOver": "বাকিটা পরের মাসে নিন",
+  "carryOverHint": "মাসের অব্যবহৃত বাজেট পরের মাসে যোগ হয়",
+  "carriedOver": "{month} থেকে {amount} বাকি",
+  "autoBackup": "অটো ব্যাকআপ",
+  "howOften": "কত ঘন ঘন",
+  "savedIn": "কোথায় সেভ হয়",
+  "keepsLastBackups": "শেষ ৫টি ব্যাকআপ রাখা হয়",
+  "lastBackupAt": "শেষ ব্যাকআপ: {date}",
+  "noBackupYet": "এখনও কোনো ব্যাকআপ নেই",
+  "includeBillPhotos": "বিলের ছবিও রাখুন",
+  "includeBillPhotosHint": "ফাইল বড় হবে, তবে বিলের ছবিও থাকবে",
+  "autoBackupFailed": "শেষ অটো ব্যাকআপ সেভ করা যায়নি"
 }
