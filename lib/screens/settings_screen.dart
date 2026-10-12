@@ -7,7 +7,6 @@ import '../backup_service.dart';
 import '../l10n/l10n.dart';
 import '../theme.dart';
 import '../update_checker.dart';
-import '../widgets/profile_avatar.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
 import 'profile_screen.dart';
@@ -29,6 +28,9 @@ String paletteName(AppLocalizations l, AppPalette p) {
   }
 }
 
+/// The profile page: photo, name and money format at the top, then all
+/// app settings. Opened by tapping the photo on Home (Profile in the
+/// sidebar on wide windows).
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key, required this.state});
 
@@ -60,31 +62,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context, _) {
         final l = context.l10n;
         return Scaffold(
-          appBar: AppBar(title: Text(l.navSettings)),
+          appBar: AppBar(title: Text(l.profile)),
           body: ListView(
             padding: const EdgeInsets.only(bottom: 24),
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-                child: Card(
-                  margin: EdgeInsets.zero,
-                  child: ListTile(
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    leading: ProfileAvatar(state: state, radius: 24),
-                    title: Text(state.userName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
-                    subtitle: Text(l.profileSubtitle),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => ProfileScreen(state: state),
-                    )),
-                  ),
-                ),
-              ),
-              _SectionTitle(l.sectionAppearance),
+              ProfileSection(state: state),
+              SectionTitle(l.sectionAppearance),
               ListTile(
                 leading: const Icon(Icons.translate),
                 title: Text(l.language),
@@ -133,7 +116,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   },
                 ),
               ),
-              _SectionTitle(l.sectionData),
+              SectionTitle(l.sectionData),
               ListTile(
                 leading: const Icon(Icons.category_outlined),
                 title: Text(l.categories),
@@ -187,7 +170,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: Text(l.importCsvSubtitle),
                 onTap: _busy ? null : _importCsv,
               ),
-              _SectionTitle(l.sectionAbout),
+              SectionTitle(l.sectionAbout),
               if (kUpdaterEnabled)
                 ListTile(
                   leading: _checking
@@ -426,28 +409,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => _UpdateDialog(update: update),
-    );
-  }
-}
-
-/// A small colored heading above a group of settings.
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 20, 16, 4),
-      child: Text(
-        text,
-        style: theme.textTheme.labelLarge?.copyWith(
-          color: theme.colorScheme.primary,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
     );
   }
 }

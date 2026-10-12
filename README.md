@@ -42,8 +42,7 @@
 ### Windows
 
 From [Releases](https://github.com/lumio-apps/pockettally/releases) take
-`…-windows-setup.exe` (installs for your user, no admin rights) or
-`…-windows.zip` (portable, unzip and run `pockettally.exe`).
+`…-windows-setup.exe` (installs for your user, no admin rights).
 Windows may show "Windows protected your PC" because the app is not signed
 with a paid certificate: click **More info → Run anyway**.
 
@@ -51,7 +50,7 @@ with a paid certificate: click **More info → Run anyway**.
 
 Take `…-linux-x86_64.AppImage`, make it executable
 (`chmod +x pockettally-*.AppImage`) and run it. It updates itself from
-Settings › Check for updates. A `…-linux-x86_64.tar.gz` is there too.
+Settings › Check for updates.
 
 Data on a computer is stored in your user's app data folder
 (`%APPDATA%\Lumio Apps\PocketTally` on Windows,
@@ -60,19 +59,9 @@ move it between a phone and a computer.
 
 ### Android
 
-Get the latest APK from [Releases](https://github.com/lumio-apps/pockettally/releases):
-
-| File | For |
-|---|---|
-| `…-arm64-v8a.apk` | Almost all phones from the last 7–8 years |
-| `…-armeabi-v7a.apk` | Older or low-cost phones (32-bit) |
-| `…-x86_64.apk` | Emulators and some tablets |
-| `…-universal.apk` | Any device (bigger file) |
-
-Not sure? Take the universal APK. After that, "Check for updates" in the app
-picks the smaller file for your phone by itself. Once a phone has a
-processor-specific APK installed, update it with the same kind of file
-(or through the app), not with the universal one.
+Take `…-android.apk` from [Releases](https://github.com/lumio-apps/pockettally/releases).
+It works on every phone and installs over any earlier PocketTally APK.
+After that, "Check for updates" in the app keeps it up to date.
 
 ## Translations
 

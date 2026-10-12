@@ -67,13 +67,20 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     return names.isEmpty ? [kOtherCategory] : names;
   }
 
+  /// The category used last time for this type, else the first one.
+  String _defaultCategory() {
+    final names = _categories;
+    final last = widget.state.lastCategory(_type);
+    return last != null && names.contains(last) ? last : names.first;
+  }
+
   @override
   void initState() {
     super.initState();
     final e = widget.entry;
     _type = e?.type ?? widget.initialType;
     _date = e?.date ?? widget.initialDate ?? DateTime.now();
-    _category = e?.category ?? _categories.first;
+    _category = e?.category ?? _defaultCategory();
     _period = e?.period ?? IncomePeriod.monthly;
     _photo = e?.photo;
     // 320.00 -> "320", 12.50 -> "12.5" (or "12,5")
@@ -201,6 +208,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       await widget.state.updateEntry(entry);
     } else {
       await widget.state.addEntry(entry);
+      await widget.state.setLastCategory(_type, _category);
       if (_repeat != null) {
         await widget.state.addRecurringFrom(entry, _repeat!);
       }
@@ -233,6 +241,32 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
         duration: const Duration(seconds: 5),
       ));
     }
+  }
+
+  /// Bottom sheet with every category of this type (searchable), and a
+  /// way to manage them.
+  Future<void> _pickCategory(List<String> names) async {
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) => _CategorySheet(
+        state: widget.state,
+        type: _type,
+        names: names,
+        selected: _category,
+      ),
+    );
+    if (!mounted || picked == null) return;
+    if (picked == _CategorySheet.manage) {
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) =>
+            CategoriesScreen(state: widget.state, initialType: _type),
+      ));
+      if (mounted) setState(() {});
+      return;
+    }
+    setState(() => _category = picked);
   }
 
   /// Saves what is in the form as a favorite for one-tap adding on Home.
@@ -347,7 +381,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                     selected: {_type},
                     onSelectionChanged: (s) => setState(() {
                       _type = s.first;
-                      _category = _categories.first;
+                      _category = _defaultCategory();
                     }),
                   ),
                   const SizedBox(height: 16),
@@ -392,35 +426,32 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                           ),
                   ),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (final c in categoryNames)
-                        ChoiceChip(
-                          label: Text(categoryLabel(l, c)),
-                          selected: c == _category,
-                          avatar: CircleAvatar(
+                  // One field like Note and Tags; tapping it opens the list.
+                  InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => _pickCategory(categoryNames),
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: l.category,
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: CircleAvatar(
+                            radius: 9,
                             backgroundColor:
-                                widget.state.colorFor(c, _type),
+                                widget.state.colorFor(_category, _type),
                           ),
-                          showCheckmark: false,
-                          onSelected: (_) => setState(() => _category = c),
                         ),
-                      ActionChip(
-                        avatar: const Icon(Icons.tune, size: 18),
-                        label: Text(l.manage),
-                        onPressed: () async {
-                          await Navigator.of(context).push(MaterialPageRoute(
-                            builder: (_) => CategoriesScreen(
-                              state: widget.state,
-                              initialType: _type,
-                            ),
-                          ));
-                          if (mounted) setState(() {});
-                        },
+                        suffixIcon: const Icon(Icons.arrow_drop_down),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14)),
                       ),
-                    ],
+                      child: Text(
+                        categoryLabel(l, _category),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium,
+                      ),
+                    ),
                   ),
                   if (isIncome) ...[
                     const SizedBox(height: 14),
@@ -584,6 +615,95 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The searchable list of categories for the entry form.
+class _CategorySheet extends StatefulWidget {
+  const _CategorySheet({
+    required this.state,
+    required this.type,
+    required this.names,
+    required this.selected,
+  });
+
+  /// Returned instead of a name when "Manage" is tapped.
+  static const String manage = '\u0000manage';
+
+  final AppState state;
+  final EntryType type;
+  final List<String> names;
+  final String selected;
+
+  @override
+  State<_CategorySheet> createState() => _CategorySheetState();
+}
+
+class _CategorySheetState extends State<_CategorySheet> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final q = _query.trim().toLowerCase();
+    final shown = [
+      for (final n in widget.names)
+        if (q.isEmpty ||
+            categoryLabel(l, n).toLowerCase().contains(q) ||
+            n.toLowerCase().contains(q))
+          n,
+    ];
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.92,
+      builder: (ctx, scroll) => Column(
+        children: [
+          if (widget.names.length > 6)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: l.search,
+                  prefixIcon: const Icon(Icons.search),
+                  isDense: true,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                onChanged: (v) => setState(() => _query = v),
+              ),
+            ),
+          Expanded(
+            child: ListView(
+              controller: scroll,
+              children: [
+                for (final n in shown)
+                  ListTile(
+                    leading: CircleAvatar(
+                      radius: 10,
+                      backgroundColor: widget.state.colorFor(n, widget.type),
+                    ),
+                    title: Text(categoryLabel(l, n)),
+                    selected: n == widget.selected,
+                    trailing:
+                        n == widget.selected ? const Icon(Icons.check) : null,
+                    onTap: () => Navigator.pop(context, n),
+                  ),
+                const Divider(),
+                ListTile(
+                  leading: Icon(Icons.tune, color: theme.colorScheme.primary),
+                  title: Text(l.manage,
+                      style: TextStyle(color: theme.colorScheme.primary)),
+                  onTap: () => Navigator.pop(context, _CategorySheet.manage),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

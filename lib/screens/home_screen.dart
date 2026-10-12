@@ -11,8 +11,8 @@ import 'calendar_screen.dart';
 import 'debts_screen.dart';
 import 'entry_form_screen.dart';
 import 'goals_screen.dart';
-import 'profile_screen.dart';
 import 'search_screen.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.state, required this.onOpenTab});
@@ -58,7 +58,7 @@ class HomeScreen extends StatelessWidget {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(28),
                           onTap: () =>
-                              _push(context, ProfileScreen(state: state)),
+                              _push(context, SettingsScreen(state: state)),
                           child: Row(
                             children: [
                               ProfileAvatar(state: state, radius: 22),

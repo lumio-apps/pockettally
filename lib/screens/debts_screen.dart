@@ -9,9 +9,12 @@ import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
 
 /// Money lent to and borrowed from people, and how much is still open.
 class DebtsScreen extends StatelessWidget {
-  const DebtsScreen({super.key, required this.state});
+  const DebtsScreen({super.key, required this.state, this.showAddButton = true});
 
   final AppState state;
+
+  /// False when shown as a phone tab: the app's + button adds instead.
+  final bool showAddButton;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +29,9 @@ class DebtsScreen extends StatelessWidget {
               tabs: [Tab(text: l.iLent), Tab(text: l.iBorrowed)],
             ),
           ),
-          floatingActionButton: FloatingActionButton.extended(
+          floatingActionButton: !showAddButton
+              ? null
+              : FloatingActionButton.extended(
             icon: const Icon(Icons.add),
             label: Text(l.add),
             onPressed: () {

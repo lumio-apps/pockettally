@@ -261,6 +261,14 @@ class AppState extends ChangeNotifier {
     await load();
   }
 
+  /// Category of the last new entry of this type, used as the default
+  /// for the next one.
+  String? lastCategory(EntryType type) =>
+      _prefs.getString('last_category_${type.name}');
+
+  Future<void> setLastCategory(EntryType type, String name) =>
+      _prefs.setString('last_category_${type.name}', name);
+
   Color colorFor(String categoryName, EntryType type) {
     for (final c in categories) {
       if (c.name == categoryName && c.type == type) return c.color;

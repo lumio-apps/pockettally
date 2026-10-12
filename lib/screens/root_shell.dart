@@ -35,9 +35,22 @@ class RootShell extends StatefulWidget {
   State<RootShell> createState() => _RootShellState();
 }
 
-class _RootShellState extends State<RootShell> {
+class _RootShellState extends State<RootShell>
+    with SingleTickerProviderStateMixin {
   AppPage _page = AppPage.home;
   late final AppLifecycleListener _lifecycle;
+
+  /// The menu that opens from the + button (phones).
+  late final AnimationController _menu = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 260),
+  )..addStatusListener((_) {
+      if (mounted) setState(() {});
+    });
+
+  bool get _menuOpen =>
+      _menu.status == AnimationStatus.forward ||
+      _menu.status == AnimationStatus.completed;
 
   AppState get state => widget.state;
 
@@ -52,18 +65,127 @@ class _RootShellState extends State<RootShell> {
 
   @override
   void dispose() {
+    _menu.dispose();
     _lifecycle.dispose();
     super.dispose();
   }
 
-  /// Used by Home: 1 = Insights, 2 = Budgets.
-  void _openTab(int i) => setState(() => _page = AppPage.values[i]);
+  /// True while the sidebar layout is shown.
+  bool _wideLayout = false;
+
+  /// Used by Home: 1 = Insights, 2 = Budgets. Phones have no Budgets tab,
+  /// so there it opens as its own screen.
+  void _openTab(int i) {
+    final p = AppPage.values[i];
+    if (!_wideLayout && p == AppPage.budgets) {
+      _closeMenu();
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => BudgetsScreen(state: state)));
+      return;
+    }
+    _go(p);
+  }
 
   void _add() {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) =>
           EntryFormScreen(state: state, initialType: EntryType.expense),
     ));
+  }
+
+  void _toggleMenu() => _menuOpen ? _menu.reverse() : _menu.forward();
+
+  void _closeMenu() {
+    if (_menuOpen) _menu.reverse();
+  }
+
+  void _go(AppPage p) {
+    _closeMenu();
+    setState(() => _page = p);
+  }
+
+  /// What the + button offers, nearest to the thumb last.
+  List<_AddOption> _addOptions(AppLocalizations l) => [
+        _AddOption(
+          icon: Icons.savings_outlined,
+          label: l.savingsGoals,
+          background: const Color(0xFFFFF0CC),
+          foreground: const Color(0xFF8A5A00),
+          screen: () => GoalsScreen(state: state),
+        ),
+        _AddOption(
+          icon: Icons.handshake_outlined,
+          label: l.lendAndBorrow,
+          background: const Color(0xFFDDE6FA),
+          foreground: const Color(0xFF2F4DA8),
+          // Straight to the form; the Lend/Borrow tab shows the list.
+          screen: () => DebtFormScreen(state: state),
+        ),
+        _AddOption(
+          icon: Icons.add,
+          label: l.income,
+          background: const Color(0xFFD7F3E6),
+          foreground: const Color(0xFF1B6E4C),
+          screen: () =>
+              EntryFormScreen(state: state, initialType: EntryType.income),
+        ),
+        _AddOption(
+          icon: Icons.remove,
+          label: l.expense,
+          background: const Color(0xFFFFE3DE),
+          foreground: const Color(0xFFB3261E),
+          screen: () =>
+              EntryFormScreen(state: state, initialType: EntryType.expense),
+        ),
+      ];
+
+  void _openFromMenu(_AddOption option) {
+    _menu.reverse();
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => option.screen()));
+  }
+
+  /// Wide windows: the same choices in a small animated dialog.
+  Future<void> _showAddDialog() async {
+    final l = context.l10n;
+    final picked = await showGeneralDialog<_AddOption>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black45,
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (ctx, _, __) => Center(
+        child: Material(
+          type: MaterialType.transparency,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final o in _addOptions(l).reversed)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: _AddMenuButton(
+                      option: o, onTap: () => Navigator.pop(ctx, o)),
+                ),
+            ],
+          ),
+        ),
+      ),
+      transitionBuilder: (ctx, animation, _, child) {
+        final curved =
+            CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween(begin: 0.92, end: 1.0).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+    if (picked != null && mounted) {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => picked.screen()));
+    }
   }
 
   void _search() {
@@ -81,12 +203,12 @@ class _RootShellState extends State<RootShell> {
       },
       child: Focus(
         autofocus: true,
-        child: LayoutBuilder(
-          builder: (context, constraints) =>
-              constraints.maxWidth >= kWideLayoutWidth
-                  ? _wide(context, constraints.maxWidth)
-                  : _narrow(context),
-        ),
+        child: LayoutBuilder(builder: (context, constraints) {
+          _wideLayout = constraints.maxWidth >= kWideLayoutWidth;
+          return _wideLayout
+              ? _wide(context, constraints.maxWidth)
+              : _narrow(context);
+        }),
       ),
     );
   }
@@ -95,68 +217,83 @@ class _RootShellState extends State<RootShell> {
 
   Widget _narrow(BuildContext context) {
     final l = context.l10n;
+    // Settings live in the profile (tap the photo on Home) and Budgets
+    // open from Home or the profile.
     const pages = [
       AppPage.home,
+      AppPage.lendBorrow,
       AppPage.insights,
-      AppPage.budgets,
-      AppPage.settings,
     ];
     final index = pages.contains(_page) ? pages.indexOf(_page) : 0;
-    return Scaffold(
-      body: IndexedStack(
-        index: index,
-        children: [
-          HomeScreen(state: state, onOpenTab: _openTab),
-          StatsScreen(state: state),
-          BudgetsScreen(state: state),
-          SettingsScreen(state: state),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        tooltip: l.addEntry,
-        onPressed: _add,
-        elevation: 4,
-        backgroundColor: BrandColors.of(context).brand,
-        foregroundColor: kAccent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: const Icon(Icons.add, size: 30),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        height: 72,
-        padding: EdgeInsets.zero,
-        child: Row(
+    return PopScope(
+      // Back closes the + menu first.
+      canPop: !_menuOpen,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _closeMenu();
+      },
+      child: Scaffold(
+        body: Stack(
           children: [
-            _NavItem(
-              icon: Icons.home_outlined,
-              selectedIcon: Icons.home_rounded,
-              label: l.navHome,
-              selected: index == 0,
-              onTap: () => setState(() => _page = AppPage.home),
+            IndexedStack(
+              index: index,
+              children: [
+                HomeScreen(state: state, onOpenTab: _openTab),
+                DebtsScreen(state: state, showAddButton: false),
+                StatsScreen(state: state),
+              ],
             ),
-            _NavItem(
-              icon: Icons.pie_chart_outline,
-              selectedIcon: Icons.pie_chart_rounded,
-              label: l.navInsights,
-              selected: index == 1,
-              onTap: () => setState(() => _page = AppPage.insights),
-            ),
-            const SizedBox(width: 72),
-            _NavItem(
-              icon: Icons.account_balance_wallet_outlined,
-              selectedIcon: Icons.account_balance_wallet_rounded,
-              label: l.navBudgets,
-              selected: index == 2,
-              onTap: () => setState(() => _page = AppPage.budgets),
-            ),
-            _NavItem(
-              icon: Icons.settings_outlined,
-              selectedIcon: Icons.settings_rounded,
-              label: l.navSettings,
-              selected: index == 3,
-              onTap: () => setState(() => _page = AppPage.settings),
+            _AddMenu(
+              animation: _menu,
+              options: _addOptions(l),
+              onPick: _openFromMenu,
+              onClose: _closeMenu,
             ),
           ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          tooltip: _menuOpen
+              ? MaterialLocalizations.of(context).closeButtonTooltip
+              : l.addEntry,
+          onPressed: _toggleMenu,
+          elevation: 4,
+          backgroundColor: BrandColors.of(context).brand,
+          foregroundColor: kAccent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          // + turns into x while the menu is open.
+          child: RotationTransition(
+            turns: Tween(begin: 0.0, end: 0.125).animate(
+                CurvedAnimation(parent: _menu, curve: Curves.easeOutCubic)),
+            child: const Icon(Icons.add, size: 30),
+          ),
+        ),
+        bottomNavigationBar: BottomAppBar(
+          height: 72,
+          padding: EdgeInsets.zero,
+          child: Row(
+            children: [
+              _NavItem(
+                icon: Icons.home_outlined,
+                selectedIcon: Icons.home_rounded,
+                label: l.navHome,
+                selected: index == 0,
+                onTap: () => _go(AppPage.home),
+              ),
+              _NavItem(
+                icon: Icons.handshake_outlined,
+                selectedIcon: Icons.handshake_rounded,
+                label: l.lendBorrowShort,
+                selected: index == 1,
+                onTap: () => _go(AppPage.lendBorrow),
+              ),
+              _NavItem(
+                icon: Icons.pie_chart_outline,
+                selectedIcon: Icons.pie_chart_rounded,
+                label: l.navInsights,
+                selected: index == 2,
+                onTap: () => _go(AppPage.insights),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -200,7 +337,7 @@ class _RootShellState extends State<RootShell> {
           _Sidebar(
             page: _page,
             onSelect: (p) => setState(() => _page = p),
-            onAdd: _add,
+            onAdd: _showAddDialog,
           ),
           Expanded(
             child: IndexedStack(
@@ -271,9 +408,9 @@ class _Sidebar extends StatelessWidget {
       ),
       (
         AppPage.settings,
-        Icons.settings_outlined,
-        Icons.settings_rounded,
-        l.navSettings
+        Icons.person_outline,
+        Icons.person_rounded,
+        l.profile
       ),
     ];
 
@@ -465,6 +602,196 @@ class _NavItem extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// One choice of the + menu.
+class _AddOption {
+  const _AddOption({
+    required this.icon,
+    required this.label,
+    required this.background,
+    required this.foreground,
+    required this.screen,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color background;
+  final Color foreground;
+  final Widget Function() screen;
+}
+
+/// A rounded button with a colored icon and a label.
+class _AddMenuButton extends StatelessWidget {
+  const _AddMenuButton({required this.option, required this.onTap});
+
+  final _AddOption option;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: 250,
+      child: Material(
+        color: theme.colorScheme.surfaceContainerHigh,
+        elevation: 3,
+        shape: const StadiumBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 8, 20, 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: option.background,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(option.icon, color: option.foreground),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    option.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The menu above the + button: a dimmed background and the choices,
+/// which slide up one after another.
+class _AddMenu extends StatelessWidget {
+  const _AddMenu({
+    required this.animation,
+    required this.options,
+    required this.onPick,
+    required this.onClose,
+  });
+
+  final Animation<double> animation;
+  final List<_AddOption> options;
+  final ValueChanged<_AddOption> onPick;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (context, _) {
+        final v = animation.value;
+        if (v == 0) return const SizedBox.shrink();
+        final n = options.length;
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: onClose,
+                child: ColoredBox(
+                    color: Colors.black.withValues(alpha: 0.45 * v)),
+              ),
+            ),
+            PositionedDirectional(
+              // Above the + button in the corner.
+              end: 16,
+              bottom: 88,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (var i = 0; i < n; i++)
+                    Builder(builder: (context) {
+                      // The bottom choice comes first.
+                      final start = (n - 1 - i) * 0.12;
+                      final t = Curves.easeOutCubic.transform(
+                          ((v - start) / (1 - 0.12 * (n - 1)))
+                              .clamp(0.0, 1.0));
+                      return Opacity(
+                        opacity: t,
+                        child: Transform.translate(
+                          offset: Offset(0, 18 * (1 - t)),
+                          child: Transform.scale(
+                            scale: 0.9 + 0.1 * t,
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: _AddMenuChip(
+                                option: options[i],
+                                onTap: () => onPick(options[i]),
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// A label and a round colored icon, lined up above the + button.
+class _AddMenuChip extends StatelessWidget {
+  const _AddMenuChip({required this.option, required this.onTap});
+
+  final _AddOption option;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Material(
+            color: theme.colorScheme.surfaceContainerHigh,
+            elevation: 2,
+            borderRadius: BorderRadius.circular(10),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              child: Text(
+                option.label,
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Material(
+            color: option.background,
+            elevation: 3,
+            shape: const CircleBorder(),
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Icon(option.icon, color: option.foreground),
+            ),
+          ),
+          // Lines the icons up with the middle of the + button.
+          const SizedBox(width: 4),
+        ],
       ),
     );
   }

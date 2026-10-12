@@ -64,47 +64,30 @@ jobs:
           } > android/key.properties
           python3 tool/prepare_android.py signing
 
-      # One universal APK (works on every phone) ...
-      - name: Build universal APK
+      # One APK for every phone. Its version code is 10000 + the build
+      # number from pubspec.yaml, so it is always higher than the old
+      # processor-specific APKs (up to 4000 + build number) and installs
+      # over them.
+      - name: Build Android APK
         run: |
-          flutter build apk --release
+          BUILD=$(grep -E '^version:' pubspec.yaml | sed -E 's/.*\+([0-9]+).*/\1/')
+          flutter build apk --release --build-number=$((10000 + BUILD))
           mv build/app/outputs/flutter-apk/app-release.apk \
-            "pockettally-${{ github.ref_name }}-universal.apk"
-
-      # ... and one smaller APK per processor type. The in-app updater
-      # downloads the one that fits the phone.
-      - name: Build split APKs
-        run: |
-          flutter build apk --release --split-per-abi
-          for abi in arm64-v8a armeabi-v7a x86_64; do
-            mv "build/app/outputs/flutter-apk/app-$abi-release.apk" \
-              "pockettally-${{ github.ref_name }}-$abi.apk"
-          done
+            "pockettally-${{ github.ref_name }}-android.apk"
 
       - uses: actions/upload-artifact@v4
         with:
           name: pockettally-apk
-          path: pockettally-*.apk
+          path: pockettally-*-android.apk
 
-      # The universal APK is uploaded first: updaters of 0.5.0 and older
-      # take the first APK of a release.
-      - name: Publish GitHub release (universal APK)
+      - name: Publish GitHub release (Android)
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: pockettally-*-universal.apk
+          files: pockettally-*-android.apk
           generate_release_notes: true
 
-      - name: Add split APKs to the release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            pockettally-*-arm64-v8a.apk
-            pockettally-*-armeabi-v7a.apk
-            pockettally-*-x86_64.apk
-
-  # ---------------- Windows: installer + portable zip ----------------
+  # ---------------- Windows: installer ----------------
   windows:
     needs: build
     runs-on: windows-latest
@@ -129,14 +112,13 @@ jobs:
 
       - run: flutter build windows --release
 
-      - name: Package installer and zip
+      - name: Package installer
         shell: pwsh
         run: |
           $tag = "${{ github.ref_name }}"
           $version = $tag.TrimStart('v')
           if ($version -notmatch '^\d+\.\d+\.\d+') { $version = "0.0.0" }
           $release = "$pwd\build\windows\x64\runner\Release"
-          Compress-Archive -Path "$release\*" -DestinationPath "pockettally-$tag-windows.zip"
           $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
           if (-not (Test-Path $iscc)) {
             choco install innosetup -y --no-progress
@@ -147,19 +129,15 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: pockettally-windows
-          path: |
-            pockettally-*-windows-setup.exe
-            pockettally-*-windows.zip
+          path: pockettally-*-windows-setup.exe
 
       - name: Add to the GitHub release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            pockettally-*-windows-setup.exe
-            pockettally-*-windows.zip
+          files: pockettally-*-windows-setup.exe
 
-  # ---------------- Linux: AppImage + tar.gz ----------------
+  # ---------------- Linux: AppImage ----------------
   linux:
     needs: build
     # The oldest supported runner, so the AppImage also runs on older Linux.
@@ -188,14 +166,10 @@ jobs:
 
       - run: flutter build linux --release
 
-      - name: Package AppImage and tar.gz
+      - name: Package AppImage
         run: |
           TAG="${{ github.ref_name }}"
           BUNDLE=build/linux/x64/release/bundle
-
-          # tar.gz: unpack anywhere and run ./pockettally/pockettally
-          cp -r "$BUNDLE" pockettally
-          tar -czf "pockettally-$TAG-linux-x86_64.tar.gz" pockettally
 
           # AppImage: one file, double-click to run, updates itself.
           mkdir -p AppDir/usr/bin
@@ -212,14 +186,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: pockettally-linux
-          path: |
-            pockettally-*-linux-x86_64.AppImage
-            pockettally-*-linux-x86_64.tar.gz
+          path: pockettally-*-linux-x86_64.AppImage
 
       - name: Add to the GitHub release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            pockettally-*-linux-x86_64.AppImage
-            pockettally-*-linux-x86_64.tar.gz
+          files: pockettally-*-linux-x86_64.AppImage
