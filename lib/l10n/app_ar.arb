@@ -304,5 +304,6 @@
   "changePhoto": "تغيير الصورة",
   "sectionAppearance": "المظهر",
   "sectionData": "البيانات",
-  "sectionAbout": "حول التطبيق"
+  "sectionAbout": "حول التطبيق",
+  "seeAllEntries": "عرض كل القيود"
 }

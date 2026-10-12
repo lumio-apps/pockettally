@@ -14,6 +14,9 @@ import 'goals_screen.dart';
 import 'search_screen.dart';
 import 'settings_screen.dart';
 
+/// How many of the newest entries Home shows under "Recent".
+const int kRecentEntries = 50;
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.state, required this.onOpenTab});
 
@@ -47,7 +50,9 @@ class HomeScreen extends StatelessWidget {
         return Scaffold(
           body: SafeArea(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+              // Room at the bottom so the + button never covers the last
+              // entry's amount.
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
               children: [
                 Row(
                   children: [
@@ -200,8 +205,24 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                   )
-                else
-                  ..._buildGroupedList(context, entries),
+                else ...[
+                  // Only the newest entries, so Home stays fast with years
+                  // of data; Search shows everything.
+                  ..._buildGroupedList(
+                      context, entries.take(kRecentEntries).toList()),
+                  if (entries.length > kRecentEntries)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Center(
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.list_alt_outlined),
+                          label: Text(l.seeAllEntries),
+                          onPressed: () =>
+                              _push(context, SearchScreen(state: state)),
+                        ),
+                      ),
+                    ),
+                ],
               ],
             ),
           ),

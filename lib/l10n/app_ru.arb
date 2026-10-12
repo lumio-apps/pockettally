@@ -304,5 +304,6 @@
   "changePhoto": "Сменить фото",
   "sectionAppearance": "Оформление",
   "sectionData": "Данные",
-  "sectionAbout": "О приложении"
+  "sectionAbout": "О приложении",
+  "seeAllEntries": "Все записи"
 }

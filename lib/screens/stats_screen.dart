@@ -324,7 +324,8 @@ class _StatsScreenState extends State<StatsScreen> {
             ],
           ),
           body: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            // Room at the bottom for the + button.
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
             children: [
               SegmentedButton<StatsPeriod>(
                 segments: [

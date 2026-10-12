@@ -304,5 +304,6 @@
   "changePhoto": "写真を変更",
   "sectionAppearance": "表示",
   "sectionData": "データ",
-  "sectionAbout": "このアプリについて"
+  "sectionAbout": "このアプリについて",
+  "seeAllEntries": "すべての記録を見る"
 }

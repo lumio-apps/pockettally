@@ -714,5 +714,6 @@
   "changePhoto": "Change photo",
   "sectionAppearance": "Appearance",
   "sectionData": "Data",
-  "sectionAbout": "About"
+  "sectionAbout": "About",
+  "seeAllEntries": "See all entries"
 }

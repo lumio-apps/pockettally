@@ -304,5 +304,6 @@
   "changePhoto": "更换照片",
   "sectionAppearance": "外观",
   "sectionData": "数据",
-  "sectionAbout": "关于"
+  "sectionAbout": "关于",
+  "seeAllEntries": "查看全部记录"
 }

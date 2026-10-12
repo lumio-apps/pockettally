@@ -304,5 +304,6 @@
   "changePhoto": "Alterar foto",
   "sectionAppearance": "Aparência",
   "sectionData": "Dados",
-  "sectionAbout": "Sobre"
+  "sectionAbout": "Sobre",
+  "seeAllEntries": "Ver todos os registros"
 }

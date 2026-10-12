@@ -1,10 +1,19 @@
 # Changelog
 
-## 0.9.4
+## 0.9.6
+
+- The + button no longer covers the amount of the last entry on Home and Insights
+- Home shows the 50 newest entries, so it stays fast with years of data. "See all entries" below them opens the full list (Search)
+
+## 0.9.5
 
 - New bottom bar on phones: Home, Lend/Borrow and Insights. The + button moved to the bottom-right corner
 - Settings are now on your profile page: tap your photo or name on Home. Budgets open from there or from the budget line on Home
-- New + button menu: tap + to add an expense, income, lend/borrow entry or savings goal (with a short animation; tap outside or Back to close). On a computer the Add button opens the same choices
+- Lend & Borrow in the + menu now opens the form for a new entry directly
+
+## 0.9.4
+
+- New + button menu: tap + to add an expense, income, lend/borrow or savings goal (with a short animation; tap outside or Back to close). On a computer the Add button opens the same choices
 - Category is now one field like Note and Tags: tap it to pick from a list (with search when there are many, and Manage at the bottom)
 - A new entry starts with the category you used last time
 - Releases now have one file per system: `…-android.apk`, `…-windows-setup.exe` and `…-linux-x86_64.AppImage`. The Android APK installs over every earlier one, also the processor-specific ones
