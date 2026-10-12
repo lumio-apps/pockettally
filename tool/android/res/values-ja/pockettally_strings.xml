@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">支出を追加</string>
+    <string name="shortcut_add_income">収入を追加</string>
+    <string name="widget_big_name">残高</string>
+    <string name="widget_small_name">すばやく追加</string>
+</resources>

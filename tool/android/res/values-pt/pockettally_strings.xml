@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">Adicionar despesa</string>
+    <string name="shortcut_add_income">Adicionar receita</string>
+    <string name="widget_big_name">Saldo</string>
+    <string name="widget_small_name">Adicionar rápido</string>
+</resources>

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The widgets' blue card, like the balance card on Home. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#0E3B30" />
+    <gradient
+        android:angle="315"
+        android:startColor="#FF1F6FFF"
+        android:endColor="#FF0B47C9" />
     <corners android:radius="24dp" />
 </shape>

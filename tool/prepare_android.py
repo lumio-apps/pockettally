@@ -2,7 +2,7 @@
 """Patches the generated android/ project in CI, so nothing has to be edited by hand.
 
 Usage:
-  python3 tool/prepare_android.py manifest   # permissions, app label, reminder setup
+  python3 tool/prepare_android.py manifest   # permissions, app label, reminder, widgets, shortcuts
   python3 tool/prepare_android.py signing    # release signing from key.properties
 
 Fails loudly if the Flutter template changes and a patch no longer applies.
@@ -80,25 +80,38 @@ def die(message: str) -> None:
     sys.exit(1)
 
 
-WIDGET_RECEIVER = (
-    '        <receiver android:name=".BalanceWidgetProvider" android:exported="true">\n'
+# Home screen widgets (big and small). See tool/android/kotlin.
+WIDGET_RECEIVERS = (
+    '        <receiver android:name=".BalanceWidgetProvider"\n'
+    '            android:exported="false"\n'
+    '            android:label="@string/widget_big_name">\n'
     '            <intent-filter>\n'
     '                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>\n'
     '            </intent-filter>\n'
     '            <meta-data android:name="android.appwidget.provider"\n'
     '                android:resource="@xml/balance_widget_info"/>\n'
     '        </receiver>\n'
-)
-
-WIDGET_LAUNCH_FILTER = (
+    '        <receiver android:name=".BalanceWidgetSmallProvider"\n'
+    '            android:exported="false"\n'
+    '            android:label="@string/widget_small_name">\n'
     '            <intent-filter>\n'
-    '                <action android:name="es.antonborri.home_widget.action.LAUNCH"/>\n'
+    '                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>\n'
     '            </intent-filter>\n'
+    '            <meta-data android:name="android.appwidget.provider"\n'
+    '                android:resource="@xml/balance_widget_small_info"/>\n'
+    '        </receiver>\n'
+)
+
+# Long-press shortcuts ("Add expense", "Add income"), inside MainActivity.
+SHORTCUTS_META = (
+    '            <meta-data android:name="android.app.shortcuts"\n'
+    '                android:resource="@xml/shortcuts"/>\n'
 )
 
 
-def install_widget_files() -> None:
-    """Copies the home screen widget (Kotlin + resources) from tool/android."""
+def install_android_extras() -> None:
+    """Copies the widgets, shortcuts and MainActivity (with the channel the
+    app uses for them) from tool/android into the generated project."""
     src = pathlib.Path("tool/android")
     res = pathlib.Path("android/app/src/main/res")
     for f in (src / "res").rglob("*"):
@@ -110,16 +123,16 @@ def install_widget_files() -> None:
         pathlib.Path("android/app/src/main").rglob("MainActivity.kt"), None)
     if main_activity is None:
         die("MainActivity.kt not found")
-    shutil.copyfile(src / "kotlin" / "BalanceWidgetProvider.kt",
-                    main_activity.parent / "BalanceWidgetProvider.kt")
     if "package com.lumio.pockettally" not in main_activity.read_text():
         die("unexpected package in MainActivity.kt")
+    for name in ("MainActivity.kt", "WidgetProviders.kt"):
+        shutil.copyfile(src / "kotlin" / name, main_activity.parent / name)
 
 
 def patch_manifest() -> None:
-    # The home screen widget (install_widget_files, WIDGET_RECEIVER,
-    # WIDGET_LAUNCH_FILTER) is switched off since 0.9.2: it made the app
-    # crash on start. Kept here to bring it back later.
+    # Since 1.1.0 the widgets work without the home_widget plugin (which
+    # made 0.9.2 crash on start): plain Android code reads texts the app
+    # saves in its settings.
     text = MANIFEST.read_text()
     if "REQUEST_INSTALL_PACKAGES" not in text:
         if "<application" not in text:
@@ -136,8 +149,16 @@ def patch_manifest() -> None:
             die("no </application> tag in AndroidManifest.xml")
         text = text.replace(
             "</application>", REMINDER_RECEIVERS + "    </application>", 1)
+    if "BalanceWidgetProvider" not in text:
+        text = text.replace(
+            "</application>", WIDGET_RECEIVERS + "    </application>", 1)
+    if "android.app.shortcuts" not in text:
+        if text.count("</activity>") != 1:
+            die("expected exactly one <activity> in AndroidManifest.xml")
+        text = text.replace("</activity>", SHORTCUTS_META + "        </activity>", 1)
     MANIFEST.write_text(text)
     install_reminder_files()
+    install_android_extras()
     patch_gradle_for_notifications()
     print("manifest patched")
 

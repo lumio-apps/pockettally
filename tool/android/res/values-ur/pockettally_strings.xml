@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">خرچ شامل کریں</string>
+    <string name="shortcut_add_income">آمدنی شامل کریں</string>
+    <string name="widget_big_name">بیلنس</string>
+    <string name="widget_small_name">فوری اندراج</string>
+</resources>

@@ -7,8 +7,10 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:crypto/crypto.dart';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'android_extras.dart';
 import 'backup.dart';
 import 'category_icons.dart';
 import 'db.dart';
@@ -468,6 +470,54 @@ class AppState extends ChangeNotifier {
       if (!top.contains(name)) top.add(name);
     }
     return top.take(count).toList();
+  }
+
+  // ---- home screen widgets (Android) ----
+
+  /// What the widgets show now, so they are only redrawn on a change.
+  String? _widgetTexts;
+
+  /// Every change of data or settings may change what the widgets show.
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
+    unawaited(syncWidget());
+  }
+
+  /// Saves the texts for the home screen widgets (this month's balance,
+  /// income and expenses, in the app's language and money format) and
+  /// redraws them. Nothing happens when nothing changed.
+  Future<void> syncWidget() async {
+    if (!AndroidExtras.supported) return;
+    try {
+      final l = lookupAppLocalizations(Locale(languageCode));
+      final now = DateTime.now();
+      final income = incomeIn(now);
+      final expense = expenseIn(now);
+      final hide = hideBalance;
+      final compact = NumberFormat.compact(locale: currency.locale);
+      final texts = <String, String>{
+        'widget_title': l.monthBalance(DateFormat.MMMM().format(now)),
+        'widget_balance': hide ? '••••••' : formatMoney(income - expense),
+        'widget_balance_short': hide
+            ? '••••'
+            : '${currency.symbol} ${compact.format((income - expense) / 100)}',
+        'widget_income': hide ? '••••' : '+ ${formatMoney(income)}',
+        'widget_expense': hide ? '••••' : '− ${formatMoney(expense)}',
+        'widget_label_expense': '− ${l.expense}',
+        'widget_label_income': '+ ${l.income}',
+      };
+      final joined = texts.values.join('\n');
+      if (joined == _widgetTexts) return;
+      _widgetTexts = joined;
+      for (final t in texts.entries) {
+        await _prefs.setString(t.key, t.value);
+      }
+      await AndroidExtras.updateWidgets();
+    } catch (e) {
+      _widgetTexts = null;
+      debugPrint('Widgets not updated: $e');
+    }
   }
 
   /// Hide the balance on Home (the eye button), e.g. in public.

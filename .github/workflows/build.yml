@@ -86,10 +86,15 @@ jobs:
         with:
           files: pockettally-*-android.apk
           generate_release_notes: true
+          # Test tags (v1.1.0-test1) make a pre-release: only for trying,
+          # never offered by the in-app updater.
+          prerelease: ${{ contains(github.ref_name, '-test') }}
 
   # ---------------- Windows: installer ----------------
   windows:
     needs: build
+    # Test tags only build the Android APK.
+    if: ${{ !contains(github.ref_name, '-test') }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -140,6 +145,8 @@ jobs:
   # ---------------- Linux: AppImage ----------------
   linux:
     needs: build
+    # Test tags only build the Android APK.
+    if: ${{ !contains(github.ref_name, '-test') }}
     # The oldest supported runner, so the AppImage also runs on older Linux.
     runs-on: ubuntu-22.04
     steps:

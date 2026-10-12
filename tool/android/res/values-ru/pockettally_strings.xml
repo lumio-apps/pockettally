@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">Добавить расход</string>
+    <string name="shortcut_add_income">Добавить доход</string>
+    <string name="widget_big_name">Баланс</string>
+    <string name="widget_small_name">Быстро добавить</string>
+</resources>

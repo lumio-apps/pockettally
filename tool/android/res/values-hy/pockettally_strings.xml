@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">Ավելացնել ծախս</string>
+    <string name="shortcut_add_income">Ավելացնել եկամուտ</string>
+    <string name="widget_big_name">Մնացորդ</string>
+    <string name="widget_small_name">Արագ ավելացում</string>
+</resources>

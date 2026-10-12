@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0 (widgets and shortcuts, Android)
+
+- Home screen widgets in the app's blue: a big one (this month's balance, income, expenses, and "− Expense" / "+ Income" buttons) and a small one (balance and − / +)
+- Tap the balance to open the app; tap − or + to go straight to the expense or income form
+- The widgets follow "Hide balance" and update after every change
+- Long-press the app icon for "Add expense" and "Add income"
+- Made without any extra plugin (the widget of 0.9.2 used one and was removed because it crashed)
+
 ## 1.0.0 (new look, part 2)
 
 - Lend & Borrow reminders (Android): "Remind me" on a record, with a day and time. A notification says who owes you, or whom you owe, and how much is still open. Change or remove it from the record's menu; it stops when the record is settled

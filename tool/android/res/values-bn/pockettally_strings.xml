@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">খরচ যোগ করুন</string>
+    <string name="shortcut_add_income">আয় যোগ করুন</string>
+    <string name="widget_big_name">ব্যালেন্স</string>
+    <string name="widget_small_name">দ্রুত যোগ</string>
+</resources>

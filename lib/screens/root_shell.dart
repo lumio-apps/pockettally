@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../android_extras.dart';
 import '../app_state.dart';
 import '../auto_backup.dart';
 import '../l10n/l10n.dart';
@@ -63,8 +64,35 @@ class _RootShellState extends State<RootShell>
       // A new day may need a new reminder plan and a backup.
       state.syncReminder();
       state.syncDebtReminders();
+      // A new month starts the widgets' balance again.
+      state.syncWidget();
       AutoBackup.runIfDue(state).catchError((_) => false);
     });
+    // "Add expense" / "Add income" from a launcher shortcut or a widget.
+    AndroidExtras.listen(_onLaunchAction);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final action = await AndroidExtras.takeAction();
+      if (action != null) _onLaunchAction(action);
+    });
+  }
+
+  /// Opens the expense or income form for a shortcut or widget button.
+  /// With the app lock on, the PIN screen stays on top until unlocked.
+  void _onLaunchAction(String action) {
+    if (!mounted) return;
+    final EntryType type;
+    switch (action) {
+      case 'expense':
+        type = EntryType.expense;
+      case 'income':
+        type = EntryType.income;
+      default:
+        return;
+    }
+    _closeMenu();
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => EntryFormScreen(state: state, initialType: type),
+    ));
   }
 
   @override

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">添加支出</string>
+    <string name="shortcut_add_income">添加收入</string>
+    <string name="widget_big_name">结余</string>
+    <string name="widget_small_name">快速添加</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">Tambah pengeluaran</string>
+    <string name="shortcut_add_income">Tambah pemasukan</string>
+    <string name="widget_big_name">Saldo</string>
+    <string name="widget_small_name">Tambah cepat</string>
+</resources>
