@@ -527,24 +527,46 @@ class AppState extends ChangeNotifier {
   // ---- CSV import ----
 
   /// Adds imported entries; categories they use that do not exist yet are
-  /// created. Existing data is kept.
+  /// created. A name that differs only in letter case ("food" vs "Food")
+  /// uses the existing category. Existing data is kept.
   Future<void> importEntries(List<Entry> list) async {
     var colorIndex = categories.length;
+    final fixed = <Entry>[];
     for (final type in EntryType.values) {
-      final names = list.where((e) => e.type == type).map((e) => e.category);
-      for (final name in names.toSet()) {
-        if (!categoryNameTaken(name, type)) {
+      // Lower-case name -> the exact name to use.
+      final names = {
+        for (final c in categories.where((c) => c.type == type))
+          c.name.toLowerCase(): c.name,
+      };
+      for (final e in list.where((e) => e.type == type)) {
+        final key = e.category.trim().toLowerCase();
+        var name = names[key];
+        if (name == null) {
+          name = e.category.trim();
+          names[key] = name;
           await AppDatabase.instance.insertCategory(EntryCategory(
             name: name,
             type: type,
             colorValue: kCategoryPalette[colorIndex++ % kCategoryPalette.length],
           ));
         }
+        fixed.add(name == e.category ? e : _withCategory(e, name));
       }
     }
-    await AppDatabase.instance.insertAll(list);
+    await AppDatabase.instance.insertAll(fixed);
     await load();
   }
+
+  static Entry _withCategory(Entry e, String category) => Entry(
+        type: e.type,
+        amountMinor: e.amountMinor,
+        category: category,
+        date: e.date,
+        note: e.note,
+        period: e.period,
+        photo: e.photo,
+        tags: e.tags,
+      );
 
   // ---- tags ----
 

@@ -8,7 +8,6 @@ import '../theme.dart';
 import '../widgets/entry_tile.dart';
 import '../widgets/profile_avatar.dart';
 import 'calendar_screen.dart';
-import 'debts_screen.dart';
 import 'entry_form_screen.dart';
 import 'goals_screen.dart';
 import 'search_screen.dart';
@@ -22,7 +21,8 @@ class HomeScreen extends StatelessWidget {
 
   final AppState state;
 
-  /// Switches the bottom navigation tab (1 = Insights, 2 = Budgets).
+  /// Opens a page of the app by its AppPage index
+  /// (1 = Insights, 2 = Budgets, 4 = Lend & Borrow).
   final ValueChanged<int> onOpenTab;
 
   void _push(BuildContext context, Widget screen) {
@@ -140,7 +140,7 @@ class HomeScreen extends StatelessWidget {
                       label: l.lendBorrowShort,
                       background: const Color(0xFFDDE6FA),
                       foreground: const Color(0xFF2F4DA8),
-                      onTap: () => _push(context, DebtsScreen(state: state)),
+                      onTap: () => onOpenTab(4),
                     ),
                     _QuickAction(
                       icon: Icons.savings_outlined,
@@ -164,7 +164,7 @@ class HomeScreen extends StatelessWidget {
                   Card(
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(
-                      onTap: () => _push(context, DebtsScreen(state: state)),
+                      onTap: () => onOpenTab(4),
                       child: Padding(
                         padding: const EdgeInsets.all(14),
                         child: Row(

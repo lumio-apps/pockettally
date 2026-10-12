@@ -152,111 +152,122 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
             ],
           ),
-          body: ListView(
+          // Results are built as they scroll into view, so thousands of
+          // entries stay fast. Item 0 holds the filters and totals.
+          body: ListView.builder(
             padding: const EdgeInsets.only(bottom: 32),
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: Column(
+            itemCount: 1 + (results.isEmpty ? 1 : results.length),
+            itemBuilder: (context, i) {
+              if (i == 0) {
+                return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SegmentedButton<_TypeFilter>(
-                      segments: [
-                        ButtonSegment(value: _TypeFilter.all, label: Text(l.all)),
-                        ButtonSegment(
-                            value: _TypeFilter.income, label: Text(l.income)),
-                        ButtonSegment(
-                            value: _TypeFilter.expense, label: Text(l.expense)),
-                      ],
-                      showSelectedIcon: false,
-                      selected: {_type},
-                      onSelectionChanged: (s) =>
-                          setState(() => _type = s.first),
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String?>(
-                      key: ValueKey('cat|$_type|$_category|${options.join('|')}'),
-                      initialValue: _category,
-                      decoration: InputDecoration(
-                        labelText: l.category,
-                        border: const OutlineInputBorder(),
-                        isDense: true,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          SegmentedButton<_TypeFilter>(
+                            segments: [
+                              ButtonSegment(value: _TypeFilter.all, label: Text(l.all)),
+                              ButtonSegment(
+                                  value: _TypeFilter.income, label: Text(l.income)),
+                              ButtonSegment(
+                                  value: _TypeFilter.expense, label: Text(l.expense)),
+                            ],
+                            showSelectedIcon: false,
+                            selected: {_type},
+                            onSelectionChanged: (s) =>
+                                setState(() => _type = s.first),
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<String?>(
+                            key: ValueKey('cat|$_type|$_category|${options.join('|')}'),
+                            initialValue: _category,
+                            decoration: InputDecoration(
+                              labelText: l.category,
+                              border: const OutlineInputBorder(),
+                              isDense: true,
+                            ),
+                            items: [
+                              DropdownMenuItem<String?>(
+                                  value: null, child: Text(l.allCategories)),
+                              for (final c in options)
+                                DropdownMenuItem<String?>(
+                                    value: c, child: Text(categoryLabel(l, c))),
+                            ],
+                            onChanged: (c) => setState(() => _category = c),
+                          ),
+                          const SizedBox(height: 12),
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.date_range, size: 18),
+                            label: Text(_dates == null
+                                ? l.anyDate
+                                : '${dateFmt.format(_dates!.start)} – ${dateFmt.format(_dates!.end)}'),
+                            onPressed: _pickDates,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(child: _amountField(_minAmount, l.minAmount)),
+                              const SizedBox(width: 12),
+                              Expanded(child: _amountField(_maxAmount, l.maxAmount)),
+                            ],
+                          ),
+                          if (_hasFilters)
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: TextButton(
+                                onPressed: _clearFilters,
+                                child: Text(l.clearFilters),
+                              ),
+                            ),
+                        ],
                       ),
-                      items: [
-                        DropdownMenuItem<String?>(
-                            value: null, child: Text(l.allCategories)),
-                        for (final c in options)
-                          DropdownMenuItem<String?>(
-                              value: c, child: Text(categoryLabel(l, c))),
-                      ],
-                      onChanged: (c) => setState(() => _category = c),
                     ),
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      icon: const Icon(Icons.date_range, size: 18),
-                      label: Text(_dates == null
-                          ? l.anyDate
-                          : '${dateFmt.format(_dates!.start)} – ${dateFmt.format(_dates!.end)}'),
-                      onPressed: _pickDates,
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(child: _amountField(_minAmount, l.minAmount)),
-                        const SizedBox(width: 12),
-                        Expanded(child: _amountField(_maxAmount, l.maxAmount)),
-                      ],
-                    ),
-                    if (_hasFilters)
-                      Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: TextButton(
-                          onPressed: _clearFilters,
-                          child: Text(l.clearFilters),
-                        ),
+                    const Divider(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Wrap(
+                        spacing: 16,
+                        runSpacing: 4,
+                        children: [
+                          Text(
+                            l.resultCount(results.length),
+                            style: theme.textTheme.labelLarge,
+                          ),
+                          if (income > 0)
+                            Text('+ ${state.formatMoney(income)}',
+                                style: const TextStyle(
+                                    color: kIncomeColor, fontWeight: FontWeight.w600)),
+                          if (expense > 0)
+                            Text('- ${state.formatMoney(expense)}',
+                                style: const TextStyle(
+                                    color: kExpenseColor, fontWeight: FontWeight.w600)),
+                        ],
                       ),
-                  ],
-                ),
-              ),
-              const Divider(height: 24),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Wrap(
-                  spacing: 16,
-                  runSpacing: 4,
-                  children: [
-                    Text(
-                      l.resultCount(results.length),
-                      style: theme.textTheme.labelLarge,
                     ),
-                    if (income > 0)
-                      Text('+ ${state.formatMoney(income)}',
-                          style: const TextStyle(
-                              color: kIncomeColor, fontWeight: FontWeight.w600)),
-                    if (expense > 0)
-                      Text('- ${state.formatMoney(expense)}',
-                          style: const TextStyle(
-                              color: kExpenseColor, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
                   ],
-                ),
-              ),
-              const SizedBox(height: 8),
-              if (results.isEmpty)
-                Padding(
+                );
+              }
+              if (results.isEmpty) {
+                return Padding(
                   padding: const EdgeInsets.all(32),
                   child: Center(child: Text(l.nothingFound)),
-                )
-              else
-                for (final e in results)
-                  EntryTile(
-                    entry: e,
-                    state: state,
-                    showDate: true,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => EntryFormScreen(state: state, entry: e),
-                    )),
-                  ),
-            ],
+                );
+              }
+              final e = results[i - 1];
+              return EntryTile(
+                key: ValueKey('result_${e.id}'),
+                entry: e,
+                state: state,
+                showDate: true,
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => EntryFormScreen(state: state, entry: e),
+                )),
+              );
+            },
           ),
         );
       },

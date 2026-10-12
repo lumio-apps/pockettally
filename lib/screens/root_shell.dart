@@ -73,8 +73,8 @@ class _RootShellState extends State<RootShell>
   /// True while the sidebar layout is shown.
   bool _wideLayout = false;
 
-  /// Used by Home: 1 = Insights, 2 = Budgets. Phones have no Budgets tab,
-  /// so there it opens as its own screen.
+  /// Used by Home: 1 = Insights, 2 = Budgets, 4 = Lend & Borrow. Phones
+  /// have no Budgets tab, so there it opens as its own screen.
   void _openTab(int i) {
     final p = AppPage.values[i];
     if (!_wideLayout && p == AppPage.budgets) {

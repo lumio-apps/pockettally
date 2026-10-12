@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.7
+
+- CSV import: a category written in other letter case ("food") now goes to the existing category ("Food") instead of making a separate one
+- Search stays fast with thousands of results
+- Lend/Borrow on Home now opens the Lend/Borrow tab
+- The welcome screen now says these choices can be changed later in your profile
+
 ## 0.9.6
 
 - The + button no longer covers the amount of the last entry on Home and Insights
