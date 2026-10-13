@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/banner.png" alt="PocketTally – every coin, counted. Offline income and expense tracker for Android, Windows and Linux.">
+  <img src="docs/banner.png" alt="PocketTally – every coin, counted. Free offline income and expense tracker for Android, Windows and Linux.">
 </p>
 
 <p align="center">
@@ -46,16 +46,23 @@ Use **Back up / Restore** to move it between a phone and a computer.
 
 <table>
   <tr>
-    <td align="center"><img src="docs/screenshots/home-light.png" width="220" alt="Home"><br><sub>Home</sub></td>
-    <td align="center"><img src="docs/screenshots/add-menu.png" width="220" alt="Add menu"><br><sub>Add anything with +</sub></td>
-    <td align="center"><img src="docs/screenshots/new-entry.png" width="220" alt="New entry"><br><sub>New entry</sub></td>
+    <td align="center"><img src="docs/screenshots/home-light.png" width="240" alt="Home"><br><sub><b>Home</b> – balance, spending overview, budget</sub></td>
+    <td align="center"><img src="docs/screenshots/entries.png" width="240" alt="Entries"><br><sub><b>Entries</b> – search, filters, month by month</sub></td>
+    <td align="center"><img src="docs/screenshots/add-menu.png" width="240" alt="Add menu"><br><sub><b>+</b> – expense, income, lend & borrow, goals</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/screenshots/insights.png" width="220" alt="Insights"><br><sub>Insights and highlights</sub></td>
-    <td align="center"><img src="docs/screenshots/home-dark.png" width="220" alt="Dark theme"><br><sub>Dark theme</sub></td>
-    <td align="center"><img src="docs/screenshots/profile.png" width="220" alt="Profile"><br><sub>Profile and settings</sub></td>
+    <td align="center"><img src="docs/screenshots/home-dark.png" width="240" alt="Dark theme"><br><sub><b>Dark theme</b> and six accent colors</sub></td>
+    <td align="center"><img src="docs/screenshots/settings.png" width="240" alt="Settings"><br><sub><b>Settings</b> – profile, language, theme</sub></td>
+    <td align="center"><img src="docs/screenshots/lock.png" width="240" alt="App lock"><br><sub><b>App lock</b> with a 4-digit PIN</sub></td>
   </tr>
 </table>
+
+## Why PocketTally
+
+- **Private by design.** No sign-up, no cloud, no ads, no analytics. The app works without internet; your data sits in a database on your device.
+- **Made for daily life.** Add an expense in a few seconds, split a bill with friends, keep track of money you lent, and see where your money went this month.
+- **For everyone.** 20 languages (10 of them Indian: Hindi, Bengali, Urdu, Gujarati, Tamil, Telugu, Marathi, Kannada, Malayalam, Punjabi), 27 currencies and local number formats like 12,34,567.89.
+- **Free forever.** Open source under GPL-3.0. No premium version, no locked features.
 
 ## Features
 
@@ -102,7 +109,7 @@ Use **Back up / Restore** to move it between a phone and a computer.
 - A **profile** with your photo and name
 - **20 languages:** English, हिन्दी, Հայերեն, 中文, Español, العربية, Français, বাংলা, Português, Русский, اردو, Bahasa Indonesia, 日本語, ગુજરાતી, தமிழ், తెలుగు, मराठी, ಕನ್ನಡ, മലയാളം, ਪੰਜਾਬੀ
 - **27 currencies** and number formats: 1,234.56 · 1.234,56 · 1 234,56 · 1'234.56 · 12,34,567.89
-- Light, dark or system theme and five accent colors
+- Light, dark or system theme and six accent colors
 - Week starts on Monday or Sunday
 - Wide layout with a sidebar on computers, keyboard shortcuts **Ctrl+N** (new entry) and **Ctrl+F** (search)
 
