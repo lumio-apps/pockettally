@@ -1,0 +1,2 @@
+- New build for F-Droid: it never goes online and has no internet permission
+- 20 languages, including Gujarati, Tamil, Telugu, Marathi, Kannada, Malayalam and Punjabi

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1 (F-Droid)
+
+- The app is ready for F-Droid: a build without the update check, without the internet permission and without the permission to install apps
+- Store listing (title, descriptions, icon, screenshots) added in `fastlane/`
+- New signing key for the GitHub release APK. **Android will not update an app installed with the old key.** Before you install this version: open the old app, make a backup in Settings, uninstall it, install this version and restore the backup
+
 ## 1.3.0 (7 Indian languages)
 
 - New languages: Gujarati (ગુજરાતી), Tamil (தமிழ்), Telugu (తెలుగు), Marathi (मराठी), Kannada (ಕನ್ನಡ), Malayalam (മലയാളം) and Punjabi (ਪੰਜਾਬੀ). The app now has 20 languages
