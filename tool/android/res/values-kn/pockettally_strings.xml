@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">ಖರ್ಚು ಸೇರಿಸಿ</string>
+    <string name="shortcut_add_income">ಆದಾಯ ಸೇರಿಸಿ</string>
+    <string name="widget_big_name">ಬ್ಯಾಲೆನ್ಸ್</string>
+    <string name="widget_small_name">ತ್ವರಿತ ಸೇರ್ಪಡೆ</string>
+</resources>

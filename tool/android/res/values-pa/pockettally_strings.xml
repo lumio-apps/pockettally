@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">ਖਰਚਾ ਜੋੜੋ</string>
+    <string name="shortcut_add_income">ਆਮਦਨ ਜੋੜੋ</string>
+    <string name="widget_big_name">ਬਕਾਇਆ</string>
+    <string name="widget_small_name">ਤੁਰੰਤ ਜੋੜੋ</string>
+</resources>

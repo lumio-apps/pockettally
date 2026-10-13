@@ -35,6 +35,13 @@ const List<AppLanguage> kLanguages = [
   AppLanguage('ur', 'اردو', 'Urdu'),
   AppLanguage('id', 'Bahasa Indonesia', 'Indonesian'),
   AppLanguage('ja', '日本語', 'Japanese'),
+  AppLanguage('gu', 'ગુજરાતી', 'Gujarati'),
+  AppLanguage('ta', 'தமிழ்', 'Tamil'),
+  AppLanguage('te', 'తెలుగు', 'Telugu'),
+  AppLanguage('mr', 'मराठी', 'Marathi'),
+  AppLanguage('kn', 'ಕನ್ನಡ', 'Kannada'),
+  AppLanguage('ml', 'മലയാളം', 'Malayalam'),
+  AppLanguage('pa', 'ਪੰਜਾਬੀ', 'Punjabi'),
 ];
 
 AppLanguage languageByCode(String code) =>

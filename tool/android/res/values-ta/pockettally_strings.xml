@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">செலவைச் சேர்</string>
+    <string name="shortcut_add_income">வருமானத்தைச் சேர்</string>
+    <string name="widget_big_name">இருப்பு</string>
+    <string name="widget_small_name">விரைவுச் சேர்ப்பு</string>
+</resources>

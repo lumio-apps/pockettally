@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0 (7 Indian languages)
+
+- New languages: Gujarati (ગુજરાતી), Tamil (தமிழ்), Telugu (తెలుగు), Marathi (मराठी), Kannada (ಕನ್ನಡ), Malayalam (മലയാളം) and Punjabi (ਪੰਜਾਬੀ). The app now has 20 languages
+- Choose one on the welcome screen or in Settings › Language. A phone set to one of these languages starts the app in it
+- Everything is translated: the app, the built-in categories, notifications and the PDF report. On Android the widget names and the app-icon shortcuts follow the phone's language
+- Dates and month names follow the chosen language
+
 ## 1.2.0 (PDF report)
 
 - The PDF button on Reports opens a page to choose what goes into the PDF: the period (this or last month, this or last year, or any dates), all entries or only expenses or income, all categories or chosen ones, and the sections (summary, by category, budgets, month by month, all entries with notes and tags)

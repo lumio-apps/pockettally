@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">ചെലവ് ചേർക്കുക</string>
+    <string name="shortcut_add_income">വരുമാനം ചേർക്കുക</string>
+    <string name="widget_big_name">ബാലൻസ്</string>
+    <string name="widget_small_name">വേഗം ചേർക്കുക</string>
+</resources>

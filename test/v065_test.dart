@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   test('every language loads, with plurals and placeholders', () {
-    expect(kLanguages.length, 13);
+    expect(kLanguages.length, 20);
     for (final lang in kLanguages) {
       final l = lookupAppLocalizations(Locale(lang.code));
       expect(l.save, isNotEmpty, reason: lang.code);

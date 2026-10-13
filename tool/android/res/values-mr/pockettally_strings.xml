@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">खर्च जोडा</string>
+    <string name="shortcut_add_income">उत्पन्न जोडा</string>
+    <string name="widget_big_name">शिल्लक</string>
+    <string name="widget_small_name">झटपट जोडा</string>
+</resources>

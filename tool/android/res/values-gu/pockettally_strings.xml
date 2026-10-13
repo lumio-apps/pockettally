@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_add_expense">ખર્ચ ઉમેરો</string>
+    <string name="shortcut_add_income">આવક ઉમેરો</string>
+    <string name="widget_big_name">બેલેન્સ</string>
+    <string name="widget_small_name">ઝડપી ઉમેરો</string>
+</resources>
