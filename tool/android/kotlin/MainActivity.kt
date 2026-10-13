@@ -1,6 +1,8 @@
 package com.lumio.pockettally
 
 import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -25,6 +27,21 @@ class MainActivity : FlutterActivity() {
                 "takeAction" -> {
                     result.success(pendingAction)
                     pendingAction = null
+                }
+                "openAppSettings" -> {
+                    // The app's page in the phone settings (battery,
+                    // notifications), for reminders that don't come.
+                    try {
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                Uri.fromParts("package", packageName, null),
+                            ),
+                        )
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.success(false)
+                    }
                 }
                 "updateWidgets" -> {
                     try {

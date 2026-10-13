@@ -34,6 +34,17 @@ class AndroidExtras {
     }
   }
 
+  /// Opens the app's page in the phone settings. Returns false if it could
+  /// not be opened.
+  static Future<bool> openAppSettings() async {
+    if (!supported) return false;
+    try {
+      return await _channel.invokeMethod<bool>('openAppSettings') ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Redraws the widgets with the texts saved last.
   static Future<void> updateWidgets() async {
     if (!supported) return;

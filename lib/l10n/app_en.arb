@@ -951,5 +951,32 @@
         "type": "String"
       }
     }
-  }
+  },
+  "pdfReport": "PDF report",
+  "period": "Period",
+  "periodThisMonth": "This month",
+  "periodLastMonth": "Last month",
+  "periodThisYear": "This year",
+  "periodLastYear": "Last year",
+  "periodCustom": "Custom",
+  "sections": "Sections",
+  "pdfIncomeByCategory": "Income by category",
+  "monthByMonthHint": "When the period is longer than a month",
+  "budgetSectionHint": "Only for one whole month",
+  "allEntries": "All entries",
+  "allEntriesHint": "With notes and tags",
+  "createPdf": "Create PDF",
+  "creatingPdf": "Making the PDF…",
+  "pdfSpent": "Spent",
+  "pdfLimit": "Limit",
+  "exactAlarmTitle": "Reminders on time",
+  "exactAlarmBody": "So that reminders come at the exact minute, Android needs your OK. On the next screen, turn on “Alarms & reminders” for PocketTally.",
+  "allowButton": "Allow",
+  "allowExactReminders": "Allow on-time reminders",
+  "allowExactRemindersHint": "Without it, Android may show a reminder up to an hour late",
+  "testNotification": "Send a test notification",
+  "testNotificationHint": "Check that reminders show and ring on this phone",
+  "testNotificationBody": "This is how your reminders will look and sound.",
+  "remindersNotComing": "Reminders don't come?",
+  "remindersNotComingHint": "Some phones stop apps in the background. In the app settings, let PocketTally run in the background (Battery: no restrictions)."
 }

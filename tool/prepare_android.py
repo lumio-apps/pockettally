@@ -19,6 +19,8 @@ PERMISSIONS = (
     '    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>\n'
     # Daily reminder: plan the reminders again after the phone restarts.
     '    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>\n'
+    # Reminders at the exact minute (Android 12+ asks the user first).
+    '    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>\n'
 )
 
 # flutter_local_notifications: receivers for scheduled notifications.

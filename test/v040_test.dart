@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pockettally/app_state.dart';
 import 'package:pockettally/models.dart';
+import 'package:pockettally/report_options.dart';
 import 'package:pockettally/report_pdf.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,8 +36,8 @@ void main() {
 
     final bytes = await ReportPdf.build(
       state: state,
-      start: DateTime(2026, 10, 1),
-      end: DateTime(2026, 11, 1),
+      options: ReportOptions(
+          start: DateTime(2026, 10, 1), end: DateTime(2026, 11, 1)),
       periodLabel: 'October 2026',
     );
 

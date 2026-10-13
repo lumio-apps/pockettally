@@ -5,12 +5,12 @@ import '../app_state.dart';
 import '../insights.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
-import '../report_pdf.dart';
 import '../report_range.dart';
 import '../theme.dart';
 import '../widgets/appear.dart';
 import '../widgets/bar_chart.dart';
 import '../widgets/pie_chart.dart';
+import 'report_options_screen.dart';
 
 /// Reports for a week, a month or a year: net savings with the change from
 /// the period before, where the money went, and income against expenses
@@ -28,7 +28,6 @@ class _StatsScreenState extends State<StatsScreen> {
   ReportPeriod _period = ReportPeriod.month;
   DateTime _anchor = DateTime.now();
   EntryType _pieType = EntryType.expense;
-  bool _exporting = false;
 
   AppState get state => widget.state;
 
@@ -48,16 +47,15 @@ class _StatsScreenState extends State<StatsScreen> {
     });
   }
 
-  /// "October 2026" etc. [locale] is used for the PDF, which may be in
-  /// another language than the app.
-  String _rangeLabel(DateTime start, DateTime end, [String? locale]) {
+  /// "October 2026" etc.
+  String _rangeLabel(DateTime start, DateTime end) {
     switch (_period) {
       case ReportPeriod.week:
         final last = DateTime(end.year, end.month, end.day - 1);
-        return '${DateFormat.MMMd(locale).format(start)} – '
-            '${DateFormat.yMMMd(locale).format(last)}';
+        return '${DateFormat.MMMd().format(start)} – '
+            '${DateFormat.yMMMd().format(last)}';
       case ReportPeriod.month:
-        return DateFormat.yMMMM(locale).format(start);
+        return DateFormat.yMMMM().format(start);
       case ReportPeriod.year:
         return '${start.year}';
     }
@@ -83,27 +81,12 @@ class _StatsScreenState extends State<StatsScreen> {
     });
   }
 
-  Future<void> _exportPdf(DateTime start, DateTime end) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final l = context.l10n;
-    final label =
-        _rangeLabel(start, end, ReportPdf.languageFor(state.languageCode));
-    setState(() => _exporting = true);
-    try {
-      final saved = await ReportPdf.saveReport(
-        state: state,
-        start: start,
-        end: end,
-        periodLabel: label,
-      );
-      if (saved) {
-        messenger.showSnackBar(SnackBar(content: Text(l.pdfSaved)));
-      }
-    } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(l.couldNotCreatePdf)));
-    } finally {
-      if (mounted) setState(() => _exporting = false);
-    }
+  /// Opens the PDF page for the period shown.
+  void _openPdf(DateTime start, DateTime end) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) =>
+          ReportOptionsScreen(state: state, start: start, end: end),
+    ));
   }
 
   @override
@@ -200,16 +183,8 @@ class _StatsScreenState extends State<StatsScreen> {
             actions: [
               IconButton(
                 tooltip: l.saveAsPdf,
-                icon: _exporting
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.picture_as_pdf_outlined),
-                onPressed: _exporting || list.isEmpty
-                    ? null
-                    : () => _exportPdf(start, end),
+                icon: const Icon(Icons.picture_as_pdf_outlined),
+                onPressed: () => _openPdf(start, end),
               ),
             ],
           ),

@@ -7,6 +7,7 @@ import '../models.dart';
 import '../reminder.dart';
 import '../widgets/amount_dialog.dart';
 import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
+import '../widgets/reminder_permission.dart';
 
 /// "Thu, Oct 15, 10:00" in the user's language and clock format (with the
 /// year when it is not this year).
@@ -21,16 +22,13 @@ String reminderLabel(BuildContext context, DateTime at) {
   return '$day, $time';
 }
 
-/// Asks for permission to show notifications (Android 13 and newer), then
+/// Asks for permission to show notifications (and on-time reminders), then
 /// for a day and a time. Returns null when cancelled or not allowed.
 Future<DateTime?> pickReminderTime(
     BuildContext context, DateTime? current) async {
   final l = context.l10n;
   final messenger = ScaffoldMessenger.of(context);
-  if (!await ReminderService.requestPermission()) {
-    messenger.showSnackBar(SnackBar(content: Text(l.notificationsBlocked)));
-    return null;
-  }
+  if (!await askReminderPermissions(context)) return null;
   if (!context.mounted) return null;
   final now = DateTime.now();
   // Tomorrow at 10:00 unless a reminder is already set.

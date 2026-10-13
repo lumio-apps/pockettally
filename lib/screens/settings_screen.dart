@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../android_extras.dart';
 import '../app_state.dart';
 import '../auto_backup.dart';
 import '../backup.dart';
@@ -11,6 +12,7 @@ import '../reminder.dart';
 import '../theme.dart';
 import '../update_checker.dart';
 import '../widgets/profile_avatar.dart';
+import '../widgets/reminder_permission.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
 import 'lock_screen.dart';
@@ -62,6 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     PackageInfo.fromPlatform().then((info) {
       if (mounted) setState(() => _version = info.version);
     });
+    _checkExact();
   }
 
   @override
@@ -218,6 +221,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         onTap: _pickReminderTime,
                       ),
+                    if (!_exact)
+                      ListTile(
+                        leading: const _SettingIcon(
+                            Icons.alarm_on_outlined, Color(0xFFE5533D)),
+                        title: Text(l.allowExactReminders),
+                        subtitle: Text(l.allowExactRemindersHint),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: _allowExact,
+                      ),
+                    ListTile(
+                      leading: const _SettingIcon(
+                          Icons.notifications_active_outlined,
+                          Color(0xFFF08C00)),
+                      title: Text(l.testNotification),
+                      subtitle: Text(l.testNotificationHint),
+                      onTap: _testNotification,
+                    ),
+                    ListTile(
+                      leading: const _SettingIcon(
+                          Icons.battery_alert_outlined, Color(0xFF64748B)),
+                      title: Text(l.remindersNotComing),
+                      subtitle: Text(l.remindersNotComingHint),
+                      trailing: const Icon(Icons.open_in_new, size: 18),
+                      onTap: AndroidExtras.openAppSettings,
+                    ),
                   ],
                 ),
               _Group(
@@ -441,14 +469,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _setReminder(bool on) async {
+    if (on && !await askReminderPermissions(context)) return;
+    await state.setReminder(on: on);
+    await _checkExact();
+  }
+
+  /// Whether reminders can come at the exact minute (see ReminderService).
+  bool _exact = true;
+
+  Future<void> _checkExact() async {
+    if (!ReminderService.supported) return;
+    final exact = await ReminderService.canBeExact();
+    if (mounted && exact != _exact) setState(() => _exact = exact);
+  }
+
+  Future<void> _allowExact() async {
+    await askExactReminders(context);
+    await _checkExact();
+    // Plan the reminders again, now on time.
+    await state.syncReminder();
+    await state.syncDebtReminders();
+  }
+
+  Future<void> _testNotification() async {
     final l = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
-    if (on && !await ReminderService.requestPermission()) {
-      messenger.showSnackBar(
-          SnackBar(content: Text(l.notificationsBlocked)));
+    if (!await ReminderService.requestPermission()) {
+      messenger.showSnackBar(SnackBar(content: Text(l.notificationsBlocked)));
       return;
     }
-    await state.setReminder(on: on);
+    final ok = await ReminderService.showTest(
+      title: 'PocketTally',
+      body: l.testNotificationBody,
+      channelName: l.debtReminders,
+    );
+    if (!ok) {
+      messenger.showSnackBar(SnackBar(content: Text(l.notificationsBlocked)));
+    }
   }
 
   Future<void> _pickReminderTime() async {

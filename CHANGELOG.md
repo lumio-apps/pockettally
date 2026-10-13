@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0 (PDF report)
+
+- The PDF button on Reports opens a page to choose what goes into the PDF: the period (this or last month, this or last year, or any dates), all entries or only expenses or income, all categories or chosen ones, and the sections (summary, by category, budgets, month by month, all entries with notes and tags)
+- Yearly report: for a year (or any period longer than a month) the PDF shows every month with income, expenses and balance, and the total
+- The PDF is now in the app's language for all 13 languages. Hindi, Bangla, Arabic, Urdu, Chinese and Japanese text (also names you typed yourself) is drawn with the phone's own fonts, so no big fonts were added to the app
+- Arabic and Urdu reports read right to left
+- New look for the PDF in the app's blue, with the logo
+- The app remembers your choices for next time
+- Reminders (daily and Lend & Borrow) now come at the exact minute and ring: the app asks once for Android's "Alarms & reminders" permission (before, Android could hold a reminder back for up to an hour)
+- Settings › Reminder: "Send a test notification", "Allow on-time reminders", and a shortcut to the app's phone settings for phones that stop apps in the background
+
 ## 1.1.0 (widgets and shortcuts, Android)
 
 - Home screen widgets in the app's blue: a big one (this month's balance, income, expenses, and "− Expense" / "+ Income" buttons) and a small one (balance and − / +)

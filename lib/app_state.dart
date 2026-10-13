@@ -520,6 +520,12 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// The PDF report choices remembered from last time (see ReportOptions).
+  String? get pdfOptions => _prefs.getString('pdf_options');
+
+  Future<void> setPdfOptions(String json) =>
+      _prefs.setString('pdf_options', json);
+
   /// Hide the balance on Home (the eye button), e.g. in public.
   bool get hideBalance => _prefs.getBool('hide_balance') ?? false;
 
@@ -954,8 +960,10 @@ class AppState extends ChangeNotifier {
               body: debtReminderText(l, d),
             ),
       ];
+      // Planned again when on-time reminders get allowed.
+      final exact = await ReminderService.canBeExact();
       final plan = [
-        l.debtReminders,
+        '${l.debtReminders}|$exact',
         for (final r in list)
           '${r.debtId}|${r.at.millisecondsSinceEpoch}|${r.body}',
       ].join('\n');

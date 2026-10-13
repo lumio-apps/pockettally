@@ -73,7 +73,8 @@ Use **Back up / Restore** to move it between a phone and a computer.
 - **Highlights** like "You spent 12% less than last month"
 - **Calendar** view and **upcoming bills**
 - **Search and filter** by text, type, category, date and amount
-- **PDF report** of any period, made on the device
+- **PDF report** in your language: pick the period (also a whole year), the
+  entries, categories and sections; made on the device
 
 **Plan**
 - **Budgets:** a monthly limit and a limit per category, with warnings, and optional carry-over of what's left
