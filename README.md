@@ -93,6 +93,10 @@ Use **Back up / Restore** to move it between a phone and a computer.
 - **App lock** with a 4-digit PIN
 - **Daily reminder** (Android) on days you haven't added anything
 
+**On the home screen (Android)**
+- A big and a small **widget** with this month's balance and − / + buttons
+- **Shortcuts:** long-press the app icon for "Add expense" or "Add income"
+
 **Make it yours**
 - A **profile** with your photo and name
 - **13 languages:** English, हिन्दी, Հայերեն, 中文, Español, العربية, Français, বাংলা, Português, Русский, اردو, Bahasa Indonesia, 日本語
