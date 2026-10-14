@@ -56,22 +56,27 @@ object WidgetUpdater {
             }
 
         for (id in ids) {
-            val layout = if (small) R.layout.balance_widget_small else R.layout.balance_widget
-            val views = RemoteViews(context.packageName, layout)
-            views.setTextViewText(R.id.widget_title, text("widget_title", "PocketTally"))
-            if (small) {
-                views.setTextViewText(R.id.widget_balance, text("widget_balance_short", "—"))
-            } else {
-                views.setTextViewText(R.id.widget_balance, text("widget_balance", "—"))
-                views.setTextViewText(R.id.widget_income, text("widget_income", ""))
-                views.setTextViewText(R.id.widget_expense, text("widget_expense", ""))
-                views.setTextViewText(R.id.widget_add_expense, text("widget_label_expense", "− Expense"))
-                views.setTextViewText(R.id.widget_add_income, text("widget_label_income", "+ Income"))
+            // One broken widget (a removed view, a full system) must never stop the others or crash the app.
+            try {
+                val layout = if (small) R.layout.balance_widget_small else R.layout.balance_widget
+                val views = RemoteViews(context.packageName, layout)
+                views.setTextViewText(R.id.widget_title, text("widget_title", "PocketTally"))
+                if (small) {
+                    views.setTextViewText(R.id.widget_balance, text("widget_balance_short", "—"))
+                } else {
+                    views.setTextViewText(R.id.widget_balance, text("widget_balance", "—"))
+                    views.setTextViewText(R.id.widget_income, text("widget_income", ""))
+                    views.setTextViewText(R.id.widget_expense, text("widget_expense", ""))
+                    views.setTextViewText(R.id.widget_add_expense, text("widget_label_expense", "− Expense"))
+                    views.setTextViewText(R.id.widget_add_income, text("widget_label_income", "+ Income"))
+                }
+                views.setOnClickPendingIntent(R.id.widget_root, launch(context, null, 0))
+                views.setOnClickPendingIntent(R.id.widget_add_expense, launch(context, "expense", 1))
+                views.setOnClickPendingIntent(R.id.widget_add_income, launch(context, "income", 2))
+                manager.updateAppWidget(id, views)
+            } catch (e: Exception) {
+                // Keep the old picture on this widget; it is drawn again at the next update.
             }
-            views.setOnClickPendingIntent(R.id.widget_root, launch(context, null, 0))
-            views.setOnClickPendingIntent(R.id.widget_add_expense, launch(context, "expense", 1))
-            views.setOnClickPendingIntent(R.id.widget_add_income, launch(context, "income", 2))
-            manager.updateAppWidget(id, views)
         }
     }
 

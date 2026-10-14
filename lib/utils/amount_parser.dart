@@ -1,3 +1,8 @@
+/// The biggest amount the app accepts, in minor units (1,000,000,000,000.00).
+/// Bigger numbers are certainly typing mistakes, and thousands of them added
+/// together would no longer fit in a 64-bit integer.
+const int kMaxAmountMinor = 100000000000000;
+
 /// Turns what the user typed in an amount field into a number.
 ///
 /// Supports simple math so the field works as a calculator:
@@ -12,7 +17,8 @@
 ///   "12,5"        -> 12.5
 ///   "12.5"        -> 12.5    (other dots still mean a decimal point)
 ///
-/// Returns null when the text is empty or not a valid expression.
+/// Returns null when the text is empty, not a valid expression, or bigger
+/// than [kMaxAmountMinor].
 double? evaluateAmount(String input, {bool decimalComma = false}) {
   var s = input.trim();
   if (s.isEmpty) return null;
@@ -38,6 +44,7 @@ double? evaluateAmount(String input, {bool decimalComma = false}) {
   final parser = _Parser(s);
   final value = parser.parse();
   if (value == null || value.isNaN || value.isInfinite) return null;
+  if (value.abs() * 100 > kMaxAmountMinor) return null;
   return value;
 }
 

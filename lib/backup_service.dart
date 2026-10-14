@@ -1,11 +1,15 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import 'app_state.dart';
 import 'backup.dart';
 import 'csv_io.dart';
+import 'photo_store.dart';
 import 'utils/lock_guard.dart';
 import 'utils/save_file.dart';
 
@@ -17,15 +21,28 @@ class BackupService {
     final now = DateTime.now();
     final stamp = '${now.year}-${now.month.toString().padLeft(2, '0')}-'
         '${now.day.toString().padLeft(2, '0')}';
-    final bytes =
-        Uint8List.fromList(utf8.encode(state
-            .createBackup(withPhotos: state.backupWithPhotos)
-            .toJsonString()));
-    return saveBytesAs(
-      dialogTitle: dialogTitle,
-      fileName: 'pockettally-backup-$stamp.json',
-      bytes: bytes,
-    );
+    // Written photo by photo to a temporary file first; the text of a big
+    // photo collection is never built in memory in one piece.
+    final temp = File(p.join((await getTemporaryDirectory()).path,
+        'pockettally-backup-export.json'));
+    try {
+      await state.createBackup().writeToFile(
+            temp,
+            photoNames:
+                state.backupWithPhotos ? state.billPhotoNames() : <String>{},
+            readPhoto: PhotoStore.readBill,
+          );
+      final bytes = await temp.readAsBytes();
+      return await saveBytesAs(
+        dialogTitle: dialogTitle,
+        fileName: 'pockettally-backup-$stamp.json',
+        bytes: bytes,
+      );
+    } finally {
+      try {
+        if (temp.existsSync()) temp.deleteSync();
+      } catch (_) {}
+    }
   }
 
   /// Saves all entries as a CSV file. Returns false if cancelled.

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.2 (safety)
+
+- Backups with bill photos are written photo by photo, to a temporary file that is renamed when it is complete. A big photo collection no longer needs several times its size in memory, and a stopped phone never leaves a half-written backup
+- The automatic backup starts 8 seconds after the app opens, so starting the app is never slowed down by it
+- CSV import: a row with an amount like "NaN", "Infinity" or an absurdly big number is skipped; before, it stopped the whole import
+- Amounts above 1,000,000,000,000 are not accepted (typing mistakes; thousands of them could overflow the totals)
+- Home screen widgets: an error in one widget can no longer crash the app
+
 ## 1.3.1 (F-Droid)
 
 - The app is ready for F-Droid: a build without the update check, without the internet permission and without the permission to install apps

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'models.dart';
 
@@ -57,7 +58,62 @@ class BackupData {
   final Map<String, List<int>> photos;
   final DateTime exportedAt;
 
-  String toJsonString() => const JsonEncoder.withIndent(' ').convert({
+  static const JsonEncoder _encoder = JsonEncoder.withIndent(' ');
+
+  /// The whole backup as one text, with the bill photos inside it.
+  /// For a big photo collection use [writeToFile], which needs far less memory.
+  String toJsonString() =>
+      _encoder.convert(_toMap(photos.keys.toSet(), inlinePhotos: true));
+
+  /// Writes the backup to [file] without holding all bill photos in memory:
+  /// the text is written first, then the photos named in [photoNames] one by
+  /// one (read with [readPhoto]). The file is written under a temporary name
+  /// and renamed at the end, so a stopped phone never leaves a half backup.
+  /// The result is the same format as [toJsonString].
+  Future<void> writeToFile(
+    File file, {
+    required Iterable<String> photoNames,
+    required List<int>? Function(String name) readPhoto,
+  }) async {
+    final names = photoNames.toSet();
+    final text = _encoder.convert(_toMap(names, inlinePhotos: false));
+    final end = text.lastIndexOf('}');
+    final tmp = File('${file.path}.tmp');
+    final sink = tmp.openWrite();
+    try {
+      sink.write(text.substring(0, end).trimRight());
+      if (names.isNotEmpty) {
+        sink.write(',\n "photos": {');
+        var first = true;
+        for (final name in names) {
+          final bytes = readPhoto(name);
+          if (bytes == null) continue;
+          sink.write('${first ? '' : ','}\n  ${jsonEncode(name)}: '
+              '"${base64Encode(bytes)}"');
+          first = false;
+          // Hands the written part to the system, so it can be freed.
+          await sink.flush();
+        }
+        sink.write('\n }');
+      }
+      sink.write('\n}\n');
+      await sink.flush();
+      await sink.close();
+      await tmp.rename(file.path);
+    } catch (_) {
+      try {
+        await sink.close();
+      } catch (_) {}
+      try {
+        if (tmp.existsSync()) tmp.deleteSync();
+      } catch (_) {}
+      rethrow;
+    }
+  }
+
+  Map<String, dynamic> _toMap(Set<String> photoNames,
+          {required bool inlinePhotos}) =>
+      {
         'app': appId,
         'format': formatVersion,
         'exportedAt': exportedAt.toIso8601String(),
@@ -95,7 +151,7 @@ class BackupData {
               'period': e.period?.name,
               if (e.tags.isNotEmpty) 'tags': e.tags,
               if (e.minutes != null) 'time': e.minutes,
-              if (e.photo != null && photos.containsKey(e.photo))
+              if (e.photo != null && photoNames.contains(e.photo))
                 'photo': e.photo,
             },
         ],
@@ -137,7 +193,7 @@ class BackupData {
               if (d.remindAt != null) 'remindAt': d.remindAt!.toIso8601String(),
             },
         ],
-        if (photos.isNotEmpty)
+        if (inlinePhotos && photos.isNotEmpty)
           'photos': {
             for (final p in photos.entries) p.key: base64Encode(p.value),
           },
@@ -150,7 +206,7 @@ class BackupData {
               'color': g.colorValue,
             },
         ],
-      });
+      };
 
   /// Parses a backup file. Throws [FormatException] whose message is an
   /// error code (see backupErrorMessage in l10n/l10n.dart)

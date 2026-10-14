@@ -50,8 +50,10 @@ Future<void> main() async {
     debugPrint('Photo folder not ready: $e');
   }
   runApp(PocketTallyApp(state: state));
-  // Weekly (or daily) backup file, if it is due.
-  AutoBackup.runIfDue(state).catchError((_) => false);
+  // Weekly (or daily) backup file, if it is due. A few seconds after the
+  // start, so opening the app is never slowed down by it.
+  Future<bool>.delayed(const Duration(seconds: 8), () => AutoBackup.runIfDue(state))
+      .catchError((_) => false);
 }
 
 class PocketTallyApp extends StatelessWidget {

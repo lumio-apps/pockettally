@@ -4,6 +4,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'app_state.dart';
+import 'backup.dart';
+import 'photo_store.dart';
 
 /// Writes a backup file by itself, every day or every week, when the app
 /// is opened. Only the newest [keep] automatic backups are kept.
@@ -32,9 +34,10 @@ class AutoBackup {
     }
     _running = true;
     try {
-      final text =
-          state.createBackup(withPhotos: state.backupWithPhotos).toJsonString();
-      final dir = await _write(text);
+      // Photos are not loaded here: they are read one by one while writing.
+      final names =
+          state.backupWithPhotos ? state.billPhotoNames() : <String>{};
+      final dir = await _write(state.createBackup(), names);
       await state.markAutoBackup(ok: dir != null, folder: dir?.path);
       if (dir != null) await _prune(dir);
       return dir != null;
@@ -54,12 +57,15 @@ class AutoBackup {
   }
 
   /// Tries the folders in order; returns the one that worked.
-  static Future<Directory?> _write(String text) async {
+  static Future<Directory?> _write(BackupData data, Set<String> photos) async {
     for (final dir in await _candidates()) {
       try {
         if (!await dir.exists()) await dir.create(recursive: true);
-        await File(p.join(dir.path, _fileName()))
-            .writeAsString(text, flush: true);
+        await data.writeToFile(
+          File(p.join(dir.path, _fileName())),
+          photoNames: photos,
+          readPhoto: PhotoStore.readBill,
+        );
         return dir;
       } catch (_) {
         // Not allowed here; try the next folder.

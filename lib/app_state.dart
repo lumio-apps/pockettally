@@ -685,6 +685,14 @@ class AppState extends ChangeNotifier {
         favorites: favorites,
       );
 
+  /// File names of the bill photos that exist on the phone. Used to write a
+  /// backup photo by photo (see BackupData.writeToFile).
+  Set<String> billPhotoNames() => {
+        for (final e in entries)
+          if (e.photo != null && PhotoStore.file(e.photo!)?.existsSync() == true)
+            e.photo!,
+      };
+
   Map<String, List<int>> _billPhotos() {
     final photos = <String, List<int>>{};
     for (final e in entries) {

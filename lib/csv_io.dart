@@ -1,4 +1,5 @@
 import 'models.dart';
+import 'utils/amount_parser.dart' show kMaxAmountMinor;
 
 /// Entries as CSV, for Excel, LibreOffice or Google Sheets.
 ///
@@ -112,7 +113,11 @@ class CsvIo {
       t = t.replaceAll(',', '.');
     }
     final v = double.tryParse(t);
-    return v == null ? null : (v * 100).round();
+    // "NaN", "Infinity" and absurd sizes: skip the row, never fail the file.
+    if (v == null || !v.isFinite || v.abs() * 100 > kMaxAmountMinor) {
+      return null;
+    }
+    return (v * 100).round();
   }
 
   static String _cell(String v) {
