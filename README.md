@@ -121,6 +121,7 @@ Use **Back up / Restore** to move it between a phone and a computer.
   page of this project for a newer version.
 - The app lock PIN is stored only as a salted hash, never as the PIN itself.
 - Backups, CSV files and PDF reports are saved only where you choose.
+- Read the full [Privacy Policy](PRIVACY.md).
 
 ## Translations
 

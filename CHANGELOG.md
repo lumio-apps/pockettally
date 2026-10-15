@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.3 (Google Play)
+
+- A build for Google Play: no update check, no internet permission, no permission to install apps and no exact alarms. Reminders in this build come as close to the chosen time as Android allows
+- The app now targets Android 16 (API 36), as Google Play asks since 31 August 2026
+- The release build also makes a signed app bundle (`.aab`) for Google Play. Before it can be uploaded, it is checked for 16 KB memory pages and for permissions Google Play does not allow
+- Privacy Policy (`PRIVACY.md`), the Google Play listing texts and 6 screenshots in `docs/play-store/`
+
 ## 1.3.2 (safety)
 
 - Backups with bill photos are written photo by photo, to a temporary file that is renamed when it is complete. A big photo collection no longer needs several times its size in memory, and a stopped phone never leaves a half-written backup

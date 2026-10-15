@@ -6,6 +6,9 @@ Usage:
   python3 tool/prepare_android.py manifest --fdroid
                                              # the same, but no INTERNET and no
                                              # REQUEST_INSTALL_PACKAGES (F-Droid build)
+  python3 tool/prepare_android.py manifest --play
+                                             # F-Droid build, and also no exact alarms
+                                             # (Google Play build)
   python3 tool/prepare_android.py signing    # release signing from key.properties
 
 Fails loudly if the Flutter template changes and a patch no longer applies.
@@ -31,10 +34,22 @@ NO_NETWORK_PERMISSIONS = (
     '    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove"/>\n'
 )
 
-PERMISSIONS = (
-    # Daily reminder: plan the reminders again after the phone restarts.
+# Google Play only allows exact alarms for alarm clock and calendar apps, so
+# the Play build does without them: reminders then come "as close as Android
+# allows" (see ReminderService). The USE_EXACT_ALARM line only removes it if
+# a plugin ever adds it.
+NO_EXACT_ALARM_PERMISSIONS = (
+    '    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove"/>\n'
+    '    <uses-permission android:name="android.permission.USE_EXACT_ALARM" tools:node="remove"/>\n'
+)
+
+# Daily reminder: plan the reminders again after the phone restarts.
+BOOT_PERMISSION = (
     '    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>\n'
-    # Reminders at the exact minute (Android 12+ asks the user first).
+)
+
+# Reminders at the exact minute (Android 12+ asks the user first).
+EXACT_ALARM_PERMISSION = (
     '    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>\n'
 )
 
@@ -148,7 +163,9 @@ def install_android_extras() -> None:
         shutil.copyfile(src / "kotlin" / name, main_activity.parent / name)
 
 
-def patch_manifest(fdroid: bool = False) -> None:
+def patch_manifest(mode: str = "github") -> None:
+    """mode: "github" (updater, exact alarms), "fdroid" (no network) or
+    "play" (no network, no exact alarms)."""
     # Since 1.1.0 the widgets work without the home_widget plugin (which
     # made 0.9.2 crash on start): plain Android code reads texts the app
     # saves in its settings.
@@ -156,10 +173,14 @@ def patch_manifest(fdroid: bool = False) -> None:
     if "RECEIVE_BOOT_COMPLETED" not in text:
         if "<application" not in text:
             die("no <application> tag in AndroidManifest.xml")
-        extra = NO_NETWORK_PERMISSIONS if fdroid else UPDATER_PERMISSIONS
-        text = text.replace(
-            "<application", extra + PERMISSIONS + "    <application", 1)
-    if fdroid and TOOLS_NS not in text:
+        if mode == "github":
+            extra = UPDATER_PERMISSIONS + BOOT_PERMISSION + EXACT_ALARM_PERMISSION
+        elif mode == "fdroid":
+            extra = NO_NETWORK_PERMISSIONS + BOOT_PERMISSION + EXACT_ALARM_PERMISSION
+        else:
+            extra = NO_NETWORK_PERMISSIONS + NO_EXACT_ALARM_PERMISSIONS + BOOT_PERMISSION
+        text = text.replace("<application", extra + "    <application", 1)
+    if mode != "github" and TOOLS_NS not in text:
         if "<manifest " not in text:
             die("no <manifest> tag in AndroidManifest.xml")
         text = text.replace("<manifest ", "<manifest " + TOOLS_NS + " ", 1)
@@ -228,6 +249,16 @@ def patch_gradle_for_notifications() -> None:
         "compileSdk = maxOf(flutter.compileSdkVersion, 36)",
         1,
     )
+    # Google Play: new apps and updates must target Android 16 (API 36) or
+    # newer since 31 August 2026. Flutter's own default may be lower.
+    if "targetSdk = flutter.targetSdkVersion" in text:
+        text = text.replace(
+            "targetSdk = flutter.targetSdkVersion",
+            "targetSdk = maxOf(flutter.targetSdkVersion, 36)",
+            1,
+        )
+    else:
+        print("warning: targetSdk line not found; Google Play needs API 36")
     text += (
         "\ndependencies {\n"
         '    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n'
@@ -260,8 +291,10 @@ if __name__ == "__main__":
     if args == ["manifest"]:
         patch_manifest()
     elif args == ["manifest", "--fdroid"]:
-        patch_manifest(fdroid=True)
+        patch_manifest("fdroid")
+    elif args == ["manifest", "--play"]:
+        patch_manifest("play")
     elif args == ["signing"]:
         patch_signing()
     else:
-        die("usage: prepare_android.py manifest [--fdroid] | signing")
+        die("usage: prepare_android.py manifest [--fdroid|--play] | signing")

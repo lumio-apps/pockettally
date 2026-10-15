@@ -221,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                         onTap: _pickReminderTime,
                       ),
-                    if (!_exact)
+                    if (kExactAlarms && !_exact)
                       ListTile(
                         leading: const _SettingIcon(
                             Icons.alarm_on_outlined, Color(0xFFE5533D)),

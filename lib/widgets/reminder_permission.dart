@@ -16,7 +16,9 @@ Future<bool> askReminderPermissions(BuildContext context) async {
     return false;
   }
   // Asked once per app start; Settings has a button for it too.
-  if (_askedForExact || await ReminderService.canBeExact()) return true;
+  if (!kExactAlarms || _askedForExact || await ReminderService.canBeExact()) {
+    return true;
+  }
   if (!context.mounted) return true;
   _askedForExact = true;
   await askExactReminders(context);

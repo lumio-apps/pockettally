@@ -1,0 +1,3 @@
+- The app now targets Android 16
+- Safer build for stores: no update check and no internet permission
+- Privacy Policy added

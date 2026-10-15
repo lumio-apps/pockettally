@@ -5,6 +5,12 @@ import 'package:timezone/timezone.dart' as tz;
 
 import 'utils/lock_guard.dart';
 
+/// False in the Google Play build (flutter build appbundle
+/// --dart-define=EXACT_ALARMS=false): Play only allows exact alarms for
+/// alarm clock and calendar apps, so reminders there come as close to the
+/// chosen time as Android allows and the "on-time reminders" button is hidden.
+const bool kExactAlarms = bool.fromEnvironment('EXACT_ALARMS', defaultValue: true);
+
 /// One planned Lend & Borrow notification.
 class DebtReminder {
   const DebtReminder({
@@ -81,7 +87,7 @@ class ReminderService {
   /// newer ask the user for this ("Alarms & reminders"); without it Android
   /// may show a reminder up to an hour late.
   static Future<bool> canBeExact() async {
-    if (!await _init()) return false;
+    if (!kExactAlarms || !await _init()) return false;
     try {
       return await _android?.canScheduleExactNotifications() ?? false;
     } catch (_) {
@@ -92,7 +98,7 @@ class ReminderService {
   /// Opens the phone's "Alarms & reminders" setting for the app. Returns
   /// true when it is allowed afterwards.
   static Future<bool> requestExact() async {
-    if (!await _init()) return false;
+    if (!kExactAlarms || !await _init()) return false;
     final android = _android;
     if (android == null) return false;
     try {
