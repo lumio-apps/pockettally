@@ -5,12 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('Version 1.3.6 is set everywhere', () {
     expect(File('pubspec.yaml').readAsStringSync(),
-        contains('version: 1.3.6+33'));
-    expect(File('fastlane/metadata/android/en-US/changelogs/33.txt').existsSync(),
+        contains('version: 1.3.7+34'));
+    expect(File('fastlane/metadata/android/en-US/changelogs/34.txt').existsSync(),
         isTrue);
     final recipe = File('fdroid/com.lumio.pockettally.yml').readAsStringSync();
-    expect(recipe, contains('versionCode: 33'));
-    expect(recipe, contains('commit: v1.3.6'));
+    expect(recipe, contains('versionCode: 34'));
+    expect(recipe, contains('commit: v1.3.7'));
   });
 
   test('The app is Android only', () {

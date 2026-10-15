@@ -7,11 +7,10 @@ restore.
 
 ## What is different in the F-Droid build
 
-- `flutter build apk --release --dart-define=UPDATER=false` hides "Check for
-  updates" (F-Droid updates the app itself).
-- `python3 tool/prepare_android.py manifest --fdroid` leaves out the
-  `INTERNET` and `REQUEST_INSTALL_PACKAGES` permissions and removes them if a
-  plugin adds them. The F-Droid app never goes online.
+- The app has no update check (F-Droid updates the app itself).
+- `python3 tool/prepare_android.py manifest --fdroid` removes the
+  `INTERNET` and `REQUEST_INSTALL_PACKAGES` permissions if a plugin adds them.
+  The app never goes online.
 - No Google services and no tracking libraries are used.
 
 ## Store listing

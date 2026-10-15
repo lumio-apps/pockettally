@@ -1,6 +1,6 @@
 # Privacy Policy for PocketTally
 
-Last updated: 15 October 2026
+Last updated: 16 October 2026
 
 PocketTally is an income and expense tracker made by Lumio Apps. It works
 fully offline. **We do not collect, store, share or sell any personal data.**
@@ -32,15 +32,7 @@ to another service, that service's own privacy policy applies.
   when you add a bill photo or a profile photo, and receives only the picture
   you choose.
 
-The version of the app on Google Play and F-Droid has no internet permission.
-
-## The version from GitHub
-
-The version you download from GitHub can check for a new version. Only when you
-tap "Check for updates", it asks github.com for the newest release and can
-download it. No personal data is sent. GitHub sees the request like any other
-web request (for example your IP address) and handles it under its own privacy
-policy.
+PocketTally has no internet permission in any version (Google Play, F-Droid and GitHub). It has no update check; updates come through the store you installed it from, or by installing a newer APK from GitHub yourself.
 
 ## Children
 

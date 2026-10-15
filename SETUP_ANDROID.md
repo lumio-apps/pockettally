@@ -15,7 +15,7 @@ keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -vali
 
 Back up `upload-keystore.jks` and its passwords somewhere private.
 Never commit them. Every release must be signed with this same key,
-otherwise in-app updates will not install over the old version.
+otherwise Android will not install an update over the old version.
 
 ## 2. Add GitHub secrets
 

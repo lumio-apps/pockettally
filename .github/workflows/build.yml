@@ -87,14 +87,14 @@ jobs:
           files: pockettally-*-android.apk
           generate_release_notes: true
           # Test tags (v1.1.0-test1) make a pre-release: only for trying,
-          # never offered by the in-app updater.
+          # never shown as the latest release.
           prerelease: ${{ contains(github.ref_name, '-test') }}
 
   # ---------------- Google Play: signed app bundle ----------------
   # Not published anywhere. Download it from the "Artifacts" of the run and
   # upload it in Play Console. It is signed with the same key as the APK,
   # which Google Play then uses as the upload key.
-  # Differences to the APK: no update check, no internet permission, no exact
+  # Difference to the APK: no exact
   # alarms (Google Play allows those for alarm clock and calendar apps only).
   play:
     # Test tags only build the Android APK.
@@ -155,7 +155,7 @@ jobs:
         run: |
           BUILD=$(grep -E '^version:' pubspec.yaml | sed -E 's/.*\+([0-9]+).*/\1/')
           flutter build appbundle --release \
-            --dart-define=UPDATER=false --dart-define=EXACT_ALARMS=false \
+            --dart-define=EXACT_ALARMS=false \
             --build-number=$BUILD
           mv build/app/outputs/bundle/release/app-release.aab \
             "pockettally-${{ github.ref_name }}-play.aab"

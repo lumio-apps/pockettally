@@ -3,7 +3,6 @@ import 'package:pockettally/app_state.dart';
 import 'package:pockettally/backup.dart';
 import 'package:pockettally/models.dart';
 import 'package:pockettally/theme.dart';
-import 'package:pockettally/update_checker.dart';
 import 'package:pockettally/utils/amount_parser.dart';
 import 'package:pockettally/utils/money_format.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -173,34 +172,5 @@ void main() {
     expect(copy.palette, 'plum');
     expect(copy.categories.single.position, 2);
     expect(copy.categories.single.hidden, isTrue);
-  });
-
-  group('update APK choice', () {
-    const v = 'https://example.com/';
-    final assets = {
-      'pockettally-v0.6.0-universal.apk': '${v}u',
-      'pockettally-v0.6.0-arm64-v8a.apk': '${v}a64',
-      'pockettally-v0.6.0-armeabi-v7a.apk': '${v}a32',
-      'pockettally-v0.6.0-x86_64.apk': '${v}x64',
-    };
-
-    test('split APK for the phone', () {
-      expect(UpdateChecker.pickApkUrl(assets, 'arm64-v8a'), '${v}a64');
-      expect(UpdateChecker.pickApkUrl(assets, 'armeabi-v7a'), '${v}a32');
-      expect(UpdateChecker.pickApkUrl(assets, 'x86_64'), '${v}x64');
-    });
-
-    test('universal when the chip is unknown', () {
-      expect(UpdateChecker.pickApkUrl(assets, null), '${v}u');
-    });
-
-    test('old single-APK releases', () {
-      expect(
-          UpdateChecker.pickApkUrl(
-              {'pockettally-v0.5.0.apk': '${v}old', 'notes.txt': '${v}n'},
-              'arm64-v8a'),
-          '${v}old');
-      expect(UpdateChecker.pickApkUrl({}, 'arm64-v8a'), isNull);
-    });
   });
 }

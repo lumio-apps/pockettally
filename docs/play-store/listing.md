@@ -89,7 +89,8 @@ First release on Google Play. Track income and expenses offline, with budgets, L
 
 ## Permissions
 
-The Play build has no internet, no exact alarms, no install-packages
+No build has internet or an install-packages permission. The Play build also has no exact alarms
+and no install-packages
 permission and no storage, photo or video permission, and the build fails if
 any of them ever gets in (`MANAGE_EXTERNAL_STORAGE`, `READ_EXTERNAL_STORAGE`,
 `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO`). So no permission declaration form should be

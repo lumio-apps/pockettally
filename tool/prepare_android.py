@@ -4,11 +4,11 @@
 Usage:
   python3 tool/prepare_android.py manifest   # permissions, app label, reminder, widgets, shortcuts
   python3 tool/prepare_android.py manifest --fdroid
-                                             # the same, but no INTERNET, no
-                                             # REQUEST_INSTALL_PACKAGES and no storage
-                                             # or photo permissions (F-Droid build)
+                                             # the same (no INTERNET, no
+                                             # REQUEST_INSTALL_PACKAGES, no storage or
+                                             # photo permissions in any build)
   python3 tool/prepare_android.py manifest --play
-                                             # F-Droid build, and also no exact alarms
+                                             # and also no exact alarms
                                              # (Google Play build)
   python3 tool/prepare_android.py signing    # release signing from key.properties
 
@@ -21,24 +21,16 @@ import sys
 MANIFEST = pathlib.Path("android/app/src/main/AndroidManifest.xml")
 GRADLE = pathlib.Path("android/app/build.gradle.kts")
 
-# Only the GitHub build checks for updates, so only it needs the internet and
-# the right to install an APK.
-UPDATER_PERMISSIONS = (
-    '    <uses-permission android:name="android.permission.INTERNET"/>\n'
-    '    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>\n'
-)
-
-# F-Droid build (--dart-define=UPDATER=false): the app never goes online. Also
-# strip these two if a plugin's own manifest adds them.
+# The app never goes online and never installs anything: remove these two if a
+# plugin's own manifest adds them.
 NO_NETWORK_PERMISSIONS = (
     '    <uses-permission android:name="android.permission.INTERNET" tools:node="remove"/>\n'
     '    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove"/>\n'
 )
 
-# The open_filex plugin (used only to open the downloaded update) adds storage
-# and photo/video permissions. The app does not need them: pictures come from
-# the system photo picker and files from the system file dialog. Google Play
-# restricts them, and the store builds have no update to open.
+# Remove storage and photo/video permissions if a plugin adds them. The app does
+# not need them: pictures come from the system photo picker and files from the
+# system file dialog. Google Play restricts them.
 NO_STORAGE_PERMISSIONS = (
     '    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>\n'
     '    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>\n'
@@ -176,8 +168,8 @@ def install_android_extras() -> None:
 
 
 def patch_manifest(mode: str = "github") -> None:
-    """mode: "github" (updater, exact alarms), "fdroid" (no network) or
-    "play" (no network, no exact alarms)."""
+    """mode: "github" and "fdroid" (exact alarms) or "play" (no exact alarms).
+    No mode has internet access: the app has no update check."""
     # Since 1.1.0 the widgets work without the home_widget plugin (which
     # made 0.9.2 crash on start): plain Android code reads texts the app
     # saves in its settings.
@@ -185,16 +177,14 @@ def patch_manifest(mode: str = "github") -> None:
     if "RECEIVE_BOOT_COMPLETED" not in text:
         if "<application" not in text:
             die("no <application> tag in AndroidManifest.xml")
-        if mode == "github":
-            extra = UPDATER_PERMISSIONS + BOOT_PERMISSION + EXACT_ALARM_PERMISSION
-        elif mode == "fdroid":
-            extra = (NO_NETWORK_PERMISSIONS + NO_STORAGE_PERMISSIONS
-                     + BOOT_PERMISSION + EXACT_ALARM_PERMISSION)
-        else:
+        if mode == "play":
             extra = (NO_NETWORK_PERMISSIONS + NO_STORAGE_PERMISSIONS
                      + NO_EXACT_ALARM_PERMISSIONS + BOOT_PERMISSION)
+        else:
+            extra = (NO_NETWORK_PERMISSIONS + NO_STORAGE_PERMISSIONS
+                     + BOOT_PERMISSION + EXACT_ALARM_PERMISSION)
         text = text.replace("<application", extra + "    <application", 1)
-    if mode != "github" and TOOLS_NS not in text:
+    if TOOLS_NS not in text:
         if "<manifest " not in text:
             die("no <manifest> tag in AndroidManifest.xml")
         text = text.replace("<manifest ", "<manifest " + TOOLS_NS + " ", 1)

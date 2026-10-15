@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.7 (no update check)
+
+- The "Check for updates" button and the code behind it are gone. The app never goes online now, in every version (Google Play, F-Droid and GitHub): no internet permission and no permission to install apps
+- Update through the store you installed from, or install a newer APK from the GitHub releases page over the old one; your data stays
+- Fewer libraries in the app (no HTTP and no file opener)
+- Privacy Policy updated
+
 ## 1.3.6 (Android only)
 
 - PocketTally is now an Android-only app. The Windows installer and the Linux AppImage are no longer built, and their code is gone: the desktop database (FFI), the desktop update and the file-dialog photo picker

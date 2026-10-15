@@ -10,7 +10,6 @@ import '../backup_service.dart';
 import '../l10n/l10n.dart';
 import '../reminder.dart';
 import '../theme.dart';
-import '../update_checker.dart';
 import '../widgets/profile_avatar.dart';
 import '../widgets/reminder_permission.dart';
 import 'budgets_screen.dart';
@@ -53,7 +52,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   String _version = '';
-  bool _checking = false;
   bool _busy = false;
 
   AppState get state => widget.state;
@@ -367,33 +365,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _Group(
                 title: l.sectionAbout,
                 children: [
-                  if (kUpdaterEnabled)
-                    ListTile(
-                      leading: _checking
-                          ? const SizedBox(
-                              width: 34,
-                              height: 34,
-                              child: Padding(
-                                padding: EdgeInsets.all(7),
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            )
-                          : const _SettingIcon(Icons.system_update_outlined,
-                              Color(0xFF1565FF)),
-                      title: Text(l.checkForUpdates),
-                      subtitle: Text(_version.isEmpty
-                          ? 'PocketTally'
-                          : l.installedVersion(_version)),
-                      onTap: _checking ? null : _checkForUpdates,
-                    )
-                  else
-                    ListTile(
-                      leading: const _SettingIcon(
-                          Icons.info_outline, Color(0xFF1565FF)),
-                      title: Text(l.version),
-                      subtitle: Text(_version),
-                    ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.info_outline, Color(0xFF1565FF)),
+                    title: Text(l.version),
+                    subtitle: Text(_version),
+                  ),
                   const ListTile(
                     leading:
                         _SettingIcon(Icons.favorite_border, Color(0xFFE0458B)),
@@ -703,107 +680,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
-  }
-
-  Future<void> _checkForUpdates() async {
-    final l = context.l10n;
-    setState(() => _checking = true);
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      final update = await UpdateChecker.check();
-      if (!mounted) return;
-      if (update == null) {
-        messenger.showSnackBar(SnackBar(content: Text(l.upToDate)));
-      } else {
-        await _showUpdateDialog(update);
-      }
-    } catch (_) {
-      messenger
-          .showSnackBar(SnackBar(content: Text(l.couldNotCheckUpdates)));
-    } finally {
-      if (mounted) setState(() => _checking = false);
-    }
-  }
-
-  Future<void> _showUpdateDialog(UpdateInfo update) async {
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => _UpdateDialog(update: update),
-    );
-  }
-}
-
-class _UpdateDialog extends StatefulWidget {
-  const _UpdateDialog({required this.update});
-
-  final UpdateInfo update;
-
-  @override
-  State<_UpdateDialog> createState() => _UpdateDialogState();
-}
-
-class _UpdateDialogState extends State<_UpdateDialog> {
-  double? _progress;
-  bool _failed = false;
-
-  Future<void> _start() async {
-    setState(() {
-      _progress = 0;
-      _failed = false;
-    });
-    try {
-      await UpdateChecker.downloadAndInstall(widget.update, (p) {
-        if (mounted) setState(() => _progress = p);
-      });
-      if (mounted) Navigator.of(context).pop();
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _progress = null;
-          _failed = true;
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final downloading = _progress != null;
-    return AlertDialog(
-      title: Text(l.versionAvailable(widget.update.version)),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.update.notes.isNotEmpty) Text(widget.update.notes),
-            if (downloading) ...[
-              const SizedBox(height: 16),
-              LinearProgressIndicator(value: _progress),
-              const SizedBox(height: 4),
-              Text('${((_progress ?? 0) * 100).round()}%'),
-            ],
-            if (_failed) ...[
-              const SizedBox(height: 12),
-              Text(l.downloadFailed,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: downloading ? null : () => Navigator.of(context).pop(),
-          child: Text(l.later),
-        ),
-        FilledButton(
-          onPressed: downloading ? null : _start,
-          child: Text(l.update),
-        ),
-      ],
-    );
   }
 }
 

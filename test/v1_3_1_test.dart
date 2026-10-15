@@ -44,7 +44,7 @@ void main() {
     final recipe = File('fdroid/com.lumio.pockettally.yml').readAsStringSync();
     expect(recipe, contains('versionCode: ${_buildNumber()}'));
     expect(recipe, contains('CurrentVersionCode: ${_buildNumber()}'));
-    expect(recipe, contains('--dart-define=UPDATER=false'));
+    expect(recipe, isNot(contains('UPDATER')));
     expect(recipe, contains('prepare_android.py manifest --fdroid'));
   });
 }

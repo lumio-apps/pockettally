@@ -19,7 +19,7 @@ void main() {
   test('the Play build is made by the release workflow', () {
     final yml = File('.github/workflows/build.yml').readAsStringSync();
     expect(yml, contains('flutter build appbundle'));
-    expect(yml, contains('--dart-define=UPDATER=false'));
+    expect(yml, isNot(contains('UPDATER')));
     expect(yml, contains('--dart-define=EXACT_ALARMS=false'));
     expect(yml, contains('prepare_android.py manifest --play'));
     expect(yml, contains('check_play_bundle.py'));
