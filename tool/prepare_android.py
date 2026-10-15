@@ -4,8 +4,9 @@
 Usage:
   python3 tool/prepare_android.py manifest   # permissions, app label, reminder, widgets, shortcuts
   python3 tool/prepare_android.py manifest --fdroid
-                                             # the same, but no INTERNET and no
-                                             # REQUEST_INSTALL_PACKAGES (F-Droid build)
+                                             # the same, but no INTERNET, no
+                                             # REQUEST_INSTALL_PACKAGES and no storage
+                                             # or photo permissions (F-Droid build)
   python3 tool/prepare_android.py manifest --play
                                              # F-Droid build, and also no exact alarms
                                              # (Google Play build)
@@ -32,6 +33,17 @@ UPDATER_PERMISSIONS = (
 NO_NETWORK_PERMISSIONS = (
     '    <uses-permission android:name="android.permission.INTERNET" tools:node="remove"/>\n'
     '    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove"/>\n'
+)
+
+# The open_filex plugin (used only to open the downloaded update) adds storage
+# and photo/video permissions. The app does not need them: pictures come from
+# the system photo picker and files from the system file dialog. Google Play
+# restricts them, and the store builds have no update to open.
+NO_STORAGE_PERMISSIONS = (
+    '    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>\n'
+    '    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>\n'
+    '    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove"/>\n'
+    '    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove"/>\n'
 )
 
 # Google Play only allows exact alarms for alarm clock and calendar apps, so
@@ -176,9 +188,11 @@ def patch_manifest(mode: str = "github") -> None:
         if mode == "github":
             extra = UPDATER_PERMISSIONS + BOOT_PERMISSION + EXACT_ALARM_PERMISSION
         elif mode == "fdroid":
-            extra = NO_NETWORK_PERMISSIONS + BOOT_PERMISSION + EXACT_ALARM_PERMISSION
+            extra = (NO_NETWORK_PERMISSIONS + NO_STORAGE_PERMISSIONS
+                     + BOOT_PERMISSION + EXACT_ALARM_PERMISSION)
         else:
-            extra = NO_NETWORK_PERMISSIONS + NO_EXACT_ALARM_PERMISSIONS + BOOT_PERMISSION
+            extra = (NO_NETWORK_PERMISSIONS + NO_STORAGE_PERMISSIONS
+                     + NO_EXACT_ALARM_PERMISSIONS + BOOT_PERMISSION)
         text = text.replace("<application", extra + "    <application", 1)
     if mode != "github" and TOOLS_NS not in text:
         if "<manifest " not in text:

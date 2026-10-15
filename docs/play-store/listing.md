@@ -89,10 +89,10 @@ First release on Google Play. Track income and expenses offline, with budgets, L
 
 ## Permissions
 
-The Play build has no internet, no exact alarms and no install-packages
-permission, and the build fails if the all-files or photo-and-video
-permissions (`MANAGE_EXTERNAL_STORAGE`, `READ_MEDIA_IMAGES`,
-`READ_MEDIA_VIDEO`) ever get in. So no permission declaration form should be
+The Play build has no internet, no exact alarms, no install-packages
+permission and no storage, photo or video permission, and the build fails if
+any of them ever gets in (`MANAGE_EXTERNAL_STORAGE`, `READ_EXTERNAL_STORAGE`,
+`READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_AUDIO`). So no permission declaration form should be
 needed. If the Console still asks for one, check the permission list printed
 by the "Check the bundle for Google Play" step of the GitHub Actions run.
 

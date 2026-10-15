@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.4 (store permissions)
+
+- The Google Play and F-Droid builds no longer carry storage, photo, video and audio permissions that a plugin had added. The app never used them: pictures come from the system photo picker and files from the system file dialog
+- The Play bundle check also refuses these permissions
+
 ## 1.3.3 (Google Play)
 
 - A build for Google Play: no update check, no internet permission, no permission to install apps and no exact alarms. Reminders in this build come as close to the chosen time as Android allows
