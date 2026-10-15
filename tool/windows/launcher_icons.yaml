@@ -1,7 +1,0 @@
-# Windows app icon only (the Android icon uses the settings in pubspec.yaml).
-# CI: dart run flutter_launcher_icons -f tool/windows/launcher_icons.yaml
-flutter_launcher_icons:
-  windows:
-    generate: true
-    image_path: "assets/icon/logo.png" # rounded blue logo
-    icon_size: 256

@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=PocketTally
-Comment=Offline income and expense tracker
-Exec=pockettally
-Icon=pockettally
-Categories=Office;Finance;
-Terminal=false

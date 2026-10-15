@@ -4,7 +4,6 @@ import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
 
 import 'models.dart';
-import 'platform.dart';
 
 /// Local SQLite storage. Everything stays on the device.
 ///
@@ -28,10 +27,9 @@ class AppDatabase {
 
   Database? _db;
 
-  /// Desktop: the user's app data folder. Phones: the usual database folder.
+  /// The phone's usual database folder.
   static Future<String> _path() async {
-    final dir =
-        isDesktop ? (await appDataDirectory()).path : await getDatabasesPath();
+    final dir = await getDatabasesPath();
     return p.join(dir, 'pockettally.db');
   }
 

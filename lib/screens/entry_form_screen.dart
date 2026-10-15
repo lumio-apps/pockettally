@@ -6,7 +6,6 @@ import '../app_state.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../photo_store.dart';
-import '../platform.dart';
 import '../split.dart';
 import '../theme.dart';
 import '../utils/amount_parser.dart' show isCalculation;
@@ -162,10 +161,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
 
   Future<void> _addPhoto() async {
     final l = context.l10n;
-    // Desktop has no camera: go straight to the file dialog.
-    final camera = isDesktop
-        ? false
-        : await showModalBottomSheet<bool>(
+    final camera = await showModalBottomSheet<bool>(
       context: context,
       builder: (ctx) => SafeArea(
         child: Column(

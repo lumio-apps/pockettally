@@ -8,7 +8,6 @@ import 'app_state.dart';
 import 'auto_backup.dart';
 import 'l10n/l10n.dart';
 import 'photo_store.dart';
-import 'platform.dart';
 import 'screens/lock_screen.dart';
 import 'screens/root_shell.dart';
 import 'screens/startup_error_screen.dart';
@@ -19,7 +18,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   late final AppState state;
   try {
-    initDatabaseFactory();
     // Month and day names for every language (used by DateFormat).
     await initializeDateFormatting();
     final prefs = await SharedPreferences.getInstance();

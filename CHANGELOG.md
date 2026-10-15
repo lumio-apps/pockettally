@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.6 (Android only)
+
+- PocketTally is now an Android-only app. The Windows installer and the Linux AppImage are no longer built, and their code is gone: the desktop database (FFI), the desktop update and the file-dialog photo picker
+- The APK is smaller and has fewer libraries (no bundled desktop SQLite)
+- Phones and tablets are not affected. Windows and Linux files from older releases stay on the release pages but get no more updates
+- README, banner and store graphic now say Android only
+
 ## 1.3.5 (glass look)
 
 - New glass look for the whole app: pages sit on a soft gradient in the colors of your accent color, cards are frosted and translucent with a light edge, in both light and dark mode

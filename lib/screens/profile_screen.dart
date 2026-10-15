@@ -4,7 +4,6 @@ import '../app_state.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../photo_store.dart';
-import '../platform.dart';
 import '../utils/money_format.dart';
 import '../widgets/profile_avatar.dart';
 
@@ -196,17 +195,14 @@ class ProfileSection extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (!isDesktop)
-              ListTile(
-                leading: const Icon(Icons.photo_camera_outlined),
-                title: Text(l.takePhoto),
-                onTap: () => Navigator.pop(ctx, 'camera'),
-              ),
             ListTile(
-              leading: Icon(isDesktop
-                  ? Icons.folder_open_outlined
-                  : Icons.photo_library_outlined),
-              title: Text(isDesktop ? l.chooseFile : l.chooseFromGallery),
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: Text(l.takePhoto),
+              onTap: () => Navigator.pop(ctx, 'camera'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l.chooseFromGallery),
               onTap: () => Navigator.pop(ctx, 'gallery'),
             ),
             if (hasPhoto)

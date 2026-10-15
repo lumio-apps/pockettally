@@ -47,12 +47,8 @@ void main() {
     }
   });
 
-  test('Version 1.3.5 is set everywhere', () {
-    expect(File('pubspec.yaml').readAsStringSync(), contains('version: 1.3.5+32'));
+  test('Store changelog for 1.3.5 exists', () {
     expect(File('fastlane/metadata/android/en-US/changelogs/32.txt').existsSync(),
         isTrue);
-    final recipe = File('fdroid/com.lumio.pockettally.yml').readAsStringSync();
-    expect(recipe, contains('versionCode: 32'));
-    expect(recipe, contains('commit: v1.3.5'));
   });
 }

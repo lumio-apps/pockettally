@@ -2,12 +2,12 @@ import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
-import 'platform.dart';
 import 'utils/lock_guard.dart';
 
 /// Bill photos are copied into the app's own folder, so they stay on the
-/// device (on desktop: the per-user app data folder).
+/// device (the app's private folder).
 /// The profile photo is kept the same way, in its own folder.
 class PhotoStore {
   static String? _dirPath;
@@ -15,7 +15,7 @@ class PhotoStore {
 
   /// Call once at start-up.
   static Future<void> init() async {
-    final base = await appDataDirectory();
+    final base = await getApplicationDocumentsDirectory();
     final dir = Directory(p.join(base.path, 'receipts'));
     if (!await dir.exists()) await dir.create(recursive: true);
     _dirPath = dir.path;
@@ -29,13 +29,12 @@ class PhotoStore {
       ? null
       : File(p.join(_profileDirPath!, name));
 
-  /// Opens the camera or gallery (a file dialog on desktop) for a profile
+  /// Opens the camera or gallery for a profile
   /// photo, stores a small copy and returns its file name, or null if the
   /// user cancelled.
   static Future<String?> pickProfile({required bool camera}) async {
     final picked = await LockGuard.around(() => ImagePicker().pickImage(
-          source:
-              camera && !isDesktop ? ImageSource.camera : ImageSource.gallery,
+          source: camera ? ImageSource.camera : ImageSource.gallery,
           preferredCameraDevice: CameraDevice.front,
           maxWidth: 512,
           maxHeight: 512,
@@ -113,13 +112,12 @@ class PhotoStore {
   static File? file(String name) =>
       _dirPath == null ? null : File(p.join(_dirPath!, name));
 
-  /// Opens the camera or gallery (a file dialog on desktop) and stores the
+  /// Opens the camera or gallery and stores the
   /// chosen photo.
   /// Returns the stored file name, or null if the user cancelled.
   static Future<String?> pick({required bool camera}) async {
     final picked = await LockGuard.around(() => ImagePicker().pickImage(
-          source:
-              camera && !isDesktop ? ImageSource.camera : ImageSource.gallery,
+          source: camera ? ImageSource.camera : ImageSource.gallery,
           maxWidth: 1600,
           imageQuality: 80,
         ));

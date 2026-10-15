@@ -18,9 +18,9 @@ RepoType: git
 Repo: https://github.com/lumio-apps/pockettally.git
 
 Builds:
-  - versionName: 1.3.5
-    versionCode: 32
-    commit: v1.3.5
+  - versionName: 1.3.6
+    versionCode: 33
+    commit: v1.3.6
     output: build/app/outputs/flutter-apk/app-release.apk
     srclibs:
       - flutter@stable
@@ -38,5 +38,5 @@ Builds:
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
 UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
-CurrentVersion: 1.3.5
-CurrentVersionCode: 32
+CurrentVersion: 1.3.6
+CurrentVersionCode: 33

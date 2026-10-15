@@ -16,10 +16,6 @@ const bool kUpdaterEnabled = bool.fromEnvironment('UPDATER', defaultValue: true)
 const String kGithubOwner = 'lumio-apps';
 const String kGithubRepo = 'pockettally';
 
-/// File name endings of the release files, per platform (lower case).
-const String kWindowsSetupSuffix = '-windows-setup.exe';
-const String kLinuxAppImageSuffix = '-linux-x86_64.appimage';
-
 class UpdateInfo {
   UpdateInfo({
     required this.version,
@@ -31,7 +27,7 @@ class UpdateInfo {
   final String version;
   final String notes;
 
-  /// The file for this device: APK, Windows installer or Linux AppImage.
+  /// The APK for this phone.
   final String downloadUrl;
 
   /// The release page on GitHub.
@@ -63,14 +59,7 @@ class UpdateChecker {
           .cast<Map<String, dynamic>>())
         (a['name'] as String): (a['browser_download_url'] as String),
     };
-    final String? url;
-    if (Platform.isWindows) {
-      url = pickDesktopUrl(assets, kWindowsSetupSuffix);
-    } else if (Platform.isLinux) {
-      url = pickDesktopUrl(assets, kLinuxAppImageSuffix);
-    } else {
-      url = pickApkUrl(assets, deviceAbi());
-    }
+    final url = pickApkUrl(assets, deviceAbi());
     if (url == null) return null;
 
     return UpdateInfo(
@@ -82,50 +71,16 @@ class UpdateChecker {
     );
   }
 
-  /// Downloads the update (reporting progress 0..1) and installs it:
-  /// - Android: opens the APK installer.
-  /// - Windows: starts the setup and closes the app; the setup replaces
-  ///   the app and opens it again.
-  /// - Linux AppImage: replaces the AppImage file and restarts it. Other
-  ///   Linux installs (tar.gz) open the release page instead.
+  /// Downloads the update (reporting progress 0..1) and opens the APK
+  /// installer.
   static Future<void> downloadAndInstall(
     UpdateInfo update,
     void Function(double progress) onProgress,
   ) async {
-    if (Platform.isLinux && Platform.environment['APPIMAGE'] == null) {
-      await Process.start('xdg-open', [update.pageUrl],
-          mode: ProcessStartMode.detached);
-      return;
-    }
-
     final dir = await getTemporaryDirectory();
-    final name = Platform.isWindows
-        ? 'pockettally-${update.version}-setup.exe'
-        : Platform.isLinux
-            ? 'pockettally-${update.version}.AppImage'
-            : 'pockettally-${update.version}.apk';
-    final file = File('${dir.path}${Platform.pathSeparator}$name');
+    final file = File(
+        '${dir.path}${Platform.pathSeparator}pockettally-${update.version}.apk');
     await _download(update.downloadUrl, file, onProgress);
-
-    if (Platform.isWindows) {
-      await Process.start(
-        file.path,
-        ['/SILENT', '/SUPPRESSMSGBOXES', '/NORESTART'],
-        mode: ProcessStartMode.detached,
-      );
-      exit(0);
-    }
-
-    if (Platform.isLinux) {
-      final current = Platform.environment['APPIMAGE']!;
-      // Copy next to the running AppImage first, then swap in one step.
-      final next = '$current.new';
-      await file.copy(next);
-      await Process.run('chmod', ['+x', next]);
-      await File(next).rename(current);
-      await Process.start(current, [], mode: ProcessStartMode.detached);
-      exit(0);
-    }
 
     final result = await LockGuard.around(() => OpenFilex.open(
           file.path,
@@ -168,15 +123,6 @@ class UpdateChecker {
     if (abi == Abi.androidArm64) return 'arm64-v8a';
     if (abi == Abi.androidArm) return 'armeabi-v7a';
     if (abi == Abi.androidX64) return 'x86_64';
-    return null;
-  }
-
-  /// The release file whose name ends with [suffix] (any letter case),
-  /// e.g. "pockettally-v0.7.0-windows-setup.exe".
-  static String? pickDesktopUrl(Map<String, String> assets, String suffix) {
-    for (final e in assets.entries) {
-      if (e.key.toLowerCase().endsWith(suffix)) return e.value;
-    }
     return null;
   }
 
