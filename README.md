@@ -2,58 +2,69 @@
   <img src="docs/banner.png" alt="PocketTally – every coin, counted. Free offline income and expense tracker for Android.">
 </p>
 
+<h1 align="center">PocketTally</h1>
+
+<p align="center">
+  <b>Every coin, counted.</b><br>
+  A simple income and expense tracker that works completely offline.<br>
+  No account, no ads, no tracking, and not even an internet permission.
+</p>
+
 <p align="center">
   <a href="https://github.com/lumio-apps/pockettally/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/lumio-apps/pockettally?label=download&color=1565FF"></a>
-  <img alt="Android" src="https://img.shields.io/badge/platform-Android-3D7FFF">
+  <img alt="Android 7.0+" src="https://img.shields.io/badge/Android-7.0%2B-3D7FFF">
+  <img alt="20 languages" src="https://img.shields.io/badge/languages-20-7BE0B5">
+  <img alt="No internet permission" src="https://img.shields.io/badge/internet-never-0E3B30">
   <a href="LICENSE"><img alt="License GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-F2B33D"></a>
 </p>
 
 <p align="center">
-  A simple daily income and expense tracker that works completely offline.<br>
-  No account, no ads, no tracking. Your money data never leaves your device.<br>
-  Part of the <b>Lumio Apps</b> family.
+  <a href="#download">Download</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#privacy">Privacy</a> ·
+  <a href="#build-from-source">Build from source</a>
 </p>
 
 ---
 
 ## Download
 
-| System | File to take from [the latest release](https://github.com/lumio-apps/pockettally/releases/latest) |
-|---|---|
-| 📱 **Android** | `pockettally-vX.Y.Z-android.apk` – works on every phone |
+Get the APK from the **[latest release](https://github.com/lumio-apps/pockettally/releases/latest)**:
 
-The app has no internet access and no update check. To update, install the newer APK from the releases page over the old one; your data stays.
+📱 `pockettally-vX.Y.Z-android.apk` – works on every phone with Android 7.0 or newer.
 
-<details>
-<summary>Install notes</summary>
+1. Open the file on your phone and allow "Install unknown apps" for your browser or file manager when Android asks.
+2. To update, install the newer APK over the old one. Your data stays.
 
-- **Android:** allow "Install unknown apps" for your browser or file manager when asked.
-  The APK installs over any earlier PocketTally, your data stays.
+PocketTally has **no update check and no internet access**, so a new version only reaches you when you install it yourself (or through the store you got the app from).
 
-Use **Back up / Restore** to move your data to another phone.
-
-</details>
+> Moving to a new phone? Use **Settings › Back up data** on the old one and **Restore from backup** on the new one.
 
 ## Screenshots
 
 <table>
   <tr>
-    <td align="center"><img src="docs/screenshots/home-light.png" width="240" alt="Home"><br><sub><b>Home</b> – balance, spending overview, budget</sub></td>
-    <td align="center"><img src="docs/screenshots/entries.png" width="240" alt="Entries"><br><sub><b>Entries</b> – search, filters, month by month</sub></td>
-    <td align="center"><img src="docs/screenshots/add-menu.png" width="240" alt="Add menu"><br><sub><b>+</b> – expense, income, lend & borrow, goals</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/home.png" width="200" alt="Home"><br><sub><b>Home</b><br>balance, spending, budget</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/entries.png" width="200" alt="Entries"><br><sub><b>Entries</b><br>search and filter</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/reports.png" width="200" alt="Reports"><br><sub><b>Reports</b><br>week, month, year</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/settings.png" width="200" alt="Settings"><br><sub><b>Settings</b><br>language, theme, backup</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/screenshots/home-dark.png" width="240" alt="Dark theme"><br><sub><b>Dark theme</b> and six accent colors</sub></td>
-    <td align="center"><img src="docs/screenshots/settings.png" width="240" alt="Settings"><br><sub><b>Settings</b> – profile, language, theme</sub></td>
-    <td align="center"><img src="docs/screenshots/lock.png" width="240" alt="App lock"><br><sub><b>App lock</b> with a 4-digit PIN</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/add-entry.png" width="200" alt="New entry"><br><sub><b>New entry</b><br>in a few taps</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/lend-borrow.png" width="200" alt="Lend and Borrow"><br><sub><b>Lend &amp; Borrow</b><br>who owes whom</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/goals.png" width="200" alt="Savings goals"><br><sub><b>Savings goals</b><br>with progress</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/lock.png" width="200" alt="App lock"><br><sub><b>App lock</b><br>4-digit PIN</sub></td>
   </tr>
 </table>
 
+The look is frosted glass on a soft gradient in the colors of the accent color you pick (six to choose from), in light and dark mode.
+
 ## Why PocketTally
 
-- **Private by design.** No sign-up, no cloud, no ads, no analytics. The app works without internet; your data sits in a database on your device.
-- **Made for daily life.** Add an expense in a few seconds, split a bill with friends, keep track of money you lent, and see where your money went this month.
-- **For everyone.** 20 languages (10 of them Indian: Hindi, Bengali, Urdu, Gujarati, Tamil, Telugu, Marathi, Kannada, Malayalam, Punjabi), 27 currencies and local number formats like 12,34,567.89.
+- **Private by design.** No sign-up, no cloud, no ads, no analytics. The app has no internet permission at all, so it cannot send anything anywhere. Your data sits in a database on your phone.
+- **Quick.** Add an expense in a few seconds, split a bill with friends, keep track of money you lent, and see where your money went this month.
+- **For everyone.** 20 languages (10 of them Indian), 27 currencies and local number formats like 12,34,567.89.
 - **Free forever.** Open source under GPL-3.0. No premium version, no locked features.
 
 ## Features
@@ -67,20 +78,16 @@ Use **Back up / Restore** to move your data to another phone.
 
 **Understand**
 - Monthly balance, income and expenses on Home
-- **Reports** for any week, month or year: net savings, the change from the
-  period before, a donut by category and income vs expenses over time
+- **Reports** for any week, month or year: net savings, the change from the period before, a donut by category and income vs expenses over time
 - **Highlights** like "You spent 12% less than last month"
 - **Calendar** view and **upcoming bills**
 - **Search and filter** by text, type, category, date and amount
-- **PDF report** in your language: pick the period (also a whole year), the
-  entries, categories and sections; made on the device
+- **PDF report** in your language: pick the period (also a whole year), the entries, categories and sections; made on your phone
 
 **Plan**
 - **Budgets:** a monthly limit and a limit per category, with warnings, and optional carry-over of what's left
-- **Lend & Borrow:** who owes you, whom you owe, part payments, and reminders
-  to ask for the money or pay it back (Android)
-- **Split bill:** share an expense with friends, equally or with your own
-  amounts; your share is the expense, the rest goes to Lend & Borrow
+- **Lend & Borrow:** who owes you, whom you owe, part payments, and reminders to ask for the money or pay it back
+- **Split bill:** share an expense with friends, equally or with your own amounts; your share is the expense, the rest goes to Lend & Borrow
 - **Savings goals** with progress
 
 **Your data, your way**
@@ -89,12 +96,10 @@ Use **Back up / Restore** to move your data to another phone.
 - **CSV export and import** for Excel, LibreOffice or Google Sheets
 - **Categories:** add, rename, recolor, reorder, hide or delete
 
-**Private**
+**Private and handy**
 - **App lock** with a 4-digit PIN
-- **Daily reminder** (Android) on days you haven't added anything
-
-**On the home screen (Android)**
-- A big and a small **widget** with this month's balance and − / + buttons
+- **Daily reminder** on days you haven't added anything
+- **Home screen widgets** with this month's balance and − / + buttons
 - **Shortcuts:** long-press the app icon for "Add expense" or "Add income"
 
 **Make it yours**
@@ -112,36 +117,34 @@ Use **Back up / Restore** to move your data to another phone.
 - The app has no internet permission at all: it cannot send anything anywhere.
 - The app lock PIN is stored only as a salted hash, never as the PIN itself.
 - Backups, CSV files and PDF reports are saved only where you choose.
-- Read the full [Privacy Policy](PRIVACY.md).
+
+Read the full [Privacy Policy](PRIVACY.md).
 
 ## Translations
 
-Texts live in `lib/l10n/app_<language>.arb`. To fix a translation, edit the
-line in that file and open a pull request. The app code is generated from
-these files by `flutter pub get`.
+Texts live in `lib/l10n/app_<language>.arb`. To fix a translation, edit the line in that file and open a pull request. The app code is generated from these files by `flutter pub get`.
 
 ## Build from source
+
+You need [Flutter](https://docs.flutter.dev/get-started/install) (stable channel).
 
 ```
 flutter pub get
 flutter analyze
 flutter test
-```
-
-The `android/` folder, the app icon and the splash
-screen are generated by GitHub Actions. Release signing setup: see
-[SETUP_ANDROID.md](SETUP_ANDROID.md).
-
-Build the APK:
-
-```
 flutter build apk --release
 ```
 
-Each `vX.Y.Z` tag builds the Android release files.
-Before tagging, raise `version:` in `pubspec.yaml` to the same number.
+The `android/` folder, the app icon and the splash screen are generated by GitHub Actions. Release signing setup: see [SETUP_ANDROID.md](SETUP_ANDROID.md).
+
+Each `vX.Y.Z` tag builds the release files. Before tagging, raise `version:` in `pubspec.yaml` to the same number.
+
+## Contributing
+
+Bug reports, translation fixes and ideas are welcome: [open an issue](https://github.com/lumio-apps/pockettally/issues) or send a pull request. The app stays offline, without ads or tracking, so features that need the internet will not be added.
 
 ## License
 
-[GPL-3.0](LICENSE). The bundled DejaVu fonts use their own free license, see
-`assets/fonts/DejaVu-LICENSE.txt`.
+[GPL-3.0](LICENSE). The bundled DejaVu fonts use their own free license, see `assets/fonts/DejaVu-LICENSE.txt`.
+
+<p align="center"><sub>Made by <b>Lumio Apps</b></sub></p>

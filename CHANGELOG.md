@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.8 (README and screenshots)
+
+- New README with screenshots of the glass look, and a new banner
+- New store screenshots and feature graphic for Google Play and F-Droid
+- No change in how the app works
+
 ## 1.3.7 (no update check)
 
 - The "Check for updates" button and the code behind it are gone. The app never goes online now, in every version (Google Play, F-Droid and GitHub): no internet permission and no permission to install apps
