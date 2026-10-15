@@ -7,6 +7,7 @@ import '../models.dart';
 import '../theme.dart';
 import '../widgets/appear.dart';
 import '../widgets/entry_tile.dart';
+import '../widgets/glass.dart';
 import '../widgets/pie_chart.dart';
 import '../widgets/profile_avatar.dart';
 import 'app_page.dart';
@@ -294,8 +295,31 @@ class _BalanceCard extends StatelessWidget {
     final l = context.l10n;
     final hidden = state.hideBalance;
 
-    return Material(
-      color: brand.brand,
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    // Dark: white glass. Light: glass in the main color (white text).
+    final decoration = dark
+        ? glassDecoration(context, radius: 26)
+        : BoxDecoration(
+            borderRadius: BorderRadius.circular(26),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [brand.brandSoft, brand.brand],
+            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+            boxShadow: [
+              BoxShadow(
+                color: brand.brand.withValues(alpha: 0.35),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          );
+
+    return DecoratedBox(
+      decoration: decoration,
+      child: Material(
+      type: MaterialType.transparency,
       borderRadius: BorderRadius.circular(26),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -364,6 +388,7 @@ class _BalanceCard extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
   }
 }
@@ -383,10 +408,7 @@ class _InOutRow extends StatelessWidget {
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: dark ? 0.18 : 0.10),
-              borderRadius: BorderRadius.circular(18),
-            ),
+            decoration: glassDecoration(context, radius: 18, tint: color),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -626,38 +648,32 @@ class _QuickAction extends StatelessWidget {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Material(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(18),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-              child: Column(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: dark ? 0.25 : 0.12),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon,
-                        color: dark ? Color.lerp(color, Colors.white, 0.4) : color),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600),
-                  ),
-                ],
+        child: GlassCard(
+          radius: 20,
+          onTap: onTap,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: dark ? 0.30 : 0.14),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon,
+                    color: dark ? Color.lerp(color, Colors.white, 0.4) : color),
               ),
-            ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
         ),
       ),

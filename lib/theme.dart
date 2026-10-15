@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'widgets/glass.dart';
+
 /// PocketTally brand colors (from the "Pocket In/Out" logo).
 const Color kBrand = Color(0xFF0E3B30);
 const Color kBrandSoft = Color(0xFF164A3D);
@@ -144,12 +146,16 @@ ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    scaffoldBackgroundColor: background,
+    // Pages are transparent: the glass background comes from the page
+    // transition (see GlassPageTransitionsBuilder).
+    scaffoldBackgroundColor: Colors.transparent,
+    canvasColor: background,
     extensions: [BrandColors(p)],
     appBarTheme: AppBarTheme(
-      backgroundColor: background,
+      backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
+      scrolledUnderElevation: 0,
       titleTextStyle: TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.w800,
@@ -157,10 +163,19 @@ ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
       ),
     ),
     cardTheme: CardThemeData(
-      color: scheme.surface,
+      // Frosted glass: translucent with a light edge.
+      color: dark
+          ? Colors.white.withValues(alpha: 0.09)
+          : Colors.white.withValues(alpha: 0.66),
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: BorderSide(
+          color: Colors.white.withValues(alpha: dark ? 0.18 : 0.90),
+        ),
+      ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -176,9 +191,12 @@ ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
     snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
     // Smooth, light page changes on every platform.
     pageTransitionsTheme: const PageTransitionsTheme(builders: {
-      TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-      TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
-      TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
+      TargetPlatform.android: GlassPageTransitionsBuilder(),
+      TargetPlatform.windows: GlassPageTransitionsBuilder(),
+      TargetPlatform.linux: GlassPageTransitionsBuilder(),
+      TargetPlatform.iOS: GlassPageTransitionsBuilder(),
+      TargetPlatform.macOS: GlassPageTransitionsBuilder(),
+      TargetPlatform.fuchsia: GlassPageTransitionsBuilder(),
     }),
   );
 }

@@ -66,7 +66,7 @@ class ProfileSection extends StatelessWidget {
                         color: theme.colorScheme.primary,
                         shape: BoxShape.circle,
                         border: Border.all(
-                            color: theme.scaffoldBackgroundColor,
+                            color: theme.colorScheme.surface,
                             width: 3),
                       ),
                       child: Icon(Icons.photo_camera_outlined,

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.5 (glass look)
+
+- New glass look for the whole app: pages sit on a soft gradient in the colors of your accent color, cards are frosted and translucent with a light edge, in both light and dark mode
+- The bottom bar floats as a glass bar with the + button in the middle; the + menu blurs the page behind it
+- Home: the balance card, income and expense tiles and the quick actions are glass
+- Pages change with a short fade and a small slide up
+
 ## 1.3.4 (store permissions)
 
 - The Google Play and F-Droid builds no longer carry storage, photo, video and audio permissions that a plugin had added. The app never used them: pictures come from the system photo picker and files from the system file dialog

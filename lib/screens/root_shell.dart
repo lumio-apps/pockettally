@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -8,6 +10,7 @@ import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/glass.dart';
 import 'app_page.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
@@ -290,61 +293,44 @@ class _RootShellState extends State<RootShell>
             ),
           ],
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: FloatingActionButton(
-          tooltip: _menuOpen
+        bottomNavigationBar: _GlassNavBar(
+          menu: _menu,
+          addTooltip: _menuOpen
               ? MaterialLocalizations.of(context).closeButtonTooltip
               : l.addEntry,
-          onPressed: _toggleMenu,
-          elevation: 4,
-          backgroundColor: BrandColors.of(context).brand,
-          foregroundColor: kAccent,
-          shape: const CircleBorder(),
-          // + turns into x while the menu is open.
-          child: RotationTransition(
-            turns: Tween(begin: 0.0, end: 0.125).animate(
-                CurvedAnimation(parent: _menu, curve: Curves.easeOutCubic)),
-            child: const Icon(Icons.add, size: 30),
-          ),
-        ),
-        bottomNavigationBar: BottomAppBar(
-          height: 72,
-          padding: EdgeInsets.zero,
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 6,
-          child: Row(
-            children: [
-              _NavItem(
-                icon: Icons.home_outlined,
-                selectedIcon: Icons.home_rounded,
-                label: l.navHome,
-                selected: index == 0,
-                onTap: () => _go(AppPage.home),
-              ),
-              _NavItem(
-                icon: Icons.receipt_long_outlined,
-                selectedIcon: Icons.receipt_long,
-                label: l.entries,
-                selected: index == 1,
-                onTap: () => _go(AppPage.entries),
-              ),
-              const SizedBox(width: 72),
-              _NavItem(
-                icon: Icons.bar_chart_outlined,
-                selectedIcon: Icons.bar_chart_rounded,
-                label: l.reports,
-                selected: index == 2,
-                onTap: () => _go(AppPage.insights),
-              ),
-              _NavItem(
-                icon: Icons.settings_outlined,
-                selectedIcon: Icons.settings_rounded,
-                label: l.settings,
-                selected: index == 3,
-                onTap: () => _go(AppPage.settings),
-              ),
-            ],
-          ),
+          onAdd: _toggleMenu,
+          items: [
+            _NavItem(
+              icon: Icons.home_outlined,
+              selectedIcon: Icons.home_rounded,
+              label: l.navHome,
+              selected: index == 0,
+              onTap: () => _go(AppPage.home),
+            ),
+            _NavItem(
+              icon: Icons.receipt_long_outlined,
+              selectedIcon: Icons.receipt_long,
+              label: l.entries,
+              selected: index == 1,
+              onTap: () => _go(AppPage.entries),
+            ),
+            // Room for the + button in the middle.
+            const SizedBox(width: 72),
+            _NavItem(
+              icon: Icons.bar_chart_outlined,
+              selectedIcon: Icons.bar_chart_rounded,
+              label: l.reports,
+              selected: index == 2,
+              onTap: () => _go(AppPage.insights),
+            ),
+            _NavItem(
+              icon: Icons.settings_outlined,
+              selectedIcon: Icons.settings_rounded,
+              label: l.settings,
+              selected: index == 3,
+              onTap: () => _go(AppPage.settings),
+            ),
+          ],
         ),
       ),
     );
@@ -613,6 +599,96 @@ class _SidebarItem extends StatelessWidget {
   }
 }
 
+/// The floating glass bar of the phone layout, with the + button in the
+/// middle, half above the bar.
+class _GlassNavBar extends StatelessWidget {
+  const _GlassNavBar({
+    required this.items,
+    required this.menu,
+    required this.addTooltip,
+    required this.onAdd,
+  });
+
+  final List<Widget> items;
+  final Animation<double> menu;
+  final String addTooltip;
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    final brand = BrandColors.of(context);
+    return SafeArea(
+      top: false,
+      child: SizedBox(
+        height: 112,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.bottomCenter,
+          children: [
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 12,
+              height: 68,
+              child: FrostedBar(
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: Row(children: items),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 52,
+              child: Tooltip(
+                message: addTooltip,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [brand.brandSoft, brand.brand],
+                    ),
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.45)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: brand.brand.withValues(alpha: 0.55),
+                        blurRadius: 22,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: onAdd,
+                      child: SizedBox(
+                        width: 56,
+                        height: 56,
+                        // + turns into x while the menu is open.
+                        child: RotationTransition(
+                          turns: Tween(begin: 0.0, end: 0.125).animate(
+                              CurvedAnimation(
+                                  parent: menu, curve: Curves.easeOutCubic)),
+                          child:
+                              const Icon(Icons.add, size: 30, color: kAccent),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.icon,
@@ -631,29 +707,44 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final color = selected ? scheme.primary : scheme.onSurfaceVariant;
+    final pill = dark
+        ? Colors.white.withValues(alpha: 0.18)
+        : scheme.primary.withValues(alpha: 0.12);
     return Expanded(
       child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(30),
         child: Semantics(
           selected: selected,
           button: true,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(selected ? selectedIcon : icon, color: color),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  color: color,
-                ),
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: selected ? pill : Colors.transparent,
+                borderRadius: BorderRadius.circular(22),
               ),
-            ],
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(selected ? selectedIcon : icon, color: color),
+                  const SizedBox(height: 2),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -757,15 +848,19 @@ class _AddMenu extends StatelessWidget {
             Positioned.fill(
               child: GestureDetector(
                 onTap: onClose,
-                child: ColoredBox(
-                    color: Colors.black.withValues(alpha: 0.45 * v)),
+                // The page blurs while the menu is open.
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8 * v, sigmaY: 8 * v),
+                  child: ColoredBox(
+                      color: Colors.black.withValues(alpha: 0.40 * v)),
+                ),
               ),
             ),
             Positioned(
               // Above the + button in the middle of the bar.
               left: 0,
               right: 0,
-              bottom: 44,
+              bottom: 8,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
