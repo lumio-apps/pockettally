@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.9 (GitHub only)
+
+- PocketTally is released on GitHub only, as a free open source APK. The Google Play and F-Droid files (store texts, recipe, app bundle build) are removed from the project
+- No change in how the app works
+
 ## 1.3.8 (README and screenshots)
 
 - New README with screenshots of the glass look, and a new banner

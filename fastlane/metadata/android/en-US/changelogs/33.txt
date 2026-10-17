@@ -1,1 +1,0 @@
-- PocketTally is now an Android-only app; the Windows and Linux versions are gone

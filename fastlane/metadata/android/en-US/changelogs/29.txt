@@ -1,4 +1,0 @@
-- Backups with bill photos now use much less memory, and the automatic backup starts a few seconds after the app opens
-- A CSV file with a broken amount no longer stops the whole import: only that row is skipped
-- Amounts are limited to 1,000,000,000,000
-- The home screen widgets can no longer crash the app

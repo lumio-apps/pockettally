@@ -1,1 +1,0 @@
-Simple offline income and expense tracker. No ads, no account, no internet.

@@ -1,1 +1,0 @@
-- The app never goes online now: the update check is removed, so there is no internet permission in any version

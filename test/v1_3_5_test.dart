@@ -47,8 +47,4 @@ void main() {
     }
   });
 
-  test('Store changelog for 1.3.5 exists', () {
-    expect(File('fastlane/metadata/android/en-US/changelogs/32.txt').existsSync(),
-        isTrue);
-  });
 }

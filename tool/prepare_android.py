@@ -2,14 +2,9 @@
 """Patches the generated android/ project in CI, so nothing has to be edited by hand.
 
 Usage:
-  python3 tool/prepare_android.py manifest   # permissions, app label, reminder, widgets, shortcuts
-  python3 tool/prepare_android.py manifest --fdroid
-                                             # the same (no INTERNET, no
-                                             # REQUEST_INSTALL_PACKAGES, no storage or
-                                             # photo permissions in any build)
-  python3 tool/prepare_android.py manifest --play
-                                             # and also no exact alarms
-                                             # (Google Play build)
+  python3 tool/prepare_android.py manifest   # permissions (no INTERNET, no install or
+                                             # storage permissions), app label,
+                                             # reminder, widgets, shortcuts
   python3 tool/prepare_android.py signing    # release signing from key.properties
 
 Fails loudly if the Flutter template changes and a patch no longer applies.
@@ -36,15 +31,6 @@ NO_STORAGE_PERMISSIONS = (
     '    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>\n'
     '    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" tools:node="remove"/>\n'
     '    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" tools:node="remove"/>\n'
-)
-
-# Google Play only allows exact alarms for alarm clock and calendar apps, so
-# the Play build does without them: reminders then come "as close as Android
-# allows" (see ReminderService). The USE_EXACT_ALARM line only removes it if
-# a plugin ever adds it.
-NO_EXACT_ALARM_PERMISSIONS = (
-    '    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove"/>\n'
-    '    <uses-permission android:name="android.permission.USE_EXACT_ALARM" tools:node="remove"/>\n'
 )
 
 # Daily reminder: plan the reminders again after the phone restarts.
@@ -167,9 +153,8 @@ def install_android_extras() -> None:
         shutil.copyfile(src / "kotlin" / name, main_activity.parent / name)
 
 
-def patch_manifest(mode: str = "github") -> None:
-    """mode: "github" and "fdroid" (exact alarms) or "play" (no exact alarms).
-    No mode has internet access: the app has no update check."""
+def patch_manifest() -> None:
+    """The app has no internet access and no update check."""
     # Since 1.1.0 the widgets work without the home_widget plugin (which
     # made 0.9.2 crash on start): plain Android code reads texts the app
     # saves in its settings.
@@ -177,12 +162,8 @@ def patch_manifest(mode: str = "github") -> None:
     if "RECEIVE_BOOT_COMPLETED" not in text:
         if "<application" not in text:
             die("no <application> tag in AndroidManifest.xml")
-        if mode == "play":
-            extra = (NO_NETWORK_PERMISSIONS + NO_STORAGE_PERMISSIONS
-                     + NO_EXACT_ALARM_PERMISSIONS + BOOT_PERMISSION)
-        else:
-            extra = (NO_NETWORK_PERMISSIONS + NO_STORAGE_PERMISSIONS
-                     + BOOT_PERMISSION + EXACT_ALARM_PERMISSION)
+        extra = (NO_NETWORK_PERMISSIONS + NO_STORAGE_PERMISSIONS
+                 + BOOT_PERMISSION + EXACT_ALARM_PERMISSION)
         text = text.replace("<application", extra + "    <application", 1)
     if TOOLS_NS not in text:
         if "<manifest " not in text:
@@ -294,11 +275,7 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     if args == ["manifest"]:
         patch_manifest()
-    elif args == ["manifest", "--fdroid"]:
-        patch_manifest("fdroid")
-    elif args == ["manifest", "--play"]:
-        patch_manifest("play")
     elif args == ["signing"]:
         patch_signing()
     else:
-        die("usage: prepare_android.py manifest [--fdroid|--play] | signing")
+        die("usage: prepare_android.py manifest | signing")

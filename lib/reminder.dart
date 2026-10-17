@@ -5,10 +5,9 @@ import 'package:timezone/timezone.dart' as tz;
 
 import 'utils/lock_guard.dart';
 
-/// False in the Google Play build (flutter build appbundle
-/// --dart-define=EXACT_ALARMS=false): Play only allows exact alarms for
-/// alarm clock and calendar apps, so reminders there come as close to the
-/// chosen time as Android allows and the "on-time reminders" button is hidden.
+/// True by default: reminders ring on the minute. A build with
+/// --dart-define=EXACT_ALARMS=false uses inexact reminders instead and hides
+/// the "on-time reminders" button.
 const bool kExactAlarms = bool.fromEnvironment('EXACT_ALARMS', defaultValue: true);
 
 /// One planned Lend & Borrow notification.

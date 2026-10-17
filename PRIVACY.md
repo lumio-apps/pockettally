@@ -32,7 +32,7 @@ to another service, that service's own privacy policy applies.
   when you add a bill photo or a profile photo, and receives only the picture
   you choose.
 
-PocketTally has no internet permission in any version (Google Play, F-Droid and GitHub). It has no update check; updates come through the store you installed it from, or by installing a newer APK from GitHub yourself.
+PocketTally has no internet permission. It has no update check; to update, install a newer APK from the GitHub releases page over the old one.
 
 ## Children
 

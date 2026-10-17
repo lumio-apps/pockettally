@@ -37,7 +37,7 @@ Get the APK from the **[latest release](https://github.com/lumio-apps/pockettall
 1. Open the file on your phone and allow "Install unknown apps" for your browser or file manager when Android asks.
 2. To update, install the newer APK over the old one. Your data stays.
 
-PocketTally has **no update check and no internet access**, so a new version only reaches you when you install it yourself (or through the store you got the app from).
+PocketTally has **no update check and no internet access**, so a new version only reaches you when you install it yourself.
 
 > Moving to a new phone? Use **Settings › Back up data** on the old one and **Restore from backup** on the new one.
 
