@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Version 1.3.10 is set', () {
+  test('Version 1.3.11 is set', () {
     expect(File('pubspec.yaml').readAsStringSync(),
-        contains('version: 1.3.10+37'));
+        contains('version: 1.3.11+38'));
   });
 
   test('GitHub only: no store files and no bundle build', () {
@@ -15,5 +15,13 @@ void main() {
     final wf = File('.github/workflows/build.yml').readAsStringSync();
     expect(wf, isNot(contains('appbundle')));
     expect(wf, contains('files: pockettally-*-android.apk'));
+  });
+
+  test('The release build does not shrink the code', () {
+    final wf = File('.github/workflows/build.yml').readAsStringSync();
+    expect(wf, contains('--no-shrink'));
+    final script = File('tool/prepare_android.py').readAsStringSync();
+    expect(script, contains('isMinifyEnabled = false'));
+    expect(script, contains('isShrinkResources = false'));
   });
 }

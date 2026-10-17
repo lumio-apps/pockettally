@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.11 (start-up crash fix)
+
+- Fixed "PocketTally could not start" (NoSuchMethodError in shared_preferences) in the release APK: the release build no longer shrinks the code with R8, which removed methods that the plugins call by name
+- The APK is a little bigger
+
 ## 1.3.10 (GitHub only, update check is back)
 
 - **Settings › Check for updates** is back (Android only). It asks GitHub for the newest release, downloads the APK and opens the installer. It runs only when you tap it, and sends none of your data

@@ -265,8 +265,15 @@ def patch_signing() -> None:
     if old_line not in text:
         die("release signingConfig line not found in build.gradle.kts")
     text = text.replace("buildTypes {", SIGNING_BLOCK + "    buildTypes {", 1)
+    # No code shrinking (R8): the plugins call into their Android code by name
+    # (JNI), and a shrunk release app crashed on start with a
+    # NoSuchMethodError in shared_preferences.
     text = text.replace(
-        old_line, 'signingConfig = signingConfigs.getByName("release")', 1
+        old_line,
+        'signingConfig = signingConfigs.getByName("release")\n'
+        '            isMinifyEnabled = false\n'
+        '            isShrinkResources = false',
+        1,
     )
     GRADLE.write_text(GRADLE_HEADER + text)
     print("signing patched")

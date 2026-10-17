@@ -71,7 +71,7 @@ jobs:
       - name: Build Android APK
         run: |
           BUILD=$(grep -E '^version:' pubspec.yaml | sed -E 's/.*\+([0-9]+).*/\1/')
-          flutter build apk --release --build-number=$((10000 + BUILD))
+          flutter build apk --release --no-shrink --build-number=$((10000 + BUILD))
           mv build/app/outputs/flutter-apk/app-release.apk \
             "pockettally-${{ github.ref_name }}-android.apk"
 
