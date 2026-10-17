@@ -7,14 +7,14 @@
 <p align="center">
   <b>Every coin, counted.</b><br>
   A simple income and expense tracker that works completely offline.<br>
-  No account, no ads, no tracking, and not even an internet permission.
+  No account, no ads, no tracking, and it goes online only when you tap "Check for updates".
 </p>
 
 <p align="center">
   <a href="https://github.com/lumio-apps/pockettally/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/lumio-apps/pockettally?label=download&color=1565FF"></a>
   <img alt="Android 7.0+" src="https://img.shields.io/badge/Android-7.0%2B-3D7FFF">
   <img alt="20 languages" src="https://img.shields.io/badge/languages-20-7BE0B5">
-  <img alt="No internet permission" src="https://img.shields.io/badge/internet-never-0E3B30">
+  <img alt="No tracking" src="https://img.shields.io/badge/tracking-none-0E3B30">
   <a href="LICENSE"><img alt="License GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-F2B33D"></a>
 </p>
 
@@ -35,9 +35,9 @@ Get the APK from the **[latest release](https://github.com/lumio-apps/pockettall
 📱 `pockettally-vX.Y.Z-android.apk` – works on every phone with Android 7.0 or newer.
 
 1. Open the file on your phone and allow "Install unknown apps" for your browser or file manager when Android asks.
-2. To update, install the newer APK over the old one. Your data stays.
+2. To update, open **Settings › Check for updates** in the app. It looks for a newer release on GitHub, downloads the APK and opens the installer. Or install the newer APK yourself over the old one. Your data stays.
 
-PocketTally has **no update check and no internet access**, so a new version only reaches you when you install it yourself.
+The update check runs **only when you tap it**. Nothing is checked or sent in the background.
 
 > Moving to a new phone? Use **Settings › Back up data** on the old one and **Restore from backup** on the new one.
 
@@ -62,7 +62,7 @@ The look is frosted glass on a soft gradient in the colors of the accent color y
 
 ## Why PocketTally
 
-- **Private by design.** No sign-up, no cloud, no ads, no analytics. The app has no internet permission at all, so it cannot send anything anywhere. Your data sits in a database on your phone.
+- **Private by design.** No sign-up, no cloud, no ads, no analytics. The only time it goes online is when you tap "Check for updates" (it asks GitHub for the newest release, and sends none of your data). Your data sits in a database on your phone.
 - **Quick.** Add an expense in a few seconds, split a bill with friends, keep track of money you lent, and see where your money went this month.
 - **For everyone.** 20 languages (10 of them Indian), 27 currencies and local number formats like 12,34,567.89.
 - **Free forever.** Open source under GPL-3.0. No premium version, no locked features.
@@ -114,7 +114,7 @@ The look is frosted glass on a soft gradient in the colors of the accent color y
 
 - Everything is stored on your device in a local database.
 - No account, no ads, no analytics, no tracking.
-- The app has no internet permission at all: it cannot send anything anywhere.
+- The app goes online only when you tap **Check for updates**, to ask GitHub for the newest release. It sends none of your data and runs no background checks.
 - The app lock PIN is stored only as a salted hash, never as the PIN itself.
 - Backups, CSV files and PDF reports are saved only where you choose.
 
@@ -141,7 +141,7 @@ Each `vX.Y.Z` tag builds the release files. Before tagging, raise `version:` in 
 
 ## Contributing
 
-Bug reports, translation fixes and ideas are welcome: [open an issue](https://github.com/lumio-apps/pockettally/issues) or send a pull request. The app stays offline, without ads or tracking, so features that need the internet will not be added.
+Bug reports, translation fixes and ideas are welcome: [open an issue](https://github.com/lumio-apps/pockettally/issues) or send a pull request. The app stays offline apart from the update check, without ads or tracking, so features that need the internet will not be added.
 
 ## License
 

@@ -19,7 +19,7 @@ void main() {
   test('the privacy policy is there and says what the app does', () {
     final text = File('PRIVACY.md').readAsStringSync();
     expect(text, contains('We do not collect'));
-    expect(text, contains('no internet permission'));
+    expect(text, contains('Check for updates'));
     expect(text, contains('github.com/lumio-apps/pockettally'));
   });
 }

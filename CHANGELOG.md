@@ -1,9 +1,11 @@
 # Changelog
 
-## 1.3.9 (GitHub only)
+## 1.3.10 (GitHub only, update check is back)
 
-- PocketTally is released on GitHub only, as a free open source APK. The Google Play and F-Droid files (store texts, recipe, app bundle build) are removed from the project
-- No change in how the app works
+- **Settings › Check for updates** is back (Android only). It asks GitHub for the newest release, downloads the APK and opens the installer. It runs only when you tap it, and sends none of your data
+- The app has the internet and "install apps" permissions again, for this button only
+- PocketTally is released on GitHub only. The Google Play and F-Droid files (store texts, recipe, app bundle build) are removed from the project
+- Privacy Policy and README updated
 
 ## 1.3.8 (README and screenshots)
 

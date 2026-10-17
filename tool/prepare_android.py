@@ -2,8 +2,8 @@
 """Patches the generated android/ project in CI, so nothing has to be edited by hand.
 
 Usage:
-  python3 tool/prepare_android.py manifest   # permissions (no INTERNET, no install or
-                                             # storage permissions), app label,
+  python3 tool/prepare_android.py manifest   # permissions (internet and install for the
+                                             # update check, no storage permissions), app label,
                                              # reminder, widgets, shortcuts
   python3 tool/prepare_android.py signing    # release signing from key.properties
 
@@ -16,11 +16,12 @@ import sys
 MANIFEST = pathlib.Path("android/app/src/main/AndroidManifest.xml")
 GRADLE = pathlib.Path("android/app/build.gradle.kts")
 
-# The app never goes online and never installs anything: remove these two if a
-# plugin's own manifest adds them.
-NO_NETWORK_PERMISSIONS = (
-    '    <uses-permission android:name="android.permission.INTERNET" tools:node="remove"/>\n'
-    '    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove"/>\n'
+# For "Check for updates" in Settings: it asks GitHub for the newest release
+# (INTERNET), downloads the APK and opens the installer
+# (REQUEST_INSTALL_PACKAGES). Nothing happens in the background.
+UPDATER_PERMISSIONS = (
+    '    <uses-permission android:name="android.permission.INTERNET"/>\n'
+    '    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>\n'
 )
 
 # Remove storage and photo/video permissions if a plugin adds them. The app does
@@ -154,7 +155,7 @@ def install_android_extras() -> None:
 
 
 def patch_manifest() -> None:
-    """The app has no internet access and no update check."""
+    """Permissions, label, reminders, widgets and shortcuts."""
     # Since 1.1.0 the widgets work without the home_widget plugin (which
     # made 0.9.2 crash on start): plain Android code reads texts the app
     # saves in its settings.
@@ -162,7 +163,7 @@ def patch_manifest() -> None:
     if "RECEIVE_BOOT_COMPLETED" not in text:
         if "<application" not in text:
             die("no <application> tag in AndroidManifest.xml")
-        extra = (NO_NETWORK_PERMISSIONS + NO_STORAGE_PERMISSIONS
+        extra = (UPDATER_PERMISSIONS + NO_STORAGE_PERMISSIONS
                  + BOOT_PERMISSION + EXACT_ALARM_PERMISSION)
         text = text.replace("<application", extra + "    <application", 1)
     if TOOLS_NS not in text:
