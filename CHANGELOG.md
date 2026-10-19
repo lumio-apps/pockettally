@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.0 (fingerprint and face unlock)
+
+- New switch in Settings › Security: **Unlock with fingerprint or face** (shown when the app lock is on and the phone has a fingerprint or face set up). PocketTally asks the phone's own prompt when it opens; the PIN pad stays under it as the fallback
+- Turning it on asks for your fingerprint or face once, to be sure it works
+- Turning the app lock off also turns this off
+- All 20 languages
+
 ## 1.4.1 (Reduce effects)
 
 - New switch in Settings › Appearance: **Reduce effects**. Flat panels with a thin edge instead of soft shadows, no pressed-card movement, no sliding tab pill and only a plain fade between pages. It can feel smoother on older phones

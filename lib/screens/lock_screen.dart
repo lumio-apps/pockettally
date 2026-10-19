@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../app_state.dart';
+import '../biometric.dart';
 import '../l10n/l10n.dart';
 import '../utils/lock_guard.dart';
 import '../widgets/app_logo.dart';
@@ -100,6 +101,18 @@ class _LockScreenState extends State<LockScreen> {
   void initState() {
     super.initState();
     _startTickerIfWaiting();
+    // Fingerprint or face first, when it is switched on; the PIN pad stays.
+    if (widget.state.biometricOn) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _tryBiometric());
+    }
+  }
+
+  Future<void> _tryBiometric() async {
+    if (!mounted || _busy || _confirmReset) return;
+    final reason = context.l10n.biometricReason;
+    if (await Biometric.authenticate(reason) && mounted) {
+      widget.onUnlocked();
+    }
   }
 
   @override
@@ -192,9 +205,22 @@ class _LockScreenState extends State<LockScreen> {
             isError: waiting || _error != null,
             enabled: !waiting,
             onComplete: _check,
-            footer: TextButton(
-              onPressed: () => setState(() => _confirmReset = true),
-              child: Text(l.forgotPin),
+            footer: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.state.biometricOn)
+                  IconButton(
+                    tooltip: l.biometricReason,
+                    iconSize: 36,
+                    color: theme.colorScheme.primary,
+                    icon: const Icon(Icons.fingerprint),
+                    onPressed: _tryBiometric,
+                  ),
+                TextButton(
+                  onPressed: () => setState(() => _confirmReset = true),
+                  child: Text(l.forgotPin),
+                ),
+              ],
             ),
           );
 

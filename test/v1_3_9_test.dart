@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  test('Version 1.4.1 is set', () {
+  test('Version 1.5.0 is set', () {
     expect(File('pubspec.yaml').readAsStringSync(),
-        contains('version: 1.4.1+40'));
+        contains('version: 1.5.0+41'));
   });
 
   test('GitHub only: no store files and no bundle build', () {

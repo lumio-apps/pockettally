@@ -139,6 +139,15 @@ class AppState extends ChangeNotifier {
   /// Seconds in the background before the PIN is asked again (0 = always).
   int get lockAfterSeconds => _prefs.getInt('lock_after') ?? 0;
 
+  /// Fingerprint or face unlock next to the PIN (only with the app lock).
+  bool get biometricOn =>
+      appLockOn && (_prefs.getBool('biometric_unlock') ?? false);
+
+  Future<void> setBiometric(bool on) async {
+    await _prefs.setBool('biometric_unlock', on);
+    notifyListeners();
+  }
+
   Future<void> setLockAfter(int seconds) async {
     await _prefs.setInt('lock_after', seconds);
     notifyListeners();
@@ -169,6 +178,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> removePin() async {
     await _prefs.remove('pin_hash');
+    await _prefs.remove('biometric_unlock');
     await _prefs.remove('pin_salt');
     await _prefs.remove('pin_failures');
     await _prefs.remove('pin_wait_until');

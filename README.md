@@ -97,7 +97,7 @@ The look is soft neumorphism: calm raised and pressed-in shapes on one surface, 
 - **Categories:** add, rename, recolor, reorder, hide or delete
 
 **Private and handy**
-- **App lock** with a 4-digit PIN
+- **App lock** with a 4-digit PIN, or your fingerprint or face
 - **Daily reminder** on days you haven't added anything
 - **Home screen widgets** with this month's balance and − / + buttons
 - **Shortcuts:** long-press the app icon for "Add expense" or "Add income"
@@ -116,6 +116,7 @@ The look is soft neumorphism: calm raised and pressed-in shapes on one surface, 
 - No account, no ads, no analytics, no tracking.
 - The app goes online only when you tap **Check for updates**, to ask GitHub for the newest release. It sends none of your data and runs no background checks.
 - The app lock PIN is stored only as a salted hash, never as the PIN itself.
+- Fingerprint and face unlock use the phone's own prompt. The app only gets a yes or no; it never sees your fingerprint or face.
 - Backups, CSV files and PDF reports are saved only where you choose.
 
 Read the full [Privacy Policy](PRIVACY.md).

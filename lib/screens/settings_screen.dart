@@ -7,6 +7,7 @@ import '../app_state.dart';
 import '../auto_backup.dart';
 import '../backup.dart';
 import '../backup_service.dart';
+import '../biometric.dart';
 import '../l10n/l10n.dart';
 import '../reminder.dart';
 import '../update_checker.dart';
@@ -56,6 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _version = '';
   bool _busy = false;
   bool _checking = false;
+  bool _biometricAvailable = false;
 
   AppState get state => widget.state;
 
@@ -66,6 +68,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) setState(() => _version = info.version);
     });
     _checkExact();
+    Biometric.available().then((ok) {
+      if (mounted) setState(() => _biometricAvailable = ok);
+    });
   }
 
   @override
@@ -168,6 +173,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (on) => on ? _turnLockOn() : _turnLockOff(),
                   ),
                   if (state.appLockOn) ...[
+                    if (_biometricAvailable)
+                      SwitchListTile(
+                        secondary: const _SettingIcon(
+                            Icons.fingerprint, Color(0xFF2E9E5B)),
+                        title: Text(l.biometricUnlock),
+                        subtitle: Text(l.biometricUnlockSubtitle),
+                        value: state.biometricOn,
+                        onChanged: _setBiometric,
+                      ),
                     ListTile(
                       leading: const _SettingIcon(
                           Icons.password, Color(0xFF2E9E5B)),
@@ -445,6 +459,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (_) => PinSetupScreen(state: state, mode: PinSetupMode.verify),
     ));
     return ok == 'ok';
+  }
+
+  /// Turning it on first asks for the fingerprint or face once, so it is
+  /// known to work before the lock relies on it.
+  Future<void> _setBiometric(bool on) async {
+    if (on && !await Biometric.authenticate(context.l10n.biometricReason)) {
+      return;
+    }
+    await state.setBiometric(on);
   }
 
   Future<void> _turnLockOff() async {

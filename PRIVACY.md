@@ -1,6 +1,6 @@
 # Privacy Policy for PocketTally
 
-Last updated: 17 October 2026
+Last updated: 19 October 2026
 
 PocketTally is an income and expense tracker made by Lumio Apps. It works
 offline; the only time it goes online is when you tap "Check for updates"

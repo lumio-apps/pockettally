@@ -3,16 +3,16 @@ package com.lumio.pockettally
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 /**
- * The app's only screen. Besides Flutter it handles the launcher shortcuts
+ * The app's only screen (a FragmentActivity, which the fingerprint prompt needs). Besides Flutter it handles the launcher shortcuts
  * and the home screen widget buttons ("expense" / "income"), and lets the
  * app refresh the widgets (see lib/android_extras.dart).
  */
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     private var channel: MethodChannel? = null
 
     /** What a shortcut or widget button asked for, until the app takes it. */
