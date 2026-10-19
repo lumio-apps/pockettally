@@ -203,6 +203,26 @@ class EntryCategory {
       );
 }
 
+/// How many days a deleted entry stays in the Trash before it is removed.
+const int kTrashDays = 30;
+
+/// A deleted entry waiting in the Trash.
+class TrashedEntry {
+  const TrashedEntry(this.entry, this.deletedAt);
+
+  final Entry entry;
+  final DateTime deletedAt;
+
+  /// Whole days left before the entry is removed for good (0 = today).
+  int daysLeft([DateTime? now]) {
+    final left = deletedAt
+        .add(const Duration(days: kTrashDays))
+        .difference(now ?? DateTime.now())
+        .inDays;
+    return left < 0 ? 0 : left;
+  }
+}
+
 /// One income or expense. Amounts are stored in minor units (cents/paise)
 /// so there are no floating point rounding errors.
 class Entry {

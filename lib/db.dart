@@ -15,6 +15,8 @@ import 'models.dart';
 ///   v5 (app 0.6.0): categories.position, categories.hidden
 ///   v6 (app 0.8.0): entries.tags, recurring, favorites
 ///   v7 (app 0.9.10): entries.time, categories.icon
+///   (app 1.6.0 adds entries.deleted_at, set while an entry is in the
+///   Trash; it is added on open too, and old backups still restore)
 ///   (app 1.0.0 adds debts.remind_at; it is added on open, so the
 ///   version number stays 7 and an older app can still open the file)
 ///
@@ -97,6 +99,7 @@ class AppDatabase {
         db, 'entries', 'tags', "TEXT NOT NULL DEFAULT ''");
     await _addColumnIfMissing(db, 'entries', 'time', 'INTEGER');
     await _addColumnIfMissing(db, 'categories', 'icon', 'TEXT');
+    await _addColumnIfMissing(db, 'entries', 'deleted_at', 'INTEGER');
     await _createDebtsAndGoals(db);
     await _addColumnIfMissing(db, 'debts', 'remind_at', 'INTEGER');
     await _createRecurringAndFavorites(db);
@@ -240,9 +243,47 @@ class AppDatabase {
 
   Future<List<Entry>> allEntries() async {
     final db = await _database;
-    final rows =
-        await db.query('entries', orderBy: 'date DESC, time DESC, id DESC');
+    final rows = await db.query('entries',
+        where: 'deleted_at IS NULL', orderBy: 'date DESC, time DESC, id DESC');
     return rows.map(Entry.fromMap).toList();
+  }
+
+  /// Entries in the Trash, the most recently deleted first.
+  Future<List<TrashedEntry>> trashedEntries() async {
+    final db = await _database;
+    final rows = await db.query('entries',
+        where: 'deleted_at IS NOT NULL', orderBy: 'deleted_at DESC, id DESC');
+    return rows
+        .map((m) => TrashedEntry(Entry.fromMap(m),
+            DateTime.fromMillisecondsSinceEpoch(m['deleted_at'] as int)))
+        .toList();
+  }
+
+  /// Takes an entry back out of the Trash.
+  Future<void> restoreFromTrash(int id) async {
+    final db = await _database;
+    await db.update('entries', {'deleted_at': null},
+        where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Removes one entry from the Trash for good.
+  Future<void> deleteForever(int id) async {
+    final db = await _database;
+    await db.delete('entries',
+        where: 'id = ? AND deleted_at IS NOT NULL', whereArgs: [id]);
+  }
+
+  /// Removes everything in the Trash for good, or only what was deleted
+  /// before [cutoff].
+  Future<void> purgeTrash({DateTime? cutoff}) async {
+    final db = await _database;
+    if (cutoff == null) {
+      await db.delete('entries', where: 'deleted_at IS NOT NULL');
+    } else {
+      await db.delete('entries',
+          where: 'deleted_at IS NOT NULL AND deleted_at < ?',
+          whereArgs: [cutoff.millisecondsSinceEpoch]);
+    }
   }
 
   Future<int> insert(Entry e) async {
@@ -268,9 +309,13 @@ class AppDatabase {
     await db.update('entries', e.toMap(), where: 'id = ?', whereArgs: [e.id]);
   }
 
+  /// Moves an entry to the Trash (it is removed for good after
+  /// [kTrashDays] days).
   Future<void> delete(int id) async {
     final db = await _database;
-    await db.delete('entries', where: 'id = ?', whereArgs: [id]);
+    await db.update(
+        'entries', {'deleted_at': DateTime.now().millisecondsSinceEpoch},
+        where: 'id = ?', whereArgs: [id]);
   }
 
   // ---- categories ----

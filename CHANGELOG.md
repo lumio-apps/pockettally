@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.6.0 (Trash)
+
+- Deleted entries now go to a **Trash** (Settings › Backup) and stay there for 30 days. Tap one to put it back or to delete it for good, or use the button at the top to empty the Trash
+- The Undo button after a delete still works
+- Entries in the Trash are not counted in balances, reports or search, and are not saved in backups or CSV files
+- After 30 days they are removed automatically when the app starts
+- Old data and old backups are not changed; one column is added to the database on open
+- All 20 languages
+
 ## 1.5.0 (fingerprint and face unlock)
 
 - New switch in Settings › Security: **Unlock with fingerprint or face** (shown when the app lock is on and the phone has a fingerprint or face set up). PocketTally asks the phone's own prompt when it opens; the PIN pad stays under it as the fallback

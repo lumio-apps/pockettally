@@ -39,11 +39,12 @@ Future<void> main() async {
   }
   try {
     await PhotoStore.init();
-    // Bill photos of deleted entries (kept until now for Undo).
+    // Entries that were in the Trash for 30 days go for good now.
+    await state.purgeOldTrash();
+    // Bill photos nothing uses any more (Trash items keep theirs).
     // Skipped when there are no entries at all, to be safe.
-    if (state.entries.isNotEmpty) {
-      await PhotoStore.cleanOrphans(
-          state.entries.map((e) => e.photo).whereType<String>().toSet());
+    if (state.entries.isNotEmpty || state.trash.isNotEmpty) {
+      await PhotoStore.cleanOrphans(state.usedPhotos);
     }
   } catch (e) {
     debugPrint('Photo folder not ready: $e');

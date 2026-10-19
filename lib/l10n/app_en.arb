@@ -392,6 +392,39 @@
     }
   },
   "accentColor": "Accent color",
+  "trash": "Trash",
+  "trashEmpty": "Empty · deleted entries stay here for 30 days",
+  "trashCount": "{count} in the Trash",
+  "@trashCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDaysLeft": "{days} days left",
+  "@trashDaysLeft": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashLastDay": "Removed today",
+  "emptyTrash": "Empty Trash",
+  "emptyTrashQuestion": "Remove all {count} entries for good? This cannot be undone.",
+  "@emptyTrashQuestion": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteForever": "Delete forever",
+  "deleteForeverQuestion": "Delete this entry for good? This cannot be undone.",
+  "trashRestored": "Entry restored",
+  "trashIsEmpty": "The Trash is empty",
+  "trashHint": "Deleted entries stay here for 30 days, then they are removed for good. They are not counted in your totals or saved in backups.",
   "biometricUnlock": "Unlock with fingerprint or face",
   "biometricUnlockSubtitle": "Use your phone's fingerprint or face instead of typing the PIN. The PIN still works.",
   "biometricReason": "Unlock PocketTally",

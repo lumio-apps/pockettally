@@ -28,6 +28,9 @@ class AppState extends ChangeNotifier {
   final SharedPreferences _prefs;
 
   List<Entry> entries = [];
+
+  /// Deleted entries waiting in the Trash.
+  List<TrashedEntry> trash = [];
   List<EntryCategory> categories = [];
   List<Debt> debts = [];
   List<SavingsGoal> goals = [];
@@ -120,6 +123,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> load() async {
     entries = await AppDatabase.instance.allEntries();
+    trash = await AppDatabase.instance.trashedEntries();
     categories = await AppDatabase.instance.allCategories();
     debts = await AppDatabase.instance.allDebts();
     goals = await AppDatabase.instance.allGoals();
@@ -388,12 +392,45 @@ class AppState extends ChangeNotifier {
     entries = entries.where((x) => x.id != e.id).toList();
     notifyListeners();
     await AppDatabase.instance.delete(e.id!);
+    trash = await AppDatabase.instance.trashedEntries();
+    notifyListeners();
   }
 
-  /// Puts a deleted entry back (same id), used by the Undo action.
+  /// Puts a deleted entry back from the Trash, used by Undo and by the
+  /// Trash screen.
   Future<void> restoreEntry(Entry e) async {
-    await AppDatabase.instance.insert(e);
+    await AppDatabase.instance.restoreFromTrash(e.id!);
     await load();
+  }
+
+  /// Removes one entry from the Trash for good (and its bill photo).
+  Future<void> deleteForever(Entry e) async {
+    await AppDatabase.instance.deleteForever(e.id!);
+    await _afterTrashChange();
+  }
+
+  Future<void> emptyTrash() async {
+    await AppDatabase.instance.purgeTrash();
+    await _afterTrashChange();
+  }
+
+  /// At start-up: removes what has been in the Trash for [kTrashDays] days.
+  Future<void> purgeOldTrash() async {
+    final cutoff = DateTime.now().subtract(const Duration(days: kTrashDays));
+    await AppDatabase.instance.purgeTrash(cutoff: cutoff);
+    trash = await AppDatabase.instance.trashedEntries();
+  }
+
+  /// Bill photos that an entry or a Trash item still needs.
+  Set<String> get usedPhotos => {
+        ...entries.map((e) => e.photo),
+        ...trash.map((t) => t.entry.photo),
+      }.whereType<String>().toSet();
+
+  Future<void> _afterTrashChange() async {
+    trash = await AppDatabase.instance.trashedEntries();
+    notifyListeners();
+    await PhotoStore.cleanOrphans(usedPhotos);
   }
 
   // ---- categories ----
