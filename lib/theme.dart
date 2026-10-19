@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'widgets/glass.dart';
+import 'widgets/neo.dart';
 
 /// PocketTally brand colors (from the "Pocket In/Out" logo).
 const Color kBrand = Color(0xFF0E3B30);
@@ -132,6 +132,7 @@ class BrandColors extends ThemeExtension<BrandColors> {
 ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
   final p = palette ?? kPalettes.first;
   final dark = brightness == Brightness.dark;
+  final neo = NeoPalette.from(p, brightness);
   final scheme = ColorScheme.fromSeed(
     seedColor: p.brand,
     brightness: brightness,
@@ -139,16 +140,15 @@ ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
     primary: dark ? p.light : p.brand,
     onPrimary: dark ? p.brand : Colors.white,
     secondary: kAccent,
-    surface: dark ? p.surfaceDark : Colors.white,
+    surface: neo.base,
   );
-  final background = dark ? p.pageDark : p.pageLight;
+  final background = neo.base;
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    // Pages are transparent: the glass background comes from the page
-    // transition (see GlassPageTransitionsBuilder).
-    scaffoldBackgroundColor: Colors.transparent,
+    // Neumorphic look: one soft surface color everywhere (see neo.dart).
+    scaffoldBackgroundColor: background,
     canvasColor: background,
     extensions: [BrandColors(p)],
     appBarTheme: AppBarTheme(
@@ -163,19 +163,20 @@ ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
       ),
     ),
     cardTheme: CardThemeData(
-      // Frosted glass: translucent with a light edge.
-      color: dark
-          ? Colors.white.withValues(alpha: 0.09)
-          : Colors.white.withValues(alpha: 0.66),
+      color: neo.base,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(22),
-        side: BorderSide(
-          color: Colors.white.withValues(alpha: dark ? 0.18 : 0.90),
-        ),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: neo.base,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+    ),
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: neo.base,
+      surfaceTintColor: Colors.transparent,
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -191,12 +192,12 @@ ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
     snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
     // Smooth, light page changes on every platform.
     pageTransitionsTheme: const PageTransitionsTheme(builders: {
-      TargetPlatform.android: GlassPageTransitionsBuilder(),
-      TargetPlatform.windows: GlassPageTransitionsBuilder(),
-      TargetPlatform.linux: GlassPageTransitionsBuilder(),
-      TargetPlatform.iOS: GlassPageTransitionsBuilder(),
-      TargetPlatform.macOS: GlassPageTransitionsBuilder(),
-      TargetPlatform.fuchsia: GlassPageTransitionsBuilder(),
+      TargetPlatform.android: NeoPageTransitionsBuilder(),
+      TargetPlatform.windows: NeoPageTransitionsBuilder(),
+      TargetPlatform.linux: NeoPageTransitionsBuilder(),
+      TargetPlatform.iOS: NeoPageTransitionsBuilder(),
+      TargetPlatform.macOS: NeoPageTransitionsBuilder(),
+      TargetPlatform.fuchsia: NeoPageTransitionsBuilder(),
     }),
   );
 }

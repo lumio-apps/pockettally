@@ -1,5 +1,3 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -10,7 +8,7 @@ import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
 import '../widgets/app_logo.dart';
-import '../widgets/glass.dart';
+import '../widgets/neo.dart';
 import 'app_page.dart';
 import 'budgets_screen.dart';
 import 'categories_screen.dart';
@@ -293,8 +291,10 @@ class _RootShellState extends State<RootShell>
             ),
           ],
         ),
-        bottomNavigationBar: _GlassNavBar(
+        bottomNavigationBar: _NeoNavBar(
           menu: _menu,
+          // The + button takes the middle slot (2).
+          slot: index < 2 ? index : index + 1,
           addTooltip: _menuOpen
               ? MaterialLocalizations.of(context).closeButtonTooltip
               : l.addEntry,
@@ -358,7 +358,7 @@ class _RootShellState extends State<RootShell>
             padding: const EdgeInsets.fromLTRB(0, 16, 16, 16),
             child: SizedBox(
               width: 380,
-              child: Card(
+              child: NeoCard(
                 clipBehavior: Clip.antiAlias,
                 child: EntryFormScreen(state: state, embedded: true),
               ),
@@ -599,17 +599,21 @@ class _SidebarItem extends StatelessWidget {
   }
 }
 
-/// The floating glass bar of the phone layout, with the + button in the
-/// middle, half above the bar.
-class _GlassNavBar extends StatelessWidget {
-  const _GlassNavBar({
+/// The soft raised bar of the phone layout, with the + button in the
+/// middle. The selected tab is a pressed-in pill that slides to the new tab.
+class _NeoNavBar extends StatelessWidget {
+  const _NeoNavBar({
     required this.items,
+    required this.slot,
     required this.menu,
     required this.addTooltip,
     required this.onAdd,
   });
 
   final List<Widget> items;
+
+  /// 0 to 4: the tab (or the + slot) the pill sits under.
+  final int slot;
   final Animation<double> menu;
   final String addTooltip;
   final VoidCallback onAdd;
@@ -617,10 +621,11 @@ class _GlassNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brand = BrandColors.of(context);
+    final neo = NeoPalette.of(context);
     return SafeArea(
       top: false,
       child: SizedBox(
-        height: 112,
+        height: 92,
         child: Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.bottomCenter,
@@ -630,34 +635,47 @@ class _GlassNavBar extends StatelessWidget {
               right: 16,
               bottom: 12,
               height: 68,
-              child: FrostedBar(
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: Row(children: items),
+              child: DecoratedBox(
+                decoration: neoDecoration(context, radius: 34),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 8),
+                        child: AnimatedAlign(
+                          duration: const Duration(milliseconds: 420),
+                          curve: Curves.easeOutBack,
+                          alignment: Alignment(-1 + slot * 0.5, 0),
+                          child: const FractionallySizedBox(
+                            widthFactor: 0.2,
+                            heightFactor: 1,
+                            child: NeoInset(
+                              radius: 26,
+                              child: SizedBox.expand(),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Material(
+                      type: MaterialType.transparency,
+                      child: Row(children: items),
+                    ),
+                  ],
                 ),
               ),
             ),
             Positioned(
-              bottom: 52,
+              bottom: 18,
               child: Tooltip(
                 message: addTooltip,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [brand.brandSoft, brand.brand],
-                    ),
-                    border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.45)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: brand.brand.withValues(alpha: 0.55),
-                        blurRadius: 22,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                    color: brand.brand,
+                    border: Border.all(color: neo.base, width: 4),
+                    boxShadow: neo.raised(0.6),
                   ),
                   child: Material(
                     type: MaterialType.transparency,
@@ -672,9 +690,9 @@ class _GlassNavBar extends StatelessWidget {
                         child: RotationTransition(
                           turns: Tween(begin: 0.0, end: 0.125).animate(
                               CurvedAnimation(
-                                  parent: menu, curve: Curves.easeOutCubic)),
-                          child:
-                              const Icon(Icons.add, size: 30, color: kAccent),
+                                  parent: menu, curve: Curves.easeOutBack)),
+                          child: const Icon(Icons.add,
+                              size: 30, color: Colors.white),
                         ),
                       ),
                     ),
@@ -707,11 +725,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final dark = Theme.of(context).brightness == Brightness.dark;
     final color = selected ? scheme.primary : scheme.onSurfaceVariant;
-    final pill = dark
-        ? Colors.white.withValues(alpha: 0.18)
-        : scheme.primary.withValues(alpha: 0.12);
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -720,30 +734,27 @@ class _NavItem extends StatelessWidget {
           selected: selected,
           button: true,
           child: Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: selected ? pill : Colors.transparent,
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(selected ? selectedIcon : icon, color: color),
-                  const SizedBox(height: 2),
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                      color: color,
-                    ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedScale(
+                  scale: selected ? 1.12 : 1,
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutBack,
+                  child: Icon(selected ? selectedIcon : icon, color: color),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                    color: color,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -781,38 +792,34 @@ class _AddMenuButton extends StatelessWidget {
     final theme = Theme.of(context);
     return SizedBox(
       width: 250,
-      child: Material(
-        color: theme.colorScheme.surfaceContainerHigh,
-        elevation: 3,
-        shape: const StadiumBorder(),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 20, 8),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: option.background,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(option.icon, color: option.foreground),
+      child: NeoCard(
+        radius: 30,
+        depth: 0.9,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 8, 20, 8),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: option.background,
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    option.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w600),
-                  ),
+                child: Icon(option.icon, color: option.foreground),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  option.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -848,11 +855,10 @@ class _AddMenu extends StatelessWidget {
             Positioned.fill(
               child: GestureDetector(
                 onTap: onClose,
-                // The page blurs while the menu is open.
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8 * v, sigmaY: 8 * v),
-                  child: ColoredBox(
-                      color: Colors.black.withValues(alpha: 0.40 * v)),
+                // The page fades into the soft surface while the menu is open.
+                child: ColoredBox(
+                  color:
+                      NeoPalette.of(context).base.withValues(alpha: 0.9 * v),
                 ),
               ),
             ),

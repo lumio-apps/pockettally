@@ -8,6 +8,7 @@ import '../reminder.dart';
 import '../widgets/amount_dialog.dart';
 import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
 import '../widgets/reminder_permission.dart';
+import '../widgets/neo.dart';
 
 /// "Thu, Oct 15, 10:00" in the user's language and clock format (with the
 /// year when it is not this year).
@@ -100,7 +101,7 @@ class DebtsScreen extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                  child: Card(
+                  child: NeoCard(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Row(
@@ -215,7 +216,7 @@ class _DebtCard extends StatelessWidget {
     final color = debt.type == DebtType.lent ? kIncomeColor : kExpenseColor;
     final progress =
         debt.amountMinor <= 0 ? 0.0 : (debt.paidMinor / debt.amountMinor).clamp(0.0, 1.0);
-    return Card(
+    return NeoCard(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => _showActions(context),
@@ -641,7 +642,7 @@ class _DebtFormScreenState extends State<DebtFormScreen> {
           ),
           if (ReminderService.supported) ...[
             const SizedBox(height: 16),
-            Card(
+            NeoCard(
               clipBehavior: Clip.antiAlias,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

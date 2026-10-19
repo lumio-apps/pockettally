@@ -58,7 +58,7 @@ The update check runs **only when you tap it**. Nothing is checked or sent in th
   </tr>
 </table>
 
-The look is frosted glass on a soft gradient in the colors of the accent color you pick (six to choose from), in light and dark mode.
+The look is soft neumorphism: calm raised and pressed-in shapes on one surface, tinted by the accent color you pick (six to choose from), in light and dark mode, with smooth little animations.
 
 ## Why PocketTally
 

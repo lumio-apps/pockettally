@@ -7,7 +7,7 @@ import '../models.dart';
 import '../theme.dart';
 import '../widgets/appear.dart';
 import '../widgets/entry_tile.dart';
-import '../widgets/glass.dart';
+import '../widgets/neo.dart';
 import '../widgets/pie_chart.dart';
 import '../widgets/profile_avatar.dart';
 import 'app_page.dart';
@@ -143,7 +143,7 @@ class HomeScreen extends StatelessWidget {
           ],
           if (state.toReceiveMinor > 0 || state.toPayMinor > 0) ...[
             const SizedBox(height: 16),
-            Card(
+            NeoCard(
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: () => onOpenTab(AppPage.lendBorrow),
@@ -188,7 +188,7 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
           if (entries.isEmpty)
-            Card(
+            NeoCard(
               child: Padding(
                 padding: const EdgeInsets.all(28),
                 child: Text(l.noEntriesYet, textAlign: TextAlign.center),
@@ -245,7 +245,7 @@ class HomeScreen extends StatelessWidget {
             style: theme.textTheme.labelLarge
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
       ));
-      widgets.add(Card(
+      widgets.add(NeoCard(
         clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
@@ -291,103 +291,76 @@ class _BalanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final balance = state.incomeIn(month) - state.expenseIn(month);
-    final brand = BrandColors.of(context);
     final l = context.l10n;
     final hidden = state.hideBalance;
 
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    // Dark: white glass. Light: glass in the main color (white text).
-    final decoration = dark
-        ? glassDecoration(context, radius: 26)
-        : BoxDecoration(
-            borderRadius: BorderRadius.circular(26),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [brand.brandSoft, brand.brand],
-            ),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
-            boxShadow: [
-              BoxShadow(
-                color: brand.brand.withValues(alpha: 0.35),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          );
+    final theme = Theme.of(context);
 
-    return DecoratedBox(
-      decoration: decoration,
-      child: Material(
-      type: MaterialType.transparency,
-      borderRadius: BorderRadius.circular(26),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 8, 20),
-          child: Row(
-            children: [
-              Container(
+    return NeoCard(
+      radius: 28,
+      depth: 1,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 8, 20),
+        child: Row(
+          children: [
+            NeoInset(
+              radius: 16,
+              child: SizedBox(
                 width: 48,
                 height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.account_balance_wallet_outlined,
-                    color: Colors.white),
+                child: Icon(Icons.account_balance_wallet_outlined,
+                    color: theme.colorScheme.primary),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l.monthBalance(DateFormat.MMMM().format(month)),
-                        style: TextStyle(
-                            color: brand.label,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 2),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 220),
-                      child: hidden
-                          ? const Text('••••••',
-                              key: ValueKey('hidden'),
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 2))
-                          : CountUp(
-                              key: const ValueKey('shown'),
-                              value: balance,
-                              format: state.formatMoney,
-                              style: TextStyle(
-                                color: balance < 0
-                                    ? const Color(0xFFFFC2B8)
-                                    : Colors.white,
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l.monthBalance(DateFormat.MMMM().format(month)),
+                      style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    child: hidden
+                        ? Text('••••••',
+                            key: const ValueKey('hidden'),
+                            style: TextStyle(
+                                color: theme.colorScheme.onSurface,
                                 fontSize: 30,
                                 fontWeight: FontWeight.w800,
-                                letterSpacing: -0.5,
-                              ),
+                                letterSpacing: 2))
+                        : CountUp(
+                            key: const ValueKey('shown'),
+                            value: balance,
+                            format: state.formatMoney,
+                            style: TextStyle(
+                              color: balance < 0
+                                  ? kExpenseColor
+                                  : theme.colorScheme.onSurface,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.5,
                             ),
-                    ),
-                  ],
-                ),
+                          ),
+                  ),
+                ],
               ),
-              IconButton(
-                tooltip: hidden ? l.showBalance : l.hideBalance,
-                color: Colors.white,
-                icon: Icon(hidden
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined),
-                onPressed: () => state.setHideBalance(!hidden),
-              ),
-            ],
-          ),
+            ),
+            IconButton(
+              tooltip: hidden ? l.showBalance : l.hideBalance,
+              color: theme.colorScheme.onSurfaceVariant,
+              icon: Icon(hidden
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined),
+              onPressed: () => state.setHideBalance(!hidden),
+            ),
+          ],
         ),
-      ),
       ),
     );
   }
@@ -406,9 +379,9 @@ class _InOutRow extends StatelessWidget {
     final dark = Theme.of(context).brightness == Brightness.dark;
     Widget tile(String label, int amount, Color color, IconData icon) =>
         Expanded(
-          child: Container(
+          child: NeoInset(
+            radius: 22,
             padding: const EdgeInsets.all(14),
-            decoration: glassDecoration(context, radius: 18, tint: color),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -482,7 +455,7 @@ class _OverviewCard extends StatelessWidget {
     final carried = state.carriedOverInto(month);
     final over = state.overBudgetCategories(month);
 
-    return Card(
+    return NeoCard(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -648,21 +621,22 @@ class _QuickAction extends StatelessWidget {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: GlassCard(
+        child: NeoCard(
           radius: 20,
           onTap: onTap,
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
           child: Column(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: dark ? 0.30 : 0.14),
-                  shape: BoxShape.circle,
+              NeoInset(
+                radius: 20,
+                depth: 0.6,
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: Icon(icon,
+                      color:
+                          dark ? Color.lerp(color, Colors.white, 0.4) : color),
                 ),
-                child: Icon(icon,
-                    color: dark ? Color.lerp(color, Colors.white, 0.4) : color),
               ),
               const SizedBox(height: 6),
               Text(
@@ -824,7 +798,7 @@ class _UpcomingCard extends StatelessWidget {
     final theme = Theme.of(context);
     final now = DateTime.now();
     final tomorrow = DateTime(now.year, now.month, now.day + 1);
-    return Card(
+    return NeoCard(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
         child: Column(

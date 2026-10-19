@@ -6,6 +6,7 @@ import '../insights.dart' show monthlyAmount;
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../widgets/entry_tile.dart' show kIncomeColor, kExpenseColor;
+import '../widgets/neo.dart';
 
 /// Entries that repeat (salary, rent…): pause, resume or stop them.
 /// New ones are made with "Repeat" in the entry form.
@@ -78,7 +79,7 @@ class RecurringScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               if (index == 0) {
                 // What subscriptions and bills cost each month.
-                return Card(
+                return NeoCard(
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -110,7 +111,7 @@ class RecurringScreen extends StatelessWidget {
               final name = r.note.isNotEmpty
                   ? '${categoryLabel(l, r.category)} · ${r.note}'
                   : categoryLabel(l, r.category);
-              return Card(
+              return NeoCard(
                 child: ListTile(
                   contentPadding:
                       const EdgeInsetsDirectional.fromSTEB(16, 6, 8, 6),

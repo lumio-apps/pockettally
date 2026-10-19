@@ -18,6 +18,7 @@ import 'categories_screen.dart';
 import 'lock_screen.dart';
 import 'profile_screen.dart';
 import 'recurring_screen.dart';
+import '../widgets/neo.dart';
 
 /// Name of a color palette in the app's language.
 String paletteName(AppLocalizations l, AppPalette p) {
@@ -811,7 +812,7 @@ class _ProfileCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l = context.l10n;
     final c = state.currency;
-    return Card(
+    return NeoCard(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -928,7 +929,7 @@ class _Group extends StatelessWidget {
             ),
           ),
         ),
-        Card(
+        NeoCard(
           clipBehavior: Clip.antiAlias,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),

@@ -5,6 +5,7 @@ import '../l10n/l10n.dart';
 import '../models.dart';
 import '../widgets/amount_dialog.dart';
 import '../widgets/entry_tile.dart' show kExpenseColor;
+import '../widgets/neo.dart';
 
 /// Savings goals like "New phone: 20,000" and how far along they are.
 class GoalsScreen extends StatelessWidget {
@@ -69,7 +70,7 @@ class _GoalCard extends StatelessWidget {
     final theme = Theme.of(context);
     final l = context.l10n;
     final left = goal.targetMinor - goal.savedMinor;
-    return Card(
+    return NeoCard(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
         child: Column(

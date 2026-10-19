@@ -11,6 +11,7 @@ import '../widgets/appear.dart';
 import '../widgets/bar_chart.dart';
 import '../widgets/pie_chart.dart';
 import 'report_options_screen.dart';
+import '../widgets/neo.dart';
 
 /// Reports for a week, a month or a year: net savings with the change from
 /// the period before, where the money went, and income against expenses
@@ -245,7 +246,7 @@ class _StatsScreenState extends State<StatsScreen> {
     if (list.isEmpty) return const [];
     return [
       const SizedBox(height: 16),
-      Card(
+      NeoCard(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
           child: Column(
@@ -317,7 +318,7 @@ class _StatsScreenState extends State<StatsScreen> {
     }
     return [
       const SizedBox(height: 16),
-      Card(
+      NeoCard(
         clipBehavior: Clip.antiAlias,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
@@ -643,7 +644,7 @@ class _CategoryCard extends StatelessWidget {
       ..sort((a, b) => b.value.compareTo(a.value));
     final total = rows.fold<int>(0, (s, r) => s + r.value);
 
-    return Card(
+    return NeoCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -841,7 +842,7 @@ class _TrendCard extends StatelessWidget {
     }
     final compact = NumberFormat.compact(locale: state.currency.locale);
 
-    return Card(
+    return NeoCard(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 16, 16, 12),
         child: Column(

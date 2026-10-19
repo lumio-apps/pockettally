@@ -6,6 +6,7 @@ import '../models.dart';
 import '../photo_store.dart';
 import '../utils/money_format.dart';
 import '../widgets/profile_avatar.dart';
+import '../widgets/neo.dart';
 
 /// The profile page: photo, name, currency and how amounts are written.
 /// Opened from the photo on Home and the profile card in Settings.
@@ -98,7 +99,7 @@ class ProfileSection extends StatelessWidget {
         const SizedBox(height: 8),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Card(
+          child: NeoCard(
             clipBehavior: Clip.antiAlias,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 4),

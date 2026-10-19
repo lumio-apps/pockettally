@@ -1,48 +1,89 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pockettally/theme.dart';
-import 'package:pockettally/widgets/glass.dart';
+import 'package:pockettally/widgets/neo.dart';
 
 void main() {
-  test('Pages are transparent so the glass background shows', () {
+  test('Pages and cards use the soft neumorphic surface', () {
     for (final b in [Brightness.light, Brightness.dark]) {
-      final theme = buildTheme(b);
-      expect(theme.scaffoldBackgroundColor, Colors.transparent);
-      expect(theme.appBarTheme.backgroundColor, Colors.transparent);
-      // Glass cards are translucent.
-      expect(theme.cardTheme.color!.a, lessThan(1));
+      for (final palette in kPalettes) {
+        final theme = buildTheme(b, palette);
+        final neo = NeoPalette.from(palette, b);
+        expect(theme.scaffoldBackgroundColor, neo.base);
+        expect(theme.cardTheme.color, neo.base);
+        expect(theme.appBarTheme.backgroundColor, Colors.transparent);
+      }
     }
   });
 
-  test('Every platform uses the glass page transition', () {
+  test('The light edge is lighter and the dark edge darker than the surface',
+      () {
+    for (final b in [Brightness.light, Brightness.dark]) {
+      for (final palette in kPalettes) {
+        final n = NeoPalette.from(palette, b);
+        expect(n.hi.computeLuminance(),
+            greaterThan(n.base.computeLuminance()));
+        expect(n.lo.computeLuminance(), lessThan(n.base.computeLuminance()));
+      }
+    }
+  });
+
+  test('Every platform uses the neo page transition', () {
     final builders = buildTheme(Brightness.dark).pageTransitionsTheme.builders;
     for (final p in [
       TargetPlatform.android,
       TargetPlatform.windows,
       TargetPlatform.linux,
     ]) {
-      expect(builders[p], isA<GlassPageTransitionsBuilder>());
+      expect(builders[p], isA<NeoPageTransitionsBuilder>());
     }
   });
 
-  testWidgets('GlassBackground and GlassCard draw in both modes',
-      (tester) async {
+  testWidgets('NeoCard and NeoInset draw in both modes', (tester) async {
     for (final b in [Brightness.light, Brightness.dark]) {
       for (final palette in kPalettes) {
         await tester.pumpWidget(MaterialApp(
           theme: buildTheme(b, palette),
-          home: const GlassBackground(
-            child: Center(
-              child: GlassCard(
-                padding: EdgeInsets.all(16),
-                child: Text('Balance'),
+          home: const Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  NeoCard(
+                    padding: EdgeInsets.all(16),
+                    child: Text('Balance'),
+                  ),
+                  NeoInset(
+                    padding: EdgeInsets.all(16),
+                    child: Text('Income'),
+                  ),
+                ],
               ),
             ),
           ),
         ));
         expect(find.text('Balance'), findsOneWidget);
+        expect(find.text('Income'), findsOneWidget);
       }
     }
   });
 
+  testWidgets('A tapped NeoCard calls onTap', (tester) async {
+    var taps = 0;
+    await tester.pumpWidget(MaterialApp(
+      theme: buildTheme(Brightness.light),
+      home: Scaffold(
+        body: Center(
+          child: NeoCard(
+            onTap: () => taps++,
+            padding: const EdgeInsets.all(24),
+            child: const Text('Tap me'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Tap me'));
+    await tester.pumpAndSettle();
+    expect(taps, 1);
+  });
 }

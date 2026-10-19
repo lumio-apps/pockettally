@@ -6,6 +6,7 @@ import '../l10n/l10n.dart';
 import '../models.dart';
 import '../split.dart';
 import '../theme.dart';
+import '../widgets/neo.dart';
 
 /// Shares a bill between the user and other people: equally or with custom
 /// amounts, paid by the user or by someone else. Returns a [SplitPlan].
@@ -271,7 +272,7 @@ class _SplitBillScreenState extends State<SplitBillScreen> {
                     onSelectionChanged: (s) => _setEqual(s.first),
                   ),
                   const SizedBox(height: 12),
-                  Card(
+                  NeoCard(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 6),
                       child: Column(

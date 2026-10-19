@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0 (neumorphic look)
+
+- New look: soft neumorphism. Cards, buttons and the bottom bar look pushed out of one calm surface, and progress bars, the balance icon and the selected tab look pressed into it. It follows your accent color and works in light and dark mode
+- Smooth motion: cards sink in when you press them, the selected tab is a pill that slides to the new tab, the + button turns, and the + menu fades in over the page
+- The old frosted glass look and its blur are gone
+- No change in how the app works
+
 ## 1.3.11 (start-up crash fix)
 
 - Fixed "PocketTally could not start" (NoSuchMethodError in shared_preferences) in the release APK: the release build no longer shrinks the code with R8, which removed methods that the plugins call by name

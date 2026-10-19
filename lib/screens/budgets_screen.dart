@@ -7,6 +7,7 @@ import '../l10n/l10n.dart';
 import '../models.dart';
 import '../widgets/budget_bar.dart';
 import 'categories_screen.dart';
+import '../widgets/neo.dart';
 
 /// Monthly budget and per-category limits for the current month.
 class BudgetsScreen extends StatelessWidget {
@@ -36,7 +37,7 @@ class BudgetsScreen extends StatelessWidget {
               Text(DateFormat.yMMMM().format(now),
                   style: theme.textTheme.labelLarge),
               const SizedBox(height: 8),
-              Card(
+              NeoCard(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(

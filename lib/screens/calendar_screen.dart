@@ -6,6 +6,7 @@ import '../l10n/l10n.dart';
 import '../models.dart';
 import '../widgets/entry_tile.dart';
 import 'entry_form_screen.dart';
+import '../widgets/neo.dart';
 
 /// A month as a calendar: each day shows what was spent or earned.
 /// Tap a day to see its entries.
@@ -194,7 +195,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   child: Text(l.noEntriesThisDay, textAlign: TextAlign.center),
                 )
               else
-                Card(
+                NeoCard(
                   clipBehavior: Clip.antiAlias,
                   child: Column(
                     children: [
