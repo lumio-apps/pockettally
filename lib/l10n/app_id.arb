@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "Tanpa ({example})",
   "accentColor": "Warna aksen",
+  "reduceEffects": "Kurangi efek",
+  "reduceEffectsSubtitle": "Panel datar tanpa bayangan lembut. Bisa terasa lebih mulus di ponsel lama.",
   "paletteForest": "Hutan",
   "paletteOcean": "Samudra",
   "palettePlum": "Plum",

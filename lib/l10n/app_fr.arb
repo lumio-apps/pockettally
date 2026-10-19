@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "Aucune ({example})",
   "accentColor": "Couleur d'accent",
+  "reduceEffects": "Réduire les effets",
+  "reduceEffectsSubtitle": "Panneaux plats, sans ombres douces. Peut être plus fluide sur les anciens téléphones.",
   "paletteForest": "Forêt",
   "paletteOcean": "Océan",
   "palettePlum": "Prune",

@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "ਕੋਈ ਨਹੀਂ ({example})",
   "accentColor": "ਮੁੱਖ ਰੰਗ",
+  "reduceEffects": "ਪ੍ਰਭਾਵ ਘਟਾਓ",
+  "reduceEffectsSubtitle": "ਸਮਤਲ ਪੈਨਲ, ਨਰਮ ਪਰਛਾਵੇਂ ਨਹੀਂ। ਪੁਰਾਣੇ ਫ਼ੋਨਾਂ 'ਤੇ ਹੋਰ ਸਮੂਥ ਚੱਲ ਸਕਦਾ ਹੈ।",
   "paletteForest": "ਜੰਗਲ",
   "paletteOcean": "ਸਮੁੰਦਰ",
   "palettePlum": "ਜਾਮਨੀ",

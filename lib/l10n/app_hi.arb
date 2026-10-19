@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "कोई नहीं ({example})",
   "accentColor": "मुख्य रंग",
+  "reduceEffects": "प्रभाव कम करें",
+  "reduceEffectsSubtitle": "सपाट पैनल, नरम छाया नहीं। पुराने फ़ोन पर ज़्यादा स्मूद चल सकता है।",
   "paletteForest": "जंगल",
   "paletteOcean": "समुद्र",
   "palettePlum": "बैंगनी",

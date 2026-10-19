@@ -106,7 +106,7 @@ The look is soft neumorphism: calm raised and pressed-in shapes on one surface, 
 - A **profile** with your photo and name
 - **20 languages:** English, हिन्दी, Հայերեն, 中文, Español, العربية, Français, বাংলা, Português, Русский, اردو, Bahasa Indonesia, 日本語, ગુજરાતી, தமிழ், తెలుగు, मराठी, ಕನ್ನಡ, മലയാളം, ਪੰਜਾਬੀ
 - **27 currencies** and number formats: 1,234.56 · 1.234,56 · 1 234,56 · 1'234.56 · 12,34,567.89
-- Light, dark or system theme and six accent colors
+- Light, dark or system theme, six accent colors and a **Reduce effects** switch (flat panels, no soft shadows) for older phones
 - Week starts on Monday or Sunday
 - Wide layout with a sidebar on tablets and big screens
 

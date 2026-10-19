@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "કોઈ નહીં ({example})",
   "accentColor": "મુખ્ય રંગ",
+  "reduceEffects": "અસરો ઘટાડો",
+  "reduceEffectsSubtitle": "સપાટ પેનલ, નરમ પડછાયા નહીં. જૂના ફોન પર વધુ સ્મૂથ ચાલી શકે છે.",
   "paletteForest": "જંગલ",
   "paletteOcean": "સમુદ્ર",
   "palettePlum": "જાંબલી",

@@ -86,4 +86,33 @@ void main() {
     await tester.pumpAndSettle();
     expect(taps, 1);
   });
+
+  testWidgets('Reduced effects draw flat cards without shadows',
+      (tester) async {
+    for (final reduce in [false, true]) {
+      await tester.pumpWidget(MaterialApp(
+        theme: buildTheme(Brightness.light),
+        home: NeoEffects(
+          reduce: reduce,
+          child: const Scaffold(
+            body: Center(
+              child: NeoCard(
+                padding: EdgeInsets.all(16),
+                child: Text('Flat'),
+              ),
+            ),
+          ),
+        ),
+      ));
+      final box = tester.widgetList<DecoratedBox>(find.descendant(
+        of: find.byType(NeoCard),
+        matching: find.byType(DecoratedBox),
+      ));
+      final shadows = box
+          .map((b) => b.decoration)
+          .whereType<BoxDecoration>()
+          .expand((d) => d.boxShadow ?? const <BoxShadow>[]);
+      expect(shadows.isEmpty, reduce);
+    }
+  });
 }

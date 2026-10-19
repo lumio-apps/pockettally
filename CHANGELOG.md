@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1 (Reduce effects)
+
+- New switch in Settings › Appearance: **Reduce effects**. Flat panels with a thin edge instead of soft shadows, no pressed-card movement, no sliding tab pill and only a plain fade between pages. It can feel smoother on older phones
+- It also switches on by itself when Android's "remove animations" is on
+- All 20 languages
+
 ## 1.4.0 (neumorphic look)
 
 - New look: soft neumorphism. Cards, buttons and the bottom bar look pushed out of one calm surface, and progress bars, the balance icon and the selected tab look pressed into it. It follows your accent color and works in light and dark mode

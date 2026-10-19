@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "Nenhuma ({example})",
   "accentColor": "Cor de destaque",
+  "reduceEffects": "Reduzir efeitos",
+  "reduceEffectsSubtitle": "Painéis planos, sem sombras suaves. Pode ficar mais fluido em celulares antigos.",
   "paletteForest": "Floresta",
   "paletteOcean": "Oceano",
   "palettePlum": "Ameixa",

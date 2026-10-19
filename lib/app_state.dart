@@ -529,6 +529,14 @@ class AppState extends ChangeNotifier {
   /// Hide the balance on Home (the eye button), e.g. in public.
   bool get hideBalance => _prefs.getBool('hide_balance') ?? false;
 
+  /// Flat panels without soft shadows and movement (older phones).
+  bool get reduceEffects => _prefs.getBool('reduce_effects') ?? false;
+
+  Future<void> setReduceEffects(bool on) async {
+    await _prefs.setBool('reduce_effects', on);
+    notifyListeners();
+  }
+
   Future<void> setHideBalance(bool hide) async {
     await _prefs.setBool('hide_balance', hide);
     notifyListeners();

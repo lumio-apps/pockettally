@@ -13,6 +13,7 @@ import 'screens/root_shell.dart';
 import 'screens/startup_error_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'theme.dart';
+import 'widgets/neo.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,8 +89,11 @@ class PocketTallyApp extends StatelessWidget {
               ? RootShell(state: state)
               : WelcomeScreen(state: state),
           // The PIN screen covers every page while the app is locked.
-          builder: (context, child) =>
-              AppLockGate(state: state, child: child ?? const SizedBox()),
+          builder: (context, child) => NeoEffects(
+            // "Reduce effects" in Settings, or Android's "remove animations".
+            reduce: state.reduceEffects || MediaQuery.disableAnimationsOf(context),
+            child: AppLockGate(state: state, child: child ?? const SizedBox()),
+          ),
         );
       },
     );

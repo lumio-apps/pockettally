@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'neo.dart';
+
 /// Fades and slides a section in, a little later for each one, the first
 /// time it is built. Used for the sections of Home and Reports.
 class Appear extends StatelessWidget {
@@ -11,7 +13,7 @@ class Appear extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Only the first screenful animates; further down appears at once.
-    if (index > 8) return child;
+    if (index > 8 || NeoEffects.reduceOf(context)) return child;
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0, end: 1),
       duration: Duration(milliseconds: 260 + index * 45),

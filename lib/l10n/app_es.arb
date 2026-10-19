@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "Ninguno ({example})",
   "accentColor": "Color de acento",
+  "reduceEffects": "Reducir efectos",
+  "reduceEffectsSubtitle": "Paneles planos, sin sombras suaves. Puede ir más fluido en móviles antiguos.",
   "paletteForest": "Bosque",
   "paletteOcean": "Océano",
   "palettePlum": "Ciruela",

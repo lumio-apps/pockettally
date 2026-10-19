@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "இல்லை ({example})",
   "accentColor": "முதன்மை நிறம்",
+  "reduceEffects": "விளைவுகளைக் குறை",
+  "reduceEffectsSubtitle": "தட்டையான பேனல்கள், மென்மையான நிழல் இல்லை. பழைய போன்களில் மென்மையாக இயங்கலாம்.",
   "paletteForest": "காடு",
   "paletteOcean": "கடல்",
   "palettePlum": "ஊதா",

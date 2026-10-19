@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "ఏదీ లేదు ({example})",
   "accentColor": "ప్రధాన రంగు",
+  "reduceEffects": "ప్రభావాలను తగ్గించు",
+  "reduceEffectsSubtitle": "సమతల ప్యానెల్స్, మృదువైన నీడలు లేవు. పాత ఫోన్లలో మరింత సాఫీగా నడవవచ్చు.",
   "paletteForest": "అడవి",
   "paletteOcean": "సముద్రం",
   "palettePlum": "ఊదా",

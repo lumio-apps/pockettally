@@ -392,6 +392,8 @@
     }
   },
   "accentColor": "Accent color",
+  "reduceEffects": "Reduce effects",
+  "reduceEffectsSubtitle": "Flat panels, no soft shadows. Can feel smoother on older phones.",
   "paletteForest": "Forest",
   "paletteOcean": "Ocean",
   "palettePlum": "Plum",

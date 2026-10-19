@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "নেই ({example})",
   "accentColor": "প্রধান রং",
+  "reduceEffects": "প্রভাব কমান",
+  "reduceEffectsSubtitle": "সমতল প্যানেল, নরম ছায়া নেই। পুরোনো ফোনে আরও মসৃণ চলতে পারে।",
   "paletteForest": "বন",
   "paletteOcean": "সমুদ্র",
   "palettePlum": "বেগুনি",

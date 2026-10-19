@@ -53,6 +53,37 @@ class NeoPalette {
       ];
 }
 
+/// Tells the Neo widgets to draw flat, without soft shadows, blur and
+/// movement ("Reduce effects" in Settings, or Android's "remove
+/// animations"). It sits above the whole app, see main.dart.
+class NeoEffects extends InheritedWidget {
+  const NeoEffects({super.key, required this.reduce, required super.child});
+
+  final bool reduce;
+
+  static bool reduceOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<NeoEffects>()?.reduce ??
+      false;
+
+  @override
+  bool updateShouldNotify(NeoEffects old) => old.reduce != reduce;
+}
+
+/// Flat look used when effects are reduced: the same surface color with a
+/// thin edge instead of shadows, so a card is still easy to see.
+BoxDecoration _flatDecoration(
+  NeoPalette n, {
+  double radius = 24,
+  BoxShape shape = BoxShape.rectangle,
+}) =>
+    BoxDecoration(
+      color: n.base,
+      shape: shape,
+      borderRadius:
+          shape == BoxShape.circle ? null : BorderRadius.circular(radius),
+      border: Border.all(color: n.lo.withValues(alpha: 0.40)),
+    );
+
 /// Fill and shadows of a raised shape, for a [DecoratedBox] or a [Container].
 BoxDecoration neoDecoration(
   BuildContext context, {
@@ -61,6 +92,9 @@ BoxDecoration neoDecoration(
   BoxShape shape = BoxShape.rectangle,
 }) {
   final n = NeoPalette.of(context);
+  if (NeoEffects.reduceOf(context)) {
+    return _flatDecoration(n, radius: radius, shape: shape);
+  }
   return BoxDecoration(
     color: n.base,
     shape: shape,
@@ -100,6 +134,7 @@ class _NeoCardState extends State<NeoCard> {
   @override
   Widget build(BuildContext context) {
     final n = NeoPalette.of(context);
+    final flat = NeoEffects.reduceOf(context);
     final radius = BorderRadius.circular(widget.radius);
     Widget content = widget.padding == null
         ? widget.child
@@ -114,6 +149,17 @@ class _NeoCardState extends State<NeoCard> {
           if (mounted) setState(() => _down = v);
         },
         child: content,
+      );
+    }
+    if (flat) {
+      return DecoratedBox(
+        decoration: _flatDecoration(n, radius: widget.radius),
+        child: Material(
+          type: MaterialType.transparency,
+          borderRadius: radius,
+          clipBehavior: widget.clipBehavior,
+          child: content,
+        ),
       );
     }
     return AnimatedScale(
@@ -158,6 +204,18 @@ class NeoInset extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final n = NeoPalette.of(context);
+    if (NeoEffects.reduceOf(context)) {
+      // Flat: a slightly darker patch, no blur.
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          color: Color.lerp(n.base, n.lo, 0.22),
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        child: padding == null
+            ? child
+            : Padding(padding: padding!, child: child),
+      );
+    }
     return CustomPaint(
       painter: _InsetPainter(
         base: n.base,
@@ -236,6 +294,9 @@ class NeoPageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
+    if (NeoEffects.reduceOf(context)) {
+      return FadeTransition(opacity: animation, child: child);
+    }
     final eased = animation.drive(CurveTween(curve: Curves.easeOutCubic));
     return FadeTransition(
       opacity: eased,

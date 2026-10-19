@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "بدون ({example})",
   "accentColor": "اللون الرئيسي",
+  "reduceEffects": "تقليل المؤثرات",
+  "reduceEffectsSubtitle": "لوحات مسطحة بدون ظلال ناعمة. قد يكون أكثر سلاسة على الهواتف القديمة.",
   "paletteForest": "غابة",
   "paletteOcean": "محيط",
   "palettePlum": "برقوقي",

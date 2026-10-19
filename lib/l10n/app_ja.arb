@@ -185,6 +185,8 @@
   "decimalsTwo": "2 桁（{example}）",
   "decimalsNone": "なし（{example}）",
   "accentColor": "アクセントカラー",
+  "reduceEffects": "エフェクトを減らす",
+  "reduceEffectsSubtitle": "フラットなパネルで、やわらかい影なし。古いスマートフォンでより滑らかに動くことがあります。",
   "paletteForest": "フォレスト",
   "paletteOcean": "オーシャン",
   "palettePlum": "プラム",

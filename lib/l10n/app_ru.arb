@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "Нет ({example})",
   "accentColor": "Основной цвет",
+  "reduceEffects": "Уменьшить эффекты",
+  "reduceEffectsSubtitle": "Плоские панели без мягких теней. На старых телефонах может работать плавнее.",
   "paletteForest": "Лес",
   "paletteOcean": "Океан",
   "palettePlum": "Слива",

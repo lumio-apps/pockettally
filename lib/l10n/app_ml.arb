@@ -185,6 +185,8 @@
   "decimalsTwo": "2 ({example})",
   "decimalsNone": "ഒന്നുമില്ല ({example})",
   "accentColor": "പ്രധാന നിറം",
+  "reduceEffects": "ഇഫക്റ്റുകൾ കുറയ്ക്കുക",
+  "reduceEffectsSubtitle": "പരന്ന പാനലുകൾ, മൃദുവായ നിഴലുകളില്ല. പഴയ ഫോണുകളിൽ കൂടുതൽ സുഗമമായി പ്രവർത്തിച്ചേക്കാം.",
   "paletteForest": "വനം",
   "paletteOcean": "സമുദ്രം",
   "palettePlum": "വയലറ്റ്",

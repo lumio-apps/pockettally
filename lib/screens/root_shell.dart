@@ -622,6 +622,7 @@ class _NeoNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final brand = BrandColors.of(context);
     final neo = NeoPalette.of(context);
+    final flat = NeoEffects.reduceOf(context);
     return SafeArea(
       top: false,
       child: SizedBox(
@@ -644,7 +645,9 @@ class _NeoNavBar extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 8),
                         child: AnimatedAlign(
-                          duration: const Duration(milliseconds: 420),
+                          duration: flat
+                              ? Duration.zero
+                              : const Duration(milliseconds: 420),
                           curve: Curves.easeOutBack,
                           alignment: Alignment(-1 + slot * 0.5, 0),
                           child: const FractionallySizedBox(
@@ -675,7 +678,7 @@ class _NeoNavBar extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: brand.brand,
                     border: Border.all(color: neo.base, width: 4),
-                    boxShadow: neo.raised(0.6),
+                    boxShadow: flat ? null : neo.raised(0.6),
                   ),
                   child: Material(
                     type: MaterialType.transparency,
@@ -738,7 +741,7 @@ class _NavItem extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 AnimatedScale(
-                  scale: selected ? 1.12 : 1,
+                  scale: selected && !NeoEffects.reduceOf(context) ? 1.12 : 1,
                   duration: const Duration(milliseconds: 260),
                   curve: Curves.easeOutBack,
                   child: Icon(selected ? selectedIcon : icon, color: color),
