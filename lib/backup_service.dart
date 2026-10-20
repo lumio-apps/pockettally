@@ -53,7 +53,7 @@ class BackupService {
         '${now.day.toString().padLeft(2, '0')}';
     // The BOM makes Excel open the file as UTF-8 (names in any script).
     final bytes = Uint8List.fromList(
-        utf8.encode('\uFEFF${CsvIo.export(state.entries)}'));
+        utf8.encode('\uFEFF${CsvIo.export(state.entries, walletOf: state.walletNameOf)}'));
     return saveBytesAs(
       dialogTitle: dialogTitle,
       fileName: 'pockettally-entries-$stamp.csv',

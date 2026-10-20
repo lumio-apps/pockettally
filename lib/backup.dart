@@ -19,6 +19,7 @@ class BackupData {
     this.goals = const [],
     this.recurring = const [],
     this.favorites = const [],
+    this.wallets = const [],
     this.numberStyle,
     this.decimals,
     this.palette,
@@ -44,6 +45,9 @@ class BackupData {
   final List<SavingsGoal> goals;
   final List<RecurringRule> recurring;
   final List<Favorite> favorites;
+
+  /// Wallets (empty in backups made before app 1.7.0).
+  final List<Wallet> wallets;
 
   /// Optional settings (null when the backup is older than 0.6.0).
   final String? numberStyle;
@@ -140,6 +144,15 @@ class BackupData {
               if (c.icon != null) 'icon': c.icon,
             },
         ],
+        'wallets': [
+          for (final w in wallets)
+            {
+              'name': w.name,
+              'color': w.colorValue,
+              'opening': w.openingMinor,
+              if (w.main) 'main': true,
+            },
+        ],
         'entries': [
           for (final e in entries)
             {
@@ -151,6 +164,7 @@ class BackupData {
               'period': e.period?.name,
               if (e.tags.isNotEmpty) 'tags': e.tags,
               if (e.minutes != null) 'time': e.minutes,
+              if (e.wallet != null) 'wallet': e.wallet,
               if (e.photo != null && photoNames.contains(e.photo))
                 'photo': e.photo,
             },
@@ -256,6 +270,16 @@ class BackupData {
             ],
             photo: e['photo'] as String?,
             minutes: e['time'] as int?,
+            wallet: e['wallet'] as String?,
+          ),
+      ];
+      final wallets = [
+        for (final w in (decoded['wallets'] as List<dynamic>? ?? []))
+          Wallet(
+            name: (w as Map<String, dynamic>)['name'] as String,
+            colorValue: w['color'] as int,
+            openingMinor: (w['opening'] as int?) ?? 0,
+            main: w['main'] == true,
           ),
       ];
       final photos = <String, List<int>>{};
@@ -320,6 +344,7 @@ class BackupData {
       return BackupData(
         recurring: recurring,
         favorites: favorites,
+        wallets: wallets,
         debts: debts,
         goals: goals,
         userName: (settings['userName'] as String?) ?? '',

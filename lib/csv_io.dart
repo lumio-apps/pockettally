@@ -3,7 +3,8 @@ import 'utils/amount_parser.dart' show kMaxAmountMinor;
 
 /// Entries as CSV, for Excel, LibreOffice or Google Sheets.
 ///
-/// Columns: date, type, category, amount, note, tags, period
+/// Columns: date, type, category, amount, note, tags, period (and wallet,
+/// when exported by the app)
 ///   2026-10-03,expense,Food,12.50,Lunch,trip;work,
 ///   2026-10-01,income,Salary,3000.00,,,monthly
 ///
@@ -12,9 +13,12 @@ import 'utils/amount_parser.dart' show kMaxAmountMinor;
 class CsvIo {
   static const header = ['date', 'type', 'category', 'amount', 'note', 'tags', 'period'];
 
-  static String export(List<Entry> entries) {
+  /// With [walletOf], a last column "wallet" is added.
+  static String export(List<Entry> entries, {String Function(Entry)? walletOf}) {
     final sorted = [...entries]..sort((a, b) => a.date.compareTo(b.date));
-    final lines = <String>[header.join(',')];
+    final lines = <String>[
+      [...header, if (walletOf != null) 'wallet'].join(',')
+    ];
     for (final e in sorted) {
       lines.add([
         _date(e.date),
@@ -24,6 +28,7 @@ class CsvIo {
         e.note,
         e.tags.join(';'),
         e.period?.name ?? '',
+        if (walletOf != null) walletOf(e),
       ].map(_cell).join(','));
     }
     // CRLF line ends and a final newline, as spreadsheet apps expect.
@@ -42,7 +47,7 @@ class CsvIo {
     int col(String name) => head.indexOf(name);
     final iDate = col('date'), iType = col('type'), iCat = col('category');
     final iAmount = col('amount'), iNote = col('note'), iTags = col('tags');
-    final iPeriod = col('period');
+    final iPeriod = col('period'), iWallet = col('wallet');
     if (iDate < 0 || iType < 0 || iAmount < 0) {
       throw const FormatException('header');
     }
@@ -85,6 +90,7 @@ class CsvIo {
         note: cell(r, iNote),
         tags: parseTags(cell(r, iTags).replaceAll(';', ',')),
         period: period,
+        wallet: cell(r, iWallet).isEmpty ? null : cell(r, iWallet),
       ));
     }
     return CsvResult(entries, skipped);

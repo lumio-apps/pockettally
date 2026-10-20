@@ -15,6 +15,8 @@ import 'models.dart';
 ///   v5 (app 0.6.0): categories.position, categories.hidden
 ///   v6 (app 0.8.0): entries.tags, recurring, favorites
 ///   v7 (app 0.9.10): entries.time, categories.icon
+///   (app 1.7.0 adds the wallets table and entries.wallet; entries with no
+///   wallet belong to the first wallet, so nothing has to be rewritten)
 ///   (app 1.6.0 adds entries.deleted_at, set while an entry is in the
 ///   Trash; it is added on open too, and old backups still restore)
 ///   (app 1.0.0 adds debts.remind_at; it is added on open, so the
@@ -100,6 +102,8 @@ class AppDatabase {
     await _addColumnIfMissing(db, 'entries', 'time', 'INTEGER');
     await _addColumnIfMissing(db, 'categories', 'icon', 'TEXT');
     await _addColumnIfMissing(db, 'entries', 'deleted_at', 'INTEGER');
+    await _addColumnIfMissing(db, 'entries', 'wallet', 'TEXT');
+    await _createWallets(db);
     await _createDebtsAndGoals(db);
     await _addColumnIfMissing(db, 'debts', 'remind_at', 'INTEGER');
     await _createRecurringAndFavorites(db);
@@ -135,6 +139,39 @@ class AppDatabase {
       )
     ''');
     await db.execute('CREATE INDEX idx_entries_date ON entries(date)');
+  }
+
+  /// The wallets table, with the first wallet ("Cash") when it is empty.
+  static Future<void> _createWallets(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS wallets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        color INTEGER NOT NULL,
+        opening_minor INTEGER NOT NULL DEFAULT 0,
+        position INTEGER NOT NULL DEFAULT 0,
+        is_main INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+    await _ensureMainWallet(db);
+  }
+
+  static Future<void> _ensureMainWallet(DatabaseExecutor db) async {
+    final main = await db.query('wallets', where: 'is_main = 1', limit: 1);
+    if (main.isNotEmpty) return;
+    final first = await db.query('wallets', orderBy: 'id', limit: 1);
+    if (first.isNotEmpty) {
+      await db.update('wallets', {'is_main': 1},
+          where: 'id = ?', whereArgs: [first.first['id']]);
+      return;
+    }
+    await db.insert('wallets', {
+      'name': kMainWalletName,
+      'color': 0xFF81C784,
+      'opening_minor': 0,
+      'position': 0,
+      'is_main': 1,
+    });
   }
 
   static Future<void> _createDebtsAndGoals(Database db) async {
@@ -318,6 +355,50 @@ class AppDatabase {
         where: 'id = ?', whereArgs: [id]);
   }
 
+  // ---- wallets ----
+
+  /// The first (main) wallet first, then the others in order.
+  Future<List<Wallet>> allWallets() async {
+    final db = await _database;
+    final rows =
+        await db.query('wallets', orderBy: 'is_main DESC, position, id');
+    return rows.map(Wallet.fromMap).toList();
+  }
+
+  Future<void> insertWallet(Wallet w) async {
+    final db = await _database;
+    final last = await db.rawQuery('SELECT MAX(position) AS p FROM wallets');
+    final next = ((last.first['p'] as int?) ?? 0) + 1;
+    final map = w.toMap()..remove('id');
+    map['position'] = next;
+    await db.insert('wallets', map);
+  }
+
+  /// Saves a changed name, color or opening balance. Entries follow a rename.
+  Future<void> updateWallet(Wallet old, Wallet changed) async {
+    final db = await _database;
+    await db.transaction((txn) async {
+      await txn.update('wallets', changed.toMap(),
+          where: 'id = ?', whereArgs: [old.id]);
+      if (old.name != changed.name) {
+        await txn.update('entries', {'wallet': changed.name},
+            where: 'wallet = ?', whereArgs: [old.name]);
+      }
+    });
+  }
+
+  /// Deletes a wallet; its entries (also those in the Trash) move to the
+  /// first wallet. The first wallet itself cannot be deleted.
+  Future<void> deleteWallet(Wallet w) async {
+    if (w.main) return;
+    final db = await _database;
+    await db.transaction((txn) async {
+      await txn.update('entries', {'wallet': null},
+          where: 'wallet = ?', whereArgs: [w.name]);
+      await txn.delete('wallets', where: 'id = ?', whereArgs: [w.id]);
+    });
+  }
+
   // ---- categories ----
 
   Future<List<EntryCategory>> allCategories() async {
@@ -487,10 +568,25 @@ class AppDatabase {
     List<SavingsGoal> goals, {
     List<RecurringRule> recurring = const [],
     List<Favorite> favorites = const [],
+    List<Wallet> wallets = const [],
   }) async {
     final db = await _database;
     await db.transaction((txn) async {
       await txn.delete('entries');
+      await txn.delete('wallets');
+      var position = 0;
+      for (final w in wallets) {
+        final map = w.toMap()..remove('id');
+        map['position'] = position++;
+        await txn.insert('wallets', map,
+            conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
+      // An old backup has no wallets: the first one is added again.
+      await _ensureMainWallet(txn);
+      final walletNames = {
+        for (final w in await txn.query('wallets'))
+          (w['name'] as String).toLowerCase(): w['name'] as String,
+      };
       await txn.delete('categories');
       await txn.delete('debts');
       await txn.delete('goals');
@@ -532,6 +628,8 @@ class AppDatabase {
       }
       for (final e in entries) {
         final map = e.toMap()..remove('id');
+        // A wallet the backup does not list counts as the first wallet.
+        map['wallet'] = walletNames[(e.wallet ?? '').toLowerCase()];
         await txn.insert('entries', map);
       }
     });

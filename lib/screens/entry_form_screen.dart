@@ -57,6 +57,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
 
   late EntryType _type;
   late String _category;
+  late String _wallet;
   late DateTime _date;
 
   /// Time of day in minutes; null for old entries saved without one.
@@ -100,6 +101,9 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     _type = e?.type ?? widget.initialType;
     _date = widget.entry?.date ?? widget.initialDate ?? DateTime.now();
     _category = e?.category ?? _defaultCategory();
+    _wallet = e != null
+        ? widget.state.walletNameOf(e)
+        : widget.state.defaultWalletName;
     _period = e?.period ?? IncomePeriod.monthly;
     _photo = widget.entry?.photo;
     final now = DateTime.now();
@@ -283,6 +287,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       period: _type == EntryType.income ? _period : null,
       photo: _photo,
       tags: parseTags(_tagsController.text),
+      wallet: _wallet,
     );
     var debtsAdded = 0;
     if (_isEditing) {
@@ -291,6 +296,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       // With a custom split the user's own share can be 0.
       if (entry.amountMinor > 0) await widget.state.addEntry(entry);
       await widget.state.setLastCategory(_type, _category);
+      await widget.state.setLastWallet(_wallet);
       if (split != null && shares != null) {
         final what = note.isNotEmpty ? note : categoryLabel(l, _category);
         final debts = split.debtsFor(shares, _date, l.splitDebtNote(what));
@@ -595,6 +601,25 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                       selected: {_period},
                       onSelectionChanged: (s) =>
                           setState(() => _period = s.first),
+                    ),
+                  ],
+                  if (widget.state.wallets.length > 1) ...[
+                    const SizedBox(height: 14),
+                    Text(l.wallet, style: theme.textTheme.bodySmall),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        for (final w in widget.state.wallets)
+                          ChoiceChip(
+                            avatar: CircleAvatar(
+                                radius: 6, backgroundColor: Color(w.colorValue)),
+                            label: Text(w.name),
+                            selected: _wallet == w.name,
+                            onSelected: (_) => setState(() => _wallet = w.name),
+                          ),
+                      ],
                     ),
                   ],
                   const SizedBox(height: 14),

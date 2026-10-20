@@ -11,6 +11,7 @@ import '../biometric.dart';
 import '../l10n/l10n.dart';
 import '../reminder.dart';
 import 'trash_screen.dart';
+import 'wallets_screen.dart';
 import '../update_checker.dart';
 import '../theme.dart';
 import '../widgets/profile_avatar.dart';
@@ -310,6 +311,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       builder: (_) => BudgetsScreen(state: state),
                     )),
                   ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.account_balance_wallet_outlined,
+                        Color(0xFF2E9E5B)),
+                    title: Text(l.wallets),
+                    subtitle: Text(l.walletsSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => WalletsScreen(state: state))),
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.delete_sweep_outlined, Color(0xFF607D8B)),
+                    title: Text(l.trash),
+                    subtitle: Text(state.trash.isEmpty
+                        ? l.trashEmpty
+                        : l.trashCount(state.trash.length)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => TrashScreen(state: state))),
+                  ),
                 ],
               ),
               _Group(
@@ -371,16 +393,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title: Text(l.restoreFromBackup),
                     subtitle: Text(l.restoreSubtitle),
                     onTap: _busy ? null : _restore,
-                  ),
-                  ListTile(
-                    leading: const _SettingIcon(
-                        Icons.delete_sweep_outlined, Color(0xFF607D8B)),
-                    title: Text(l.trash),
-                    subtitle: Text(state.trash.isEmpty
-                        ? l.trashEmpty
-                        : l.trashCount(state.trash.length)),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => TrashScreen(state: state))),
                   ),
                   ListTile(
                     leading: const _SettingIcon(

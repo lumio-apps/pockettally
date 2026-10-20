@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.7.0 (Wallets)
+
+- New **Wallets** (Settings › Data): keep Cash, Bank, UPI, a card and so on apart. Each wallet has a name, a color and an optional opening balance, and shows what is in it now
+- Every new entry has a wallet (a chooser appears once you have more than one wallet; the wallet you used last is picked for you)
+- Home shows a card with each wallet's balance when you have more than one
+- Your old entries are not touched: they all belong to the first wallet, "Cash", which you can rename but not delete. Deleting another wallet moves its entries to "Cash"
+- Backups and CSV files now carry the wallet. Old backups and old CSV files still work; their entries go to "Cash"
+- All 20 languages
+
 ## 1.6.0 (Trash)
 
 - Deleted entries now go to a **Trash** (Settings › Backup) and stay there for 30 days. Tap one to put it back or to delete it for good, or use the button at the top to empty the Trash

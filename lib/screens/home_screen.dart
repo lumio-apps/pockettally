@@ -15,6 +15,7 @@ import 'calendar_screen.dart';
 import 'entry_form_screen.dart';
 import 'goals_screen.dart';
 import 'profile_screen.dart';
+import 'wallets_screen.dart';
 
 /// How many of the newest entries Home shows under "Recent".
 const int kRecentEntries = 50;
@@ -92,6 +93,10 @@ class HomeScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _InOutRow(state: state, month: now),
           const SizedBox(height: 12),
+          if (state.wallets.length > 1) ...[
+            _WalletsCard(state: state),
+            const SizedBox(height: 12),
+          ],
           _OverviewCard(
             state: state,
             month: now,
@@ -367,6 +372,60 @@ class _BalanceCard extends StatelessWidget {
 }
 
 /// This month's income and expenses, side by side.
+/// Each wallet with what is in it (only shown when there is more than one).
+class _WalletsCard extends StatelessWidget {
+  const _WalletsCard({required this.state});
+
+  final AppState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final theme = Theme.of(context);
+    final hide = state.hideBalance;
+    return NeoCard(
+      onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => WalletsScreen(state: state))),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(l.wallets,
+                      style: theme.textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800)),
+                ),
+                const Icon(Icons.chevron_right),
+              ],
+            ),
+            const SizedBox(height: 6),
+            for (final w in state.wallets)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Row(
+                  children: [
+                    CircleAvatar(radius: 6, backgroundColor: Color(w.colorValue)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(w.name, overflow: TextOverflow.ellipsis),
+                    ),
+                    Text(
+                      hide ? '••••' : state.formatMoney(state.walletBalance(w)),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _InOutRow extends StatelessWidget {
   const _InOutRow({required this.state, required this.month});
 

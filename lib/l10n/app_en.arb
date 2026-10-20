@@ -392,6 +392,28 @@
     }
   },
   "accentColor": "Accent color",
+  "wallets": "Wallets",
+  "wallet": "Wallet",
+  "addWallet": "Add wallet",
+  "editWallet": "Edit wallet",
+  "walletName": "Wallet name",
+  "openingBalance": "Opening balance",
+  "openingBalanceHint": "Money already in this wallet when you started. Optional.",
+  "walletsTotal": "All wallets",
+  "walletsSubtitle": "Cash, bank, UPI, card: see each balance",
+  "deleteWalletQuestion": "Delete \"{name}\"? Its entries move to \"{main}\".",
+  "@deleteWalletQuestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "main": {
+        "type": "String"
+      }
+    }
+  },
+  "walletNameTaken": "A wallet with this name already exists",
+  "enterValidAmount": "Enter a valid amount",
   "trash": "Trash",
   "trashEmpty": "Empty · deleted entries stay here for 30 days",
   "trashCount": "{count} in the Trash",

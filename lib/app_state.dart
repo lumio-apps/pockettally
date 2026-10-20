@@ -29,6 +29,9 @@ class AppState extends ChangeNotifier {
 
   List<Entry> entries = [];
 
+  /// The wallets, the main one first.
+  List<Wallet> wallets = [];
+
   /// Deleted entries waiting in the Trash.
   List<TrashedEntry> trash = [];
   List<EntryCategory> categories = [];
@@ -124,6 +127,7 @@ class AppState extends ChangeNotifier {
   Future<void> load() async {
     entries = await AppDatabase.instance.allEntries();
     trash = await AppDatabase.instance.trashedEntries();
+    wallets = await AppDatabase.instance.allWallets();
     categories = await AppDatabase.instance.allCategories();
     debts = await AppDatabase.instance.allDebts();
     goals = await AppDatabase.instance.allGoals();
@@ -433,6 +437,69 @@ class AppState extends ChangeNotifier {
     await PhotoStore.cleanOrphans(usedPhotos);
   }
 
+  // ---- wallets ----
+
+  /// The first wallet: entries without a wallet belong to it.
+  Wallet get mainWallet => wallets.firstWhere((w) => w.main,
+      orElse: () => wallets.isNotEmpty
+          ? wallets.first
+          : Wallet(name: kMainWalletName, colorValue: 0xFF81C784, main: true));
+
+  /// The wallet name an entry belongs to (an unknown name counts as main).
+  String walletNameOf(Entry e) {
+    final name = e.wallet;
+    if (name == null) return mainWallet.name;
+    for (final w in wallets) {
+      if (w.name == name) return w.name;
+    }
+    return mainWallet.name;
+  }
+
+  /// What is in a wallet now: its opening balance plus income minus expense.
+  int walletBalance(Wallet w) {
+    var sum = w.openingMinor;
+    for (final e in entries) {
+      if (walletNameOf(e) != w.name) continue;
+      sum += e.isIncome ? e.amountMinor : -e.amountMinor;
+    }
+    return sum;
+  }
+
+  Wallet walletNamed(String name) =>
+      wallets.firstWhere((w) => w.name == name, orElse: () => mainWallet);
+
+  /// The wallet a new entry starts with: the one used last, else the main.
+  String get defaultWalletName {
+    final last = _prefs.getString('last_wallet');
+    return last != null && wallets.any((w) => w.name == last)
+        ? last
+        : mainWallet.name;
+  }
+
+  Future<void> setLastWallet(String name) =>
+      _prefs.setString('last_wallet', name);
+
+  /// True when another wallet already has [name] (letter case ignored).
+  bool walletNameTaken(String name, {Wallet? except}) => wallets.any((w) =>
+      w.id != except?.id && w.name.toLowerCase() == name.trim().toLowerCase());
+
+  Future<void> addWallet(Wallet w) async {
+    await AppDatabase.instance.insertWallet(w);
+    await load();
+  }
+
+  Future<void> updateWallet(Wallet old, Wallet changed) async {
+    await AppDatabase.instance.updateWallet(old, changed);
+    final last = _prefs.getString('last_wallet');
+    if (last == old.name) await _prefs.setString('last_wallet', changed.name);
+    await load();
+  }
+
+  Future<void> deleteWallet(Wallet w) async {
+    await AppDatabase.instance.deleteWallet(w);
+    await load();
+  }
+
   // ---- categories ----
 
   /// Categories of one type in the user's order, with "Other" always last.
@@ -738,6 +805,7 @@ class AppState extends ChangeNotifier {
         goals: goals,
         recurring: recurring,
         favorites: favorites,
+        wallets: wallets,
       );
 
   /// File names of the bill photos that exist on the phone. Used to write a
@@ -776,7 +844,9 @@ class AppState extends ChangeNotifier {
     }
     await AppDatabase.instance
         .replaceAll(b.categories, b.entries, b.debts, b.goals,
-            recurring: b.recurring, favorites: b.favorites);
+            recurring: b.recurring,
+            favorites: b.favorites,
+            wallets: b.wallets);
     if (b.userName.trim().isNotEmpty) {
       await _prefs.setString('user_name', b.userName.trim());
     }
@@ -924,9 +994,43 @@ class AppState extends ChangeNotifier {
         fixed.add(name == e.category ? e : _withCategory(e, name));
       }
     }
+    // Wallet names from the file: a name that differs only in letter case
+    // uses the existing wallet; a new name creates a wallet.
+    final walletNames = {for (final w in wallets) w.name.toLowerCase(): w.name};
+    var walletColor = wallets.length;
+    for (var i = 0; i < fixed.length; i++) {
+      final raw = fixed[i].wallet?.trim() ?? '';
+      if (raw.isEmpty) {
+        if (fixed[i].wallet != null) fixed[i] = _withWallet(fixed[i], null);
+        continue;
+      }
+      var name = walletNames[raw.toLowerCase()];
+      if (name == null) {
+        name = raw;
+        walletNames[raw.toLowerCase()] = name;
+        await AppDatabase.instance.insertWallet(Wallet(
+          name: name,
+          colorValue: kCategoryPalette[walletColor++ % kCategoryPalette.length],
+        ));
+      }
+      if (name != fixed[i].wallet) fixed[i] = _withWallet(fixed[i], name);
+    }
     await AppDatabase.instance.insertAll(fixed);
     await load();
   }
+
+  static Entry _withWallet(Entry e, String? wallet) => Entry(
+        type: e.type,
+        amountMinor: e.amountMinor,
+        category: e.category,
+        date: e.date,
+        note: e.note,
+        period: e.period,
+        photo: e.photo,
+        tags: e.tags,
+        minutes: e.minutes,
+        wallet: wallet,
+      );
 
   static Entry _withCategory(Entry e, String category) => Entry(
         type: e.type,
@@ -938,6 +1042,7 @@ class AppState extends ChangeNotifier {
         photo: e.photo,
         tags: e.tags,
         minutes: e.minutes,
+        wallet: e.wallet,
       );
 
   // ---- tags ----

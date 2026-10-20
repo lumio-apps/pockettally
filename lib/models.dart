@@ -203,6 +203,60 @@ class EntryCategory {
       );
 }
 
+/// Name of the first wallet that every install has. It can be renamed but
+/// not deleted; entries without a wallet belong to it.
+const String kMainWalletName = 'Cash';
+
+/// A place where money is kept: cash, a bank account, UPI, a card.
+class Wallet {
+  Wallet({
+    this.id,
+    required this.name,
+    required this.colorValue,
+    this.openingMinor = 0,
+    this.position = 0,
+    this.main = false,
+  });
+
+  final int? id;
+  final String name;
+  final int colorValue;
+
+  /// Money already in the wallet when you started using the app.
+  final int openingMinor;
+  final int position;
+
+  /// The first wallet: cannot be deleted, and entries with no wallet use it.
+  final bool main;
+
+  Wallet copyWith({String? name, int? colorValue, int? openingMinor}) => Wallet(
+        id: id,
+        name: name ?? this.name,
+        colorValue: colorValue ?? this.colorValue,
+        openingMinor: openingMinor ?? this.openingMinor,
+        position: position,
+        main: main,
+      );
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'id': id,
+        'name': name,
+        'color': colorValue,
+        'opening_minor': openingMinor,
+        'position': position,
+        'is_main': main ? 1 : 0,
+      };
+
+  static Wallet fromMap(Map<String, Object?> m) => Wallet(
+        id: m['id'] as int?,
+        name: m['name'] as String,
+        colorValue: m['color'] as int,
+        openingMinor: (m['opening_minor'] as int?) ?? 0,
+        position: (m['position'] as int?) ?? 0,
+        main: m['is_main'] == 1,
+      );
+}
+
 /// How many days a deleted entry stays in the Trash before it is removed.
 const int kTrashDays = 30;
 
@@ -237,6 +291,7 @@ class Entry {
     this.photo,
     this.tags = const [],
     this.minutes,
+    this.wallet,
   });
 
   final int? id;
@@ -245,6 +300,9 @@ class Entry {
   final String category;
   final DateTime date;
   final String note;
+
+  /// Name of the wallet; null means the first (main) wallet.
+  final String? wallet;
 
   /// Time of day in minutes after midnight (null for entries made before
   /// app 1.0.0, recurring entries and imports without a time).
@@ -272,6 +330,7 @@ class Entry {
         'photo': photo,
         'tags': tags.join(','),
         'time': minutes,
+        'wallet': wallet,
       };
 
   static Entry fromMap(Map<String, Object?> m) => Entry(
@@ -287,6 +346,7 @@ class Entry {
         photo: m['photo'] as String?,
         tags: parseTags((m['tags'] as String?) ?? ''),
         minutes: m['time'] as int?,
+        wallet: m['wallet'] as String?,
       );
 }
 
