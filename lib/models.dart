@@ -297,6 +297,123 @@ class Transfer {
       );
 }
 
+/// A bill you pay again and again by hand (Netflix, rent, insurance). The
+/// app shows what is due next, reminds you, and adds the expense when you
+/// mark it paid.
+class Subscription {
+  const Subscription({
+    this.id,
+    required this.name,
+    required this.amountMinor,
+    this.every = RepeatEvery.monthly,
+    required this.nextDate,
+    required this.anchorDay,
+    this.category = kOtherCategory,
+    this.wallet,
+    this.remindDays = 1,
+    this.paused = false,
+  });
+
+  final int? id;
+  final String name;
+  final int amountMinor;
+
+  /// Weekly, monthly or yearly.
+  final RepeatEvery every;
+  final DateTime nextDate;
+
+  /// Day of the month the bill falls on (for monthly and yearly).
+  final int anchorDay;
+  final String category;
+
+  /// Wallet name; null means the first wallet.
+  final String? wallet;
+
+  /// Days before the due date to remind; -1 = no reminder.
+  final int remindDays;
+  final bool paused;
+
+  /// What this costs per month on average (a week is 52/12 of a month, a
+  /// year is 1/12).
+  int get monthlyMinor {
+    switch (every) {
+      case RepeatEvery.daily:
+        return amountMinor * 30;
+      case RepeatEvery.weekly:
+        return (amountMinor * 52 / 12).round();
+      case RepeatEvery.monthly:
+        return amountMinor;
+      case RepeatEvery.yearly:
+        return (amountMinor / 12).round();
+    }
+  }
+
+  int get yearlyMinor => monthlyMinor * 12;
+
+  /// When the reminder rings: [remindDays] before the due date, at 9:00.
+  DateTime? get remindAt => remindDays < 0
+      ? null
+      : DateTime(nextDate.year, nextDate.month, nextDate.day - remindDays, 9);
+
+  /// Whole days from [today] to the due date (negative when late).
+  int daysUntilDue(DateTime today) => DateTime(
+          nextDate.year, nextDate.month, nextDate.day)
+      .difference(DateTime(today.year, today.month, today.day))
+      .inDays;
+
+  /// The due date after paying [today]: one step on, and never in the past.
+  DateTime nextAfterPaying(DateTime today) {
+    final start = DateTime(today.year, today.month, today.day);
+    var next = nextRepeatDate(nextDate, every, anchorDay);
+    var guard = 0;
+    while (next.isBefore(start) && guard++ < 1000) {
+      next = nextRepeatDate(next, every, anchorDay);
+    }
+    return next;
+  }
+
+  Subscription copyWith({DateTime? nextDate, bool? paused}) => Subscription(
+        id: id,
+        name: name,
+        amountMinor: amountMinor,
+        every: every,
+        nextDate: nextDate ?? this.nextDate,
+        anchorDay: anchorDay,
+        category: category,
+        wallet: wallet,
+        remindDays: remindDays,
+        paused: paused ?? this.paused,
+      );
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'id': id,
+        'name': name,
+        'amount_minor': amountMinor,
+        'every': every.name,
+        'next_date':
+            DateTime(nextDate.year, nextDate.month, nextDate.day).millisecondsSinceEpoch,
+        'anchor_day': anchorDay,
+        'category': category,
+        'wallet': wallet,
+        'remind_days': remindDays,
+        'paused': paused ? 1 : 0,
+      };
+
+  static Subscription fromMap(Map<String, Object?> m) => Subscription(
+        id: m['id'] as int?,
+        name: m['name'] as String,
+        amountMinor: m['amount_minor'] as int,
+        every: RepeatEvery.values.firstWhere((e) => e.name == m['every'],
+            orElse: () => RepeatEvery.monthly),
+        nextDate: DateTime.fromMillisecondsSinceEpoch(m['next_date'] as int),
+        anchorDay: (m['anchor_day'] as int?) ?? 1,
+        category: (m['category'] as String?) ?? kOtherCategory,
+        wallet: m['wallet'] as String?,
+        remindDays: (m['remind_days'] as int?) ?? 1,
+        paused: m['paused'] == 1,
+      );
+}
+
 /// How many days a deleted entry stays in the Trash before it is removed.
 const int kTrashDays = 30;
 

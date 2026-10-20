@@ -392,6 +392,58 @@
     }
   },
   "accentColor": "Accent color",
+  "subscriptions": "Subscriptions",
+  "subscriptionsSubtitle": "Netflix, rent, insurance: due dates and reminders",
+  "addSubscription": "Add subscription",
+  "editSubscription": "Edit subscription",
+  "subscriptionName": "Name (e.g. Netflix)",
+  "perMonthTotal": "Per month",
+  "perYearTotal": "Per year",
+  "markPaid": "Mark as paid",
+  "subscriptionPaidNext": "Paid. Next due {date}",
+  "@subscriptionPaidNext": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dueToday": "Due today",
+  "dueTomorrow": "Due tomorrow",
+  "dueInDays": "Due in {days} days",
+  "@dueInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "overdueDays": "{days} days overdue",
+  "@overdueDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "nextDue": "Next due",
+  "remindOff": "No reminder",
+  "remindSameDay": "On the day",
+  "remind1Day": "1 day before",
+  "remind3Days": "3 days before",
+  "remind7Days": "7 days before",
+  "noSubscriptions": "No subscriptions yet. Add bills you pay again and again, like Netflix, rent or insurance, and get a reminder before each one.",
+  "subscriptionReminderBody": "{amount} is due on {date}",
+  "@subscriptionReminderBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "transfer": "Transfer",
   "transfers": "Transfers",
   "transferFrom": "From",

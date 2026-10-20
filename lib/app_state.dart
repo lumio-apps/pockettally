@@ -32,6 +32,9 @@ class AppState extends ChangeNotifier {
   /// The wallets, the main one first.
   List<Wallet> wallets = [];
 
+  /// Bills paid by hand again and again, the soonest first.
+  List<Subscription> subscriptions = [];
+
   /// Money moved between wallets, newest first.
   List<Transfer> transfers = [];
 
@@ -132,6 +135,7 @@ class AppState extends ChangeNotifier {
     trash = await AppDatabase.instance.trashedEntries();
     wallets = await AppDatabase.instance.allWallets();
     transfers = await AppDatabase.instance.allTransfers();
+    subscriptions = await AppDatabase.instance.allSubscriptions();
     categories = await AppDatabase.instance.allCategories();
     debts = await AppDatabase.instance.allDebts();
     goals = await AppDatabase.instance.allGoals();
@@ -141,6 +145,7 @@ class AppState extends ChangeNotifier {
     // A new entry for today means no reminder today.
     unawaited(syncReminder());
     unawaited(syncDebtReminders());
+    unawaited(syncSubscriptionReminders());
   }
 
   // ---- app lock ----
@@ -841,6 +846,7 @@ class AppState extends ChangeNotifier {
         favorites: favorites,
         wallets: wallets,
         transfers: transfers,
+        subscriptions: subscriptions,
       );
 
   /// File names of the bill photos that exist on the phone. Used to write a
@@ -882,7 +888,8 @@ class AppState extends ChangeNotifier {
             recurring: b.recurring,
             favorites: b.favorites,
             wallets: b.wallets,
-            transfers: b.transfers);
+            transfers: b.transfers,
+            subscriptions: b.subscriptions);
     if (b.userName.trim().isNotEmpty) {
       await _prefs.setString('user_name', b.userName.trim());
     }
@@ -1193,6 +1200,112 @@ class AppState extends ChangeNotifier {
   Future<void> deleteDebt(Debt d) async {
     await AppDatabase.instance.deleteDebt(d.id!);
     await load();
+  }
+
+  // ---- subscriptions ----
+
+  Future<void> saveSubscription(Subscription s) async {
+    await AppDatabase.instance.saveSubscription(s);
+    await load();
+  }
+
+  Future<void> deleteSubscription(Subscription s) async {
+    await AppDatabase.instance.deleteSubscription(s.id!);
+    await load();
+  }
+
+  Future<void> setSubscriptionPaused(Subscription s, bool paused) async {
+    var next = s.nextDate;
+    if (!paused) {
+      // Resuming does not count the bills missed while paused.
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      var guard = 0;
+      while (next.isBefore(today) && guard++ < 1000) {
+        next = nextRepeatDate(next, s.every, s.anchorDay);
+      }
+    }
+    await AppDatabase.instance
+        .saveSubscription(s.copyWith(paused: paused, nextDate: next));
+    await load();
+  }
+
+  /// Adds the expense for a subscription (dated today, in its wallet) and
+  /// moves its due date on. Returns the new due date.
+  Future<DateTime> paySubscription(Subscription s) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final next = s.nextAfterPaying(today);
+    // A category that was deleted since falls back to "Other".
+    final known = categories
+        .any((c) => c.type == EntryType.expense && c.name == s.category);
+    await AppDatabase.instance.paySubscription(
+      s.copyWith(nextDate: next),
+      Entry(
+        type: EntryType.expense,
+        amountMinor: s.amountMinor,
+        category: known ? s.category : kOtherCategory,
+        date: today,
+        minutes: now.hour * 60 + now.minute,
+        note: s.name,
+        wallet: s.wallet,
+      ),
+    );
+    await load();
+    return next;
+  }
+
+  /// What the active subscriptions cost per month.
+  int get subscriptionsMonthlyMinor => subscriptions
+      .where((s) => !s.paused)
+      .fold<int>(0, (sum, s) => sum + s.monthlyMinor);
+
+  String? _plannedSubscriptionReminders;
+  Future<void>? _subscriptionSync;
+
+  /// Plans the subscription notifications again (Android only). Cheap to
+  /// call often: nothing happens when the plan did not change.
+  Future<void> syncSubscriptionReminders() {
+    if (!ReminderService.supported) return Future<void>.value();
+    final run = (_subscriptionSync ?? Future<void>.value())
+        .then((_) => _syncSubscriptionReminders());
+    _subscriptionSync = run;
+    return run;
+  }
+
+  Future<void> _syncSubscriptionReminders() async {
+    try {
+      final l = lookupAppLocalizations(Locale(languageCode));
+      final now = DateTime.now();
+      final list = <SubscriptionReminder>[
+        for (final s in subscriptions)
+          if (s.id != null &&
+              !s.paused &&
+              s.remindAt != null &&
+              s.remindAt!.isAfter(now))
+            SubscriptionReminder(
+              id: s.id!,
+              at: s.remindAt!,
+              title: s.name,
+              body: l.subscriptionReminderBody(
+                  formatMoney(s.amountMinor),
+                  DateFormat.MMMEd(languageCode).format(s.nextDate)),
+            ),
+      ];
+      final exact = await ReminderService.canBeExact();
+      final plan = [
+        '${l.subscriptions}|$exact',
+        for (final r in list)
+          '${r.id}|${r.at.millisecondsSinceEpoch}|${r.title}|${r.body}',
+      ].join('\n');
+      if (plan == _plannedSubscriptionReminders) return;
+      _plannedSubscriptionReminders = plan;
+      await ReminderService.syncSubscriptions(
+          reminders: list, channelName: l.subscriptions);
+    } catch (e) {
+      _plannedSubscriptionReminders = null;
+      debugPrint('Subscription reminders not planned: $e');
+    }
   }
 
   // ---- savings goals ----

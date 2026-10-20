@@ -21,6 +21,7 @@ class BackupData {
     this.favorites = const [],
     this.wallets = const [],
     this.transfers = const [],
+    this.subscriptions = const [],
     this.numberStyle,
     this.decimals,
     this.palette,
@@ -52,6 +53,9 @@ class BackupData {
 
   /// Money moved between wallets (empty before app 1.8.0).
   final List<Transfer> transfers;
+
+  /// Bills you pay again and again (empty before app 1.9.0).
+  final List<Subscription> subscriptions;
 
   /// Optional settings (null when the backup is older than 0.6.0).
   final String? numberStyle;
@@ -157,6 +161,21 @@ class BackupData {
               if (w.main) 'main': true,
             },
         ],
+        if (subscriptions.isNotEmpty)
+          'subscriptions': [
+            for (final s in subscriptions)
+              {
+                'name': s.name,
+                'amountMinor': s.amountMinor,
+                'every': s.every.name,
+                'nextDate': _dateString(s.nextDate),
+                'anchorDay': s.anchorDay,
+                'category': s.category,
+                if (s.wallet != null) 'wallet': s.wallet,
+                'remindDays': s.remindDays,
+                'paused': s.paused,
+              },
+          ],
         if (transfers.isNotEmpty)
           'transfers': [
             for (final t in transfers)
@@ -297,6 +316,20 @@ class BackupData {
             main: w['main'] == true,
           ),
       ];
+      final subscriptions = [
+        for (final s in (decoded['subscriptions'] as List<dynamic>? ?? []))
+          Subscription(
+            name: (s as Map<String, dynamic>)['name'] as String,
+            amountMinor: s['amountMinor'] as int,
+            every: RepeatEvery.values.byName(s['every'] as String),
+            nextDate: DateTime.parse(s['nextDate'] as String),
+            anchorDay: (s['anchorDay'] as int?) ?? 1,
+            category: (s['category'] as String?) ?? kOtherCategory,
+            wallet: s['wallet'] as String?,
+            remindDays: (s['remindDays'] as int?) ?? 1,
+            paused: s['paused'] == true,
+          ),
+      ];
       final transfers = [
         for (final t in (decoded['transfers'] as List<dynamic>? ?? []))
           Transfer(
@@ -371,6 +404,7 @@ class BackupData {
         favorites: favorites,
         wallets: wallets,
         transfers: transfers,
+        subscriptions: subscriptions,
         debts: debts,
         goals: goals,
         userName: (settings['userName'] as String?) ?? '',

@@ -10,6 +10,7 @@ import '../backup_service.dart';
 import '../biometric.dart';
 import '../l10n/l10n.dart';
 import '../reminder.dart';
+import 'subscriptions_screen.dart';
 import 'trash_screen.dart';
 import 'wallets_screen.dart';
 import '../update_checker.dart';
@@ -320,6 +321,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => WalletsScreen(state: state))),
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.autorenew, Color(0xFFD84315)),
+                    title: Text(l.subscriptions),
+                    subtitle: Text(state.subscriptions.isEmpty
+                        ? l.subscriptionsSubtitle
+                        : '${l.perMonthTotal}: ${state.formatMoney(state.subscriptionsMonthlyMinor)}'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => SubscriptionsScreen(state: state))),
                   ),
                   ListTile(
                     leading: const _SettingIcon(

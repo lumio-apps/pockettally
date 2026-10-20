@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.9.0 (Subscriptions)
+
+- New **Subscriptions** (Settings › Data): list the bills you pay again and again, like Netflix, rent or insurance. Each shows when it is due next, with totals per month and per year
+- A reminder before each bill: on the day, or 1, 3 or 7 days before (at 9:00, on your phone only)
+- Tap the check button when you have paid: the expense is added (to the wallet you chose) and the due date moves on
+- You can pause a subscription, edit it or delete it
+- Backups carry subscriptions; old backups still work
+- All 20 languages
+
 ## 1.8.0 (Transfers, wallet filters)
 
 - **Transfer:** move money from one wallet to another (Settings › Data › Wallets › Transfer). Both balances change; it is not counted as income or expense, so reports and budgets stay right. Transfers can be deleted, with Undo

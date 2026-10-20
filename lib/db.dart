@@ -15,6 +15,7 @@ import 'models.dart';
 ///   v5 (app 0.6.0): categories.position, categories.hidden
 ///   v6 (app 0.8.0): entries.tags, recurring, favorites
 ///   v7 (app 0.9.10): entries.time, categories.icon
+///   (app 1.9.0 adds the subscriptions table)
 ///   (app 1.8.0 adds the transfers table)
 ///   (app 1.8.0 adds the transfers table)
 ///   (app 1.7.0 adds the wallets table and entries.wallet; entries with no
@@ -107,6 +108,7 @@ class AppDatabase {
     await _addColumnIfMissing(db, 'entries', 'wallet', 'TEXT');
     await _createWallets(db);
     await _createTransfers(db);
+    await _createSubscriptions(db);
     await _createDebtsAndGoals(db);
     await _addColumnIfMissing(db, 'debts', 'remind_at', 'INTEGER');
     await _createRecurringAndFavorites(db);
@@ -142,6 +144,23 @@ class AppDatabase {
       )
     ''');
     await db.execute('CREATE INDEX idx_entries_date ON entries(date)');
+  }
+
+  static Future<void> _createSubscriptions(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS subscriptions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        amount_minor INTEGER NOT NULL,
+        every TEXT NOT NULL DEFAULT 'monthly',
+        next_date INTEGER NOT NULL,
+        anchor_day INTEGER NOT NULL DEFAULT 1,
+        category TEXT NOT NULL DEFAULT 'Other',
+        wallet TEXT,
+        remind_days INTEGER NOT NULL DEFAULT 1,
+        paused INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
   }
 
   static Future<void> _createTransfers(Database db) async {
@@ -371,6 +390,36 @@ class AppDatabase {
         where: 'id = ?', whereArgs: [id]);
   }
 
+  // ---- subscriptions ----
+
+  Future<List<Subscription>> allSubscriptions() async {
+    final db = await _database;
+    final rows = await db.query('subscriptions', orderBy: 'next_date, id');
+    return rows.map(Subscription.fromMap).toList();
+  }
+
+  Future<void> saveSubscription(Subscription s) async {
+    final db = await _database;
+    await db.insert('subscriptions', s.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<void> deleteSubscription(int id) async {
+    final db = await _database;
+    await db.delete('subscriptions', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Marks a subscription paid: adds the expense and moves the due date on,
+  /// in one transaction.
+  Future<void> paySubscription(Subscription next, Entry paid) async {
+    final db = await _database;
+    await db.transaction((txn) async {
+      await txn.insert('entries', paid.toMap()..remove('id'));
+      await txn.update('subscriptions', next.toMap(),
+          where: 'id = ?', whereArgs: [next.id]);
+    });
+  }
+
   // ---- transfers ----
 
   Future<List<Transfer>> allTransfers() async {
@@ -423,6 +472,8 @@ class AppDatabase {
             where: 'from_wallet = ?', whereArgs: [old.name]);
         await txn.update('transfers', {'to_wallet': changed.name},
             where: 'to_wallet = ?', whereArgs: [old.name]);
+        await txn.update('subscriptions', {'wallet': changed.name},
+            where: 'wallet = ?', whereArgs: [old.name]);
       }
     });
   }
@@ -434,6 +485,8 @@ class AppDatabase {
     final db = await _database;
     await db.transaction((txn) async {
       await txn.update('entries', {'wallet': null},
+          where: 'wallet = ?', whereArgs: [w.name]);
+      await txn.update('subscriptions', {'wallet': null},
           where: 'wallet = ?', whereArgs: [w.name]);
       // Transfers of this wallet move to the first wallet too; one that
       // then goes from a wallet to itself changes nothing and is removed.
@@ -621,12 +674,17 @@ class AppDatabase {
     List<Favorite> favorites = const [],
     List<Wallet> wallets = const [],
     List<Transfer> transfers = const [],
+    List<Subscription> subscriptions = const [],
   }) async {
     final db = await _database;
     await db.transaction((txn) async {
       await txn.delete('entries');
       await txn.delete('wallets');
       await txn.delete('transfers');
+      await txn.delete('subscriptions');
+      for (final s in subscriptions) {
+        await txn.insert('subscriptions', s.toMap()..remove('id'));
+      }
       var position = 0;
       for (final w in wallets) {
         final map = w.toMap()..remove('id');

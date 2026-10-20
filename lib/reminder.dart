@@ -25,6 +25,21 @@ class DebtReminder {
   final String body;
 }
 
+/// One planned subscription notification.
+class SubscriptionReminder {
+  const SubscriptionReminder({
+    required this.id,
+    required this.at,
+    required this.title,
+    required this.body,
+  });
+
+  final int id;
+  final DateTime at;
+  final String title;
+  final String body;
+}
+
 /// The daily "Did you spend anything today?" notification and the
 /// Lend & Borrow reminders (Android only).
 ///
@@ -45,6 +60,11 @@ class ReminderService {
   /// Lend & Borrow reminders use this id plus the record's id.
   static const int _debtBaseId = 1000000;
   static const String _debtChannelId = 'debt_reminders';
+
+  /// Subscription reminders use this id plus the subscription's id. Lend &
+  /// Borrow ids stay below it.
+  static const int _subBaseId = 2000000;
+  static const String _subChannelId = 'subscription_reminders';
 
   /// Reminders are offered on Android only.
   static bool get supported => Platform.isAndroid;
@@ -157,6 +177,50 @@ class ReminderService {
   static Future<void> cancelAll() async {
     await cancelDaily();
     await _cancelDebtReminders();
+    await _cancelSubscriptionReminders();
+  }
+
+  static Future<void> _cancelSubscriptionReminders() async {
+    if (!await _init()) return;
+    try {
+      final pending = await _plugin.pendingNotificationRequests();
+      for (final p in pending) {
+        if (p.id >= _subBaseId) await _plugin.cancel(id: p.id);
+      }
+    } catch (_) {
+      // Nothing planned, or the list could not be read.
+    }
+  }
+
+  /// Plans the subscription reminders again, like [syncDebts].
+  static Future<void> syncSubscriptions({
+    required List<SubscriptionReminder> reminders,
+    required String channelName,
+  }) async {
+    if (!await _init()) return;
+    await _cancelSubscriptionReminders();
+    final details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        _subChannelId,
+        channelName,
+        importance: Importance.high,
+        priority: Priority.high,
+        category: AndroidNotificationCategory.reminder,
+      ),
+    );
+    final mode = await _mode();
+    final now = DateTime.now();
+    for (final r in reminders) {
+      if (!r.at.isAfter(now)) continue;
+      await _plugin.zonedSchedule(
+        id: _subBaseId + r.id,
+        scheduledDate: tz.TZDateTime.from(r.at.toUtc(), tz.UTC),
+        notificationDetails: details,
+        androidScheduleMode: mode,
+        title: r.title,
+        body: r.body,
+      );
+    }
   }
 
   static Future<void> _cancelDebtReminders() async {
@@ -164,7 +228,9 @@ class ReminderService {
     try {
       final pending = await _plugin.pendingNotificationRequests();
       for (final p in pending) {
-        if (p.id >= _debtBaseId) await _plugin.cancel(id: p.id);
+        if (p.id >= _debtBaseId && p.id < _subBaseId) {
+          await _plugin.cancel(id: p.id);
+        }
       }
     } catch (_) {
       // Nothing planned, or the list could not be read.
