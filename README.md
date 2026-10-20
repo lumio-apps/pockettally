@@ -1,116 +1,155 @@
-<h1 align="center">Paperwise</h1>
+<p align="center">
+  <img src="docs/banner.png" alt="PocketTally – every coin, counted. Free offline income and expense tracker for Android.">
+</p>
+
+<h1 align="center">PocketTally</h1>
 
 <p align="center">
-  <b>Private PDF tools for Android. Fully offline.</b><br>
-  Merge, split, sign, scan, compress, protect, search and clean PDFs, all on your phone.<br>
-  No ads. No account. No tracking. Your files never leave your phone.
+  <b>Every coin, counted.</b><br>
+  A simple income and expense tracker that works completely offline.<br>
+  No account, no ads, no tracking, and it goes online only when you tap "Check for updates".
 </p>
 
 <p align="center">
-  <a href="https://github.com/lumio-apps/paperwise/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/lumio-apps/paperwise?color=4338CA&label=release"></a>
-  <img alt="Android 7.0+" src="https://img.shields.io/badge/Android-7.0%2B-15803D">
-  <img alt="Works offline" src="https://img.shields.io/badge/works-offline-0E7490">
-  <img alt="No ads" src="https://img.shields.io/badge/ads-none-BE185D">
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-334155"></a>
+  <a href="https://github.com/lumio-apps/pockettally/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/lumio-apps/pockettally?label=download&color=1565FF"></a>
+  <img alt="Android 7.0+" src="https://img.shields.io/badge/Android-7.0%2B-3D7FFF">
+  <img alt="20 languages" src="https://img.shields.io/badge/languages-20-7BE0B5">
+  <img alt="No tracking" src="https://img.shields.io/badge/tracking-none-0E3B30">
+  <a href="LICENSE"><img alt="License GPL-3.0" src="https://img.shields.io/badge/license-GPL--3.0-F2B33D"></a>
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/home.jpg" width="190" alt="Home screen with colorful tool tiles">
-  &nbsp;
-  <img src="docs/screenshots/tools.jpg" width="190" alt="More tools: Text from scans, Protect, Edit and sign, Markup, Search">
-  &nbsp;
-  <img src="docs/screenshots/files.jpg" width="190" alt="Your files with search and sort">
-  &nbsp;
-  <img src="docs/screenshots/settings-dark.jpg" width="190" alt="Settings in dark mode">
+  <a href="#download">Download</a> ·
+  <a href="#screenshots">Screenshots</a> ·
+  <a href="#features">Features</a> ·
+  <a href="#privacy">Privacy</a> ·
+  <a href="#build-from-source">Build from source</a>
 </p>
 
-## Why Paperwise
+---
 
-Most PDF apps upload your files, show ads or ask you to sign in. Paperwise does none of that. Every tool runs on your phone. The only time the app uses the internet is when you tap **Check for updates**, which asks GitHub for the newest version. Your documents are never uploaded. The code is open, so you can check that for yourself.
+## Download
 
-## What you can do
+Get the APK from the **[latest release](https://github.com/lumio-apps/pockettally/releases/latest)**:
 
-| | Tool | What it does |
-| --- | --- | --- |
-| 🔗 | **Merge PDF** | Join PDFs into one and drag them into the order you want |
-| ✂️ | **Split PDF** | Cut by page ranges (`1-4, 5-10`) or make one file per page |
-| 🧩 | **Page tools** | Reorder, rotate, delete and extract pages on a visual page grid |
-| 🖼️ | **Image to PDF** | Turn photos from the gallery or camera into a PDF (A4, Letter or fit image) |
-| 📤 | **PDF to image** | Save pages as JPG or PNG, all pages or just some |
-| 📷 | **Scan to PDF** | Photograph paper, straighten it with the four corners, pick a look and build a PDF |
-| 🗜️ | **Compress** | Light, Balanced or Strong, with the expected size shown first |
-| 🔤 | **Text from scans** | Make scanned PDFs searchable, or copy their text (offline, English) |
-| 🔒 | **Protect** | Lock with a password (AES-128), unlock, or add a text or image watermark |
-| ✍️ | **Edit & sign** | Type text anywhere, draw and place your signature, add page numbers, headers and footers |
-| 🖍️ | **Markup** | Highlighter, pen, boxes, ovals, lines and arrows in six colors |
-| 🔎 | **Search in PDF** | Find words inside a PDF and jump between matches |
-| 🧾 | **PDF info** | See the author, software and dates inside a PDF and save a clean copy without them |
-| 🛡️ | **Image privacy** | Remove hidden location and device info from photos, blur faces or number plates |
+📱 `pockettally-vX.Y.Z-android.apk` – works on every phone with Android 7.0 or newer.
 
-**Also built in**
+1. Open the file on your phone and allow "Install unknown apps" for your browser or file manager when Android asks.
+2. To update, open **Settings › Check for updates** in the app. It looks for a newer release on GitHub, downloads the APK and opens the installer. Or install the newer APK yourself over the old one. Your data stays.
 
-- A PDF reader with zoom, page jump, thumbnails, "Continue reading", favorites and a night reading mode
-- Open PDFs straight from your file manager, chat apps or email ("Open with Paperwise")
-- Search and sort your files by newest, oldest, name or size
-- A soft "neumorphic" look in light, dark or system theme, in English and Hindi (हिन्दी)
-- **Reduce effects** switch in Settings: flat panels with no shadows or animations, handy on older phones
-- Backup and restore in one `.pwbackup` file (you choose where it goes)
+The update check runs **only when you tap it**. Nothing is checked or sent in the background.
 
-Your original files are never changed. Every tool saves a new copy.
+> Moving to a new phone? Use **Settings › Back up data** on the old one and **Restore from backup** on the new one.
 
-## Install
+## Screenshots
 
-**From GitHub:** download the latest `.apk` from the [Releases page](https://github.com/lumio-apps/paperwise/releases/latest), open it on your phone and allow installs from your browser or file manager when Android asks. Requires Android 7.0 or newer.
+<table>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/home.png" width="200" alt="Home"><br><sub><b>Home</b><br>balance, spending, budget</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/entries.png" width="200" alt="Entries"><br><sub><b>Entries</b><br>search and filter</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/reports.png" width="200" alt="Reports"><br><sub><b>Reports</b><br>week, month, year</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/settings.png" width="200" alt="Settings"><br><sub><b>Settings</b><br>language, theme, backup</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top"><img src="docs/screenshots/add-entry.png" width="200" alt="New entry"><br><sub><b>New entry</b><br>in a few taps</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/lend-borrow.png" width="200" alt="Lend and Borrow"><br><sub><b>Lend &amp; Borrow</b><br>who owes whom</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/goals.png" width="200" alt="Savings goals"><br><sub><b>Savings goals</b><br>with progress</sub></td>
+    <td align="center" valign="top"><img src="docs/screenshots/lock.png" width="200" alt="App lock"><br><sub><b>App lock</b><br>4-digit PIN</sub></td>
+  </tr>
+</table>
 
-To update later, open **Settings → Check for updates**. Paperwise asks GitHub for the newest release, downloads the APK and hands it to Android to install over the old one. It only does this when you tap the button.
+The look is soft neumorphism: calm raised and pressed-in shapes on one surface, tinted by the accent color you pick (six to choose from), in light and dark mode, with smooth little animations.
 
-## Good to know
+## Why PocketTally
 
-- **Text from scans** reads English text. It adds the words invisibly behind your scan, so the scan looks exactly the same but becomes searchable. Clear, straight scans work best.
-- **Lock, Watermark and Compress** redraw each page as a picture. Text in those copies can no longer be selected. Edit & sign, Markup and Unlock keep the text selectable.
-- Text you add with **Edit & sign** supports letters, numbers and keyboard symbols (no accents or other scripts yet).
-- Hindi covers the main screens. Tool screens are still in English.
-- **PDF info** makes a clean copy by rebuilding the PDF page by page. The text stays selectable, but bookmarks, links and form fields are not kept.
+- **Private by design.** No sign-up, no cloud, no ads, no analytics. The only time it goes online is when you tap "Check for updates" (it asks GitHub for the newest release, and sends none of your data). Your data sits in a database on your phone.
+- **Quick.** Add an expense in a few seconds, split a bill with friends, keep track of money you lent, and see where your money went this month.
+- **For everyone.** 20 languages (10 of them Indian), 27 currencies and local number formats like 12,34,567.89.
+- **Free forever.** Open source under GPL-3.0. No premium version, no locked features.
+
+## Features
+
+**Track**
+- Income (daily, weekly or monthly) and expenses in one list
+- Quick add with the **+** button: expense, income, lend/borrow or savings goal
+- Simple math in the amount field (`120+45`), and **duplicate** any entry
+- **Recurring entries** like salary or rent, added automatically
+- **Favorites** for one-tap entries, **tags** like `#trip`, and **bill photos**
+- **Trash and Undo:** a deleted entry waits 30 days in the Trash and can be put back; the Undo bar after a delete closes by itself after 3 seconds
+
+**Understand**
+- Monthly balance, income and expenses on Home
+- **Reports** for any week, month or year (all wallets or just one): net savings, the change from the period before, a donut by category and income vs expenses over time
+- **Highlights** like "You spent 12% less than last month"
+- **Calendar** view and **upcoming bills**
+- **Search and filter** by text, type, category, wallet, date and amount
+- **PDF report** in your language: pick the period (also a whole year), the entries, categories and sections; made on your phone
+
+**Plan**
+- **Budgets:** a monthly limit and a limit per category, with warnings, and optional carry-over of what's left
+- **Lend & Borrow:** who owes you, whom you owe, part payments, and reminders to ask for the money or pay it back
+- **Split bill:** share an expense with friends, equally or with your own amounts; your share is the expense, the rest goes to Lend & Borrow
+- **Savings goals** with progress
+- **Subscriptions:** the bills you pay again and again (Netflix, rent, insurance) with the next due date, the cost per month and per year, a reminder before each one, and a check button that adds the expense when you pay
+
+**Your data, your way**
+- **Wallets:** keep Cash, Bank, UPI or a card apart, each with its own balance and an optional opening balance; **transfer** money between them without it counting as income or expense
+- **Backup and restore** to a file you choose, with or without bill photos
+- **Auto backup** every day or week, the last 5 kept
+- **CSV export and import** for Excel, LibreOffice or Google Sheets
+- **Categories:** add, rename, recolor, reorder, hide or delete
+
+**Private and handy**
+- **App lock** with a 4-digit PIN, or your fingerprint or face
+- **Daily reminder** on days you haven't added anything, and reminders for Lend & Borrow and subscriptions (all planned on your phone)
+- **Home screen widgets** with this month's balance and − / + buttons
+- **Shortcuts:** long-press the app icon for "Add expense" or "Add income"
+
+**Make it yours**
+- A **profile** with your photo and name
+- **20 languages:** English, हिन्दी, Հայերեն, 中文, Español, العربية, Français, বাংলা, Português, Русский, اردو, Bahasa Indonesia, 日本語, ગુજરાતી, தமிழ், తెలుగు, मराठी, ಕನ್ನಡ, മലയാളം, ਪੰਜਾਬੀ
+- **27 currencies** and number formats: 1,234.56 · 1.234,56 · 1 234,56 · 1'234.56 · 12,34,567.89
+- Light, dark or system theme, six accent colors and a **Reduce effects** switch (flat panels, no soft shadows) for older phones
+- Week starts on Monday or Sunday
+- Wide layout with a sidebar on tablets and big screens
 
 ## Privacy
 
-- Everything happens on your phone. Files you pick are read locally and results are saved in the app's own storage.
-- The internet is used only when you tap Check for updates. No ads, no analytics, no account.
-- Passwords are used only to lock the file and are never stored.
-- Full policy: [PRIVACY.md](PRIVACY.md)
+- Everything is stored on your device in a local database.
+- No account, no ads, no analytics, no tracking.
+- The app goes online only when you tap **Check for updates**, to ask GitHub for the newest release. It sends none of your data and runs no background checks.
+- The app lock PIN is stored only as a salted hash, never as the PIN itself.
+- Fingerprint and face unlock use the phone's own prompt. The app only gets a yes or no; it never sees your fingerprint or face.
+- Reminders are planned by your phone itself; nothing is sent anywhere.
+- Backups, CSV files and PDF reports are saved only where you choose.
+
+Read the full [Privacy Policy](PRIVACY.md).
+
+## Translations
+
+Texts live in `lib/l10n/app_<language>.arb`. To fix a translation, edit the line in that file and open a pull request. The app code is generated from these files by `flutter pub get`.
 
 ## Build from source
 
-You need [Flutter](https://docs.flutter.dev/get-started/install) (stable) and the Android SDK.
+You need [Flutter](https://docs.flutter.dev/get-started/install) (stable channel).
 
-```sh
+```
 flutter pub get
 flutter analyze
-flutter run                    # on a connected phone or emulator
-flutter build apk --release    # signed with the debug key unless android/key.properties exists
+flutter test
+flutter build apk --release
 ```
 
-**Releases:** pushing a tag like `v1.0.0` runs GitHub Actions, which builds the APK, signs it with the Lumio release key from repository secrets and publishes it on the Releases page.
+The `android/` folder, the app icon and the splash screen are generated by GitHub Actions. Release signing setup: see [SETUP_ANDROID.md](SETUP_ANDROID.md).
 
-## Built with
-
-- [Flutter](https://flutter.dev) and Material 3
-- [PDFium](https://pdfium.googlesource.com/pdfium/) through [`pdfrx`](https://pub.dev/packages/pdfrx) for reading, rendering and page assembly
-- [`pdf`](https://pub.dev/packages/pdf) and [`image`](https://pub.dev/packages/image) for creating PDFs and pictures
-- [`pointycastle`](https://pub.dev/packages/pointycastle) for PDF encryption
-- Google ML Kit text recognition (bundled, runs on the device) for scans
-- [Outfit](https://fonts.google.com/specimen/Outfit) font (SIL Open Font License)
-
-## Roadmap
-
-Paperwise has all its core tools and keeps growing, roughly one small update at a time. See [TODO.md](TODO.md) for what is planned next, and the [changelog](CHANGELOG.md) for what changed in each version.
+Each `vX.Y.Z` tag builds the release files. Before tagging, raise `version:` in `pubspec.yaml` to the same number.
 
 ## Contributing
 
-Bug reports and ideas are welcome: [open an issue](https://github.com/lumio-apps/paperwise/issues). Please do not attach private documents to issues.
+Bug reports, translation fixes and ideas are welcome: [open an issue](https://github.com/lumio-apps/pockettally/issues) or send a pull request. The app stays offline apart from the update check, without ads or tracking, so features that need the internet will not be added.
 
 ## License
 
-[MIT](LICENSE) © Lumio Apps. The bundled Outfit font is under the SIL Open Font License (see `assets/fonts/OFL.txt`).
+[GPL-3.0](LICENSE). The bundled DejaVu fonts use their own free license, see `assets/fonts/DejaVu-LICENSE.txt`.
 
-<p align="center"><sub>Made by <a href="https://github.com/lumio-apps">Lumio Apps</a>: simple, private, open source apps.</sub></p>
+<p align="center"><sub>Made by <b>Lumio Apps</b></sub></p>
