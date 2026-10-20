@@ -192,7 +192,7 @@ class _TrashTile extends StatelessWidget {
       await state.restoreEntry(item.entry);
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l.trashRestored)));
+        ..showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.trashRestored)));
     }
     if (action == 'forever' && context.mounted) {
       final ok = await showDialog<bool>(

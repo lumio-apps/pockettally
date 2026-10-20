@@ -26,6 +26,13 @@ class StatsScreen extends StatefulWidget {
 }
 
 class _StatsScreenState extends State<StatsScreen> {
+  /// Only this wallet is counted (null = all wallets).
+  String? _walletPick;
+
+  /// The chosen wallet, or null when it is all or the wallet is gone.
+  String? get _wallet =>
+      state.wallets.any((w) => w.name == _walletPick) ? _walletPick : null;
+
   ReportPeriod _period = ReportPeriod.month;
   DateTime _anchor = DateTime.now();
   EntryType _pieType = EntryType.expense;
@@ -99,10 +106,11 @@ class _StatsScreenState extends State<StatsScreen> {
         final l = context.l10n;
         final now = DateTime.now();
         final (start, end) = _range;
-        final list = state.entriesBetween(start, end);
+        final list = state.entriesBetween(start, end, wallet: _wallet);
         final (prevStart, prevEnd) =
             previousComparable(_period, start, end, now);
-        final previous = state.entriesBetween(prevStart, prevEnd);
+        final previous =
+            state.entriesBetween(prevStart, prevEnd, wallet: _wallet);
         // No "next" when the next period would start in the future.
         final canGoForward = !end.isAfter(now);
 
@@ -120,6 +128,35 @@ class _StatsScreenState extends State<StatsScreen> {
               _anchor = DateTime.now();
             }),
           ),
+          if (state.wallets.length > 1)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    ChoiceChip(
+                      label: Text(l.all),
+                      selected: _wallet == null,
+                      showCheckmark: false,
+                      onSelected: (_) => setState(() => _walletPick = null),
+                    ),
+                    for (final w in state.wallets) ...[
+                      const SizedBox(width: 8),
+                      ChoiceChip(
+                        avatar: CircleAvatar(
+                            radius: 6, backgroundColor: Color(w.colorValue)),
+                        label: Text(w.name),
+                        selected: _wallet == w.name,
+                        showCheckmark: false,
+                        onSelected: (_) =>
+                            setState(() => _walletPick = w.name),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Row(
@@ -169,8 +206,9 @@ class _StatsScreenState extends State<StatsScreen> {
           ),
           const SizedBox(height: 16),
           _TrendCard(
-            key: ValueKey('trend-$_period-$start'),
+            key: ValueKey('trend-$_period-$start-$_wallet'),
             state: state,
+            wallet: _wallet,
             period: _period,
             start: start,
           ),
@@ -242,7 +280,8 @@ class _StatsScreenState extends State<StatsScreen> {
 
   /// "You spent 12% less than last month" and similar, for one month.
   List<Widget> _highlights(ThemeData theme, AppLocalizations l, DateTime month) {
-    final list = monthInsights(state.entries, month, DateTime.now());
+    final list =
+        monthInsights(state.entriesOfWallet(_wallet), month, DateTime.now());
     if (list.isEmpty) return const [];
     return [
       const SizedBox(height: 16),
@@ -290,7 +329,8 @@ class _StatsScreenState extends State<StatsScreen> {
     final rows = <Widget>[];
     for (var m = lastMonth; m >= 1; m--) {
       final list = state.entriesBetween(
-          DateTime(year, m, 1), DateTime(year, m + 1, 1));
+          DateTime(year, m, 1), DateTime(year, m + 1, 1),
+          wallet: _wallet);
       final inc = AppState.sumIncome(list);
       final exp = AppState.sumExpense(list);
       final bal = inc - exp;
@@ -805,9 +845,11 @@ class _TrendCard extends StatelessWidget {
     required this.state,
     required this.period,
     required this.start,
+    this.wallet,
   });
 
   final AppState state;
+  final String? wallet;
   final ReportPeriod period;
   final DateTime start;
 
@@ -831,7 +873,7 @@ class _TrendCard extends StatelessWidget {
     };
     final groups = <BarGroup>[];
     for (final (s, e) in ranges) {
-      final list = state.entriesBetween(s, e);
+      final list = state.entriesBetween(s, e, wallet: wallet);
       final label = switch (period) {
         ReportPeriod.week => DateFormat.MMMd().format(s),
         ReportPeriod.month => DateFormat.MMM().format(s),

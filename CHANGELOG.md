@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.0 (Transfers, wallet filters)
+
+- **Transfer:** move money from one wallet to another (Settings › Data › Wallets › Transfer). Both balances change; it is not counted as income or expense, so reports and budgets stay right. Transfers can be deleted, with Undo
+- **Wallet filter:** Reports (the chips under the period) and Search (More filters) can show one wallet only. Entries show their wallet when you have more than one
+- The Undo bar after deleting now closes by itself after 3 seconds, and all other short messages stay 3 seconds too
+- Backups carry transfers. Old backups still work. Transfers are not in CSV files, which hold entries only
+- All 20 languages
+
 ## 1.7.0 (Wallets)
 
 - New **Wallets** (Settings › Data): keep Cash, Bank, UPI, a card and so on apart. Each wallet has a name, a color and an optional opening balance, and shows what is in it now

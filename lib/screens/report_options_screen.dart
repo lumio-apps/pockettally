@@ -187,10 +187,10 @@ class _ReportOptionsScreenState extends State<ReportOptionsScreen> {
         periodLabel: _periodLabel,
       );
       if (saved) {
-        messenger.showSnackBar(SnackBar(content: Text(l.pdfSaved)));
+        messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.pdfSaved)));
       }
     } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(l.couldNotCreatePdf)));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.couldNotCreatePdf)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

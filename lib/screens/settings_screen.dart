@@ -473,7 +473,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ));
     if (pin == null) return;
     await state.setPin(pin);
-    messenger.showSnackBar(SnackBar(content: Text(l.pinSet)));
+    messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.pinSet)));
   }
 
   /// Asks for the current PIN; true when it was typed right.
@@ -498,7 +498,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final messenger = ScaffoldMessenger.of(context);
     if (!await _verifyPin()) return;
     await state.removePin();
-    messenger.showSnackBar(SnackBar(content: Text(l.pinOff)));
+    messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.pinOff)));
   }
 
   Future<void> _changePin() async {
@@ -511,7 +511,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ));
     if (pin == null) return;
     await state.setPin(pin);
-    messenger.showSnackBar(SnackBar(content: Text(l.pinSet)));
+    messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.pinSet)));
   }
 
   Future<void> _setReminder(bool on) async {
@@ -541,7 +541,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final l = context.l10n;
     final messenger = ScaffoldMessenger.of(context);
     if (!await ReminderService.requestPermission()) {
-      messenger.showSnackBar(SnackBar(content: Text(l.notificationsBlocked)));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.notificationsBlocked)));
       return;
     }
     final ok = await ReminderService.showTest(
@@ -550,7 +550,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       channelName: l.debtReminders,
     );
     if (!ok) {
-      messenger.showSnackBar(SnackBar(content: Text(l.notificationsBlocked)));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.notificationsBlocked)));
     }
   }
 
@@ -632,12 +632,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final saved =
           await BackupService.export(state, dialogTitle: l.saveBackupTitle);
       if (saved) {
-        messenger.showSnackBar(SnackBar(
+        messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), 
           content: Text(l.backupSaved(state.entries.length)),
         ));
       }
     } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(l.couldNotSaveBackup)));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.couldNotSaveBackup)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -652,10 +652,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           await BackupService.exportCsv(state, dialogTitle: l.exportCsv);
       if (saved) {
         messenger.showSnackBar(
-            SnackBar(content: Text(l.csvExported(state.entries.length))));
+            SnackBar(duration: const Duration(seconds: 3), content: Text(l.csvExported(state.entries.length))));
       }
     } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(l.couldNotSaveFile)));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.couldNotSaveFile)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -669,7 +669,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final result = await BackupService.pickCsv(dialogTitle: l.importCsv);
       if (result == null || !mounted) return;
       if (result.entries.isEmpty) {
-        messenger.showSnackBar(SnackBar(content: Text(l.csvNoEntries)));
+        messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.csvNoEntries)));
         return;
       }
       final ok = await showDialog<bool>(
@@ -692,11 +692,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (ok != true) return;
       await state.importEntries(result.entries);
       messenger.showSnackBar(
-          SnackBar(content: Text(l.csvImported(result.entries.length))));
+          SnackBar(duration: const Duration(seconds: 3), content: Text(l.csvImported(result.entries.length))));
     } on FormatException {
-      messenger.showSnackBar(SnackBar(content: Text(l.csvInvalid)));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.csvInvalid)));
     } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(l.csvInvalid)));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.csvInvalid)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -710,13 +710,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final update = await UpdateChecker.check();
       if (!mounted) return;
       if (update == null) {
-        messenger.showSnackBar(SnackBar(content: Text(l.upToDate)));
+        messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.upToDate)));
       } else {
         await _showUpdateDialog(update);
       }
     } catch (_) {
       messenger
-          .showSnackBar(SnackBar(content: Text(l.couldNotCheckUpdates)));
+          .showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.couldNotCheckUpdates)));
     } finally {
       if (mounted) setState(() => _checking = false);
     }
@@ -740,7 +740,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backup = await BackupService.pick(dialogTitle: l.chooseBackupTitle);
       } on FormatException catch (e) {
         messenger.showSnackBar(
-            SnackBar(content: Text(backupErrorMessage(l, e.message))));
+            SnackBar(duration: const Duration(seconds: 3), content: Text(backupErrorMessage(l, e.message))));
         return;
       }
       if (backup == null || !mounted) return;
@@ -771,9 +771,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (ok != true) return;
 
       await state.restoreBackup(data);
-      messenger.showSnackBar(SnackBar(content: Text(l.backupRestored)));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.backupRestored)));
     } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(l.couldNotRestore)));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.couldNotRestore)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -12,7 +12,7 @@ Future<bool> askReminderPermissions(BuildContext context) async {
   final l = context.l10n;
   final messenger = ScaffoldMessenger.of(context);
   if (!await ReminderService.requestPermission()) {
-    messenger.showSnackBar(SnackBar(content: Text(l.notificationsBlocked)));
+    messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.notificationsBlocked)));
     return false;
   }
   // Asked once per app start; Settings has a button for it too.

@@ -228,7 +228,7 @@ class ProfileSection extends StatelessWidget {
       final name = await PhotoStore.pickProfile(camera: choice == 'camera');
       if (name != null) await state.setProfilePhoto(name);
     } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(l.couldNotAddPhoto)));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.couldNotAddPhoto)));
     }
   }
 

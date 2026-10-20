@@ -192,7 +192,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       if (name != null && mounted) setState(() => _photo = name);
     } catch (_) {
       messenger.showSnackBar(
-          SnackBar(content: Text(l.couldNotAddPhoto)));
+          SnackBar(duration: const Duration(seconds: 3), content: Text(l.couldNotAddPhoto)));
     }
   }
 
@@ -225,7 +225,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l.enterAmountAboveZero)));
+        ..showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.enterAmountAboveZero)));
       _amountFocus.requestFocus();
       return;
     }
@@ -259,7 +259,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     if (amount == null || amount <= 0) {
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l.enterAmountAboveZero)));
+        ..showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.enterAmountAboveZero)));
       return;
     }
     // A split bill keeps only the user's share as the expense; the rest
@@ -271,7 +271,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       if (shares == null) {
         messenger
           ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(l.splitSharesWrong)));
+          ..showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.splitSharesWrong)));
         return;
       }
     }
@@ -326,7 +326,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       Navigator.of(context).pop();
     }
     if (debtsAdded > 0) {
-      messenger.showSnackBar(SnackBar(content: Text(l.splitSaved(debtsAdded))));
+      messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.splitSaved(debtsAdded))));
     }
     if (warning != null) {
       messenger.showSnackBar(SnackBar(
@@ -376,7 +376,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     if (amount == null || amount <= 0) {
       messenger
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(l.enterAmountAboveZero)));
+        ..showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.enterAmountAboveZero)));
       return;
     }
     await widget.state.addFavorite(Favorite(
@@ -388,7 +388,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     ));
     messenger
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l.addedToFavorites)));
+      ..showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.addedToFavorites)));
   }
 
   void _addTag(String tag) {

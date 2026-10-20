@@ -48,6 +48,7 @@ class EntryTile extends StatelessWidget {
         ].join(', ')
       else if (time != null)
         time,
+      if (state.wallets.length > 1) state.walletNameOf(entry),
       if (entry.tags.isNotEmpty) entry.tags.map((t) => '#$t').join(' '),
     ];
 
@@ -182,6 +183,8 @@ Future<void> deleteEntryWithUndo(ScaffoldMessengerState messenger,
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
+        duration: const Duration(seconds: 3),
+        persist: false,
         content: Text(l.entryDeleted),
         action: SnackBarAction(
           label: l.undo,

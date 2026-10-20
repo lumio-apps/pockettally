@@ -15,6 +15,8 @@ import 'models.dart';
 ///   v5 (app 0.6.0): categories.position, categories.hidden
 ///   v6 (app 0.8.0): entries.tags, recurring, favorites
 ///   v7 (app 0.9.10): entries.time, categories.icon
+///   (app 1.8.0 adds the transfers table)
+///   (app 1.8.0 adds the transfers table)
 ///   (app 1.7.0 adds the wallets table and entries.wallet; entries with no
 ///   wallet belong to the first wallet, so nothing has to be rewritten)
 ///   (app 1.6.0 adds entries.deleted_at, set while an entry is in the
@@ -104,6 +106,7 @@ class AppDatabase {
     await _addColumnIfMissing(db, 'entries', 'deleted_at', 'INTEGER');
     await _addColumnIfMissing(db, 'entries', 'wallet', 'TEXT');
     await _createWallets(db);
+    await _createTransfers(db);
     await _createDebtsAndGoals(db);
     await _addColumnIfMissing(db, 'debts', 'remind_at', 'INTEGER');
     await _createRecurringAndFavorites(db);
@@ -139,6 +142,19 @@ class AppDatabase {
       )
     ''');
     await db.execute('CREATE INDEX idx_entries_date ON entries(date)');
+  }
+
+  static Future<void> _createTransfers(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS transfers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        from_wallet TEXT NOT NULL,
+        to_wallet TEXT NOT NULL,
+        amount_minor INTEGER NOT NULL,
+        date INTEGER NOT NULL,
+        note TEXT NOT NULL DEFAULT ''
+      )
+    ''');
   }
 
   /// The wallets table, with the first wallet ("Cash") when it is empty.
@@ -355,6 +371,26 @@ class AppDatabase {
         where: 'id = ?', whereArgs: [id]);
   }
 
+  // ---- transfers ----
+
+  Future<List<Transfer>> allTransfers() async {
+    final db = await _database;
+    final rows = await db.query('transfers', orderBy: 'date DESC, id DESC');
+    return rows.map(Transfer.fromMap).toList();
+  }
+
+  /// Saves a transfer; with an id (Undo) it comes back under the same id.
+  Future<void> insertTransfer(Transfer t) async {
+    final db = await _database;
+    await db.insert('transfers', t.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<void> deleteTransfer(int id) async {
+    final db = await _database;
+    await db.delete('transfers', where: 'id = ?', whereArgs: [id]);
+  }
+
   // ---- wallets ----
 
   /// The first (main) wallet first, then the others in order.
@@ -383,6 +419,10 @@ class AppDatabase {
       if (old.name != changed.name) {
         await txn.update('entries', {'wallet': changed.name},
             where: 'wallet = ?', whereArgs: [old.name]);
+        await txn.update('transfers', {'from_wallet': changed.name},
+            where: 'from_wallet = ?', whereArgs: [old.name]);
+        await txn.update('transfers', {'to_wallet': changed.name},
+            where: 'to_wallet = ?', whereArgs: [old.name]);
       }
     });
   }
@@ -395,6 +435,17 @@ class AppDatabase {
     await db.transaction((txn) async {
       await txn.update('entries', {'wallet': null},
           where: 'wallet = ?', whereArgs: [w.name]);
+      // Transfers of this wallet move to the first wallet too; one that
+      // then goes from a wallet to itself changes nothing and is removed.
+      final main = await txn.query('wallets', where: 'is_main = 1', limit: 1);
+      if (main.isNotEmpty) {
+        final mainName = main.first['name'] as String;
+        await txn.update('transfers', {'from_wallet': mainName},
+            where: 'from_wallet = ?', whereArgs: [w.name]);
+        await txn.update('transfers', {'to_wallet': mainName},
+            where: 'to_wallet = ?', whereArgs: [w.name]);
+        await txn.delete('transfers', where: 'from_wallet = to_wallet');
+      }
       await txn.delete('wallets', where: 'id = ?', whereArgs: [w.id]);
     });
   }
@@ -569,11 +620,13 @@ class AppDatabase {
     List<RecurringRule> recurring = const [],
     List<Favorite> favorites = const [],
     List<Wallet> wallets = const [],
+    List<Transfer> transfers = const [],
   }) async {
     final db = await _database;
     await db.transaction((txn) async {
       await txn.delete('entries');
       await txn.delete('wallets');
+      await txn.delete('transfers');
       var position = 0;
       for (final w in wallets) {
         final map = w.toMap()..remove('id');
@@ -625,6 +678,17 @@ class AppDatabase {
           {'name': kOtherCategory, 'type': type.name, 'color': 0xFF90A4AE},
           conflictAlgorithm: ConflictAlgorithm.ignore,
         );
+      }
+      for (final t in transfers) {
+        final from = walletNames[t.from.toLowerCase()];
+        final to = walletNames[t.to.toLowerCase()];
+        // A transfer that names an unknown wallet, or goes from a wallet to
+        // itself, is left out.
+        if (from == null || to == null || from == to) continue;
+        final map = t.toMap()..remove('id');
+        map['from_wallet'] = from;
+        map['to_wallet'] = to;
+        await txn.insert('transfers', map);
       }
       for (final e in entries) {
         final map = e.toMap()..remove('id');

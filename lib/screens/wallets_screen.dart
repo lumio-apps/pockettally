@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../app_state.dart';
 import '../l10n/l10n.dart';
@@ -40,6 +41,17 @@ class WalletsScreen extends StatelessWidget {
                       ?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
+              if (wallets.length > 1)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 48)),
+                    icon: const Icon(Icons.swap_horiz),
+                    label: Text(l.transfer),
+                    onPressed: () => showTransferDialog(context, state),
+                  ),
+                ),
               for (final w in wallets)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
@@ -76,10 +88,229 @@ class WalletsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+              if (state.transfers.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
+                  child: Text(
+                    l.transfers,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w800),
+                  ),
+                ),
+                for (final t in state.transfers.take(30))
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: NeoCard(
+                      child: ListTile(
+                        contentPadding:
+                            const EdgeInsets.only(left: 14, right: 4),
+                        leading: const Icon(Icons.swap_horiz),
+                        title: Text('${t.from} → ${t.to}',
+                            overflow: TextOverflow.ellipsis,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w700)),
+                        subtitle: Text(
+                          [
+                            DateFormat.MMMEd().format(t.date),
+                            if (t.note.isNotEmpty) t.note,
+                          ].join(' · '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(state.formatMoney(t.amountMinor),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w800)),
+                            IconButton(
+                              tooltip: l.delete,
+                              icon: const Icon(Icons.delete_outline),
+                              onPressed: () => _deleteTransfer(context, t),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ],
           ),
         );
       },
+    );
+  }
+
+  Future<void> _deleteTransfer(BuildContext context, Transfer t) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l = context.l10n;
+    await state.deleteTransfer(t);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        duration: const Duration(seconds: 3),
+        persist: false,
+        content: Text(l.transferDeleted),
+        action: SnackBarAction(
+          label: l.undo,
+          onPressed: () => state.restoreTransfer(t),
+        ),
+      ));
+  }
+}
+
+/// Dialog to move money from one wallet to another.
+Future<void> showTransferDialog(BuildContext context, AppState state) {
+  return showDialog<void>(
+    context: context,
+    builder: (_) => _TransferDialog(state: state),
+  );
+}
+
+class _TransferDialog extends StatefulWidget {
+  const _TransferDialog({required this.state});
+
+  final AppState state;
+
+  @override
+  State<_TransferDialog> createState() => _TransferDialogState();
+}
+
+class _TransferDialogState extends State<_TransferDialog> {
+  late String _from;
+  late String _to;
+  DateTime _date = DateTime.now();
+  final _amount = TextEditingController();
+  final _note = TextEditingController();
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    final names = widget.state.wallets.map((w) => w.name).toList();
+    _from = widget.state.defaultWalletName;
+    _to = names.firstWhere((n) => n != _from, orElse: () => names.first);
+  }
+
+  @override
+  void dispose() {
+    _amount.dispose();
+    _note.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _date,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(now.year + 1, 12, 31),
+    );
+    if (picked != null) setState(() => _date = picked);
+  }
+
+  void _save() {
+    final l = context.l10n;
+    if (_from == _to) {
+      setState(() => _error = l.transferSameWallet);
+      return;
+    }
+    final amount = widget.state.parseMinor(_amount.text);
+    if (amount == null || amount <= 0) {
+      setState(() => _error = l.enterAmountAboveZero);
+      return;
+    }
+    widget.state.addTransfer(Transfer(
+      from: _from,
+      to: _to,
+      amountMinor: amount,
+      date: _date,
+      note: _note.text.trim(),
+    ));
+    Navigator.pop(context);
+  }
+
+  Widget _walletField(
+      String label, String value, ValueChanged<String> onChanged) {
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      isExpanded: true,
+      decoration: InputDecoration(
+          labelText: label, border: const OutlineInputBorder()),
+      items: [
+        for (final w in widget.state.wallets)
+          DropdownMenuItem(
+              value: w.name,
+              child: Text(w.name, overflow: TextOverflow.ellipsis)),
+      ],
+      onChanged: (v) {
+        if (v == null) return;
+        setState(() {
+          _error = null;
+          onChanged(v);
+        });
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return AlertDialog(
+      title: Text(l.transfer),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _walletField(l.transferFrom, _from, (v) => _from = v),
+            const SizedBox(height: 12),
+            _walletField(l.transferTo, _to, (v) => _to = v),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _amount,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: InputDecoration(
+                labelText: l.amount,
+                border: const OutlineInputBorder(),
+              ),
+              onChanged: (_) {
+                if (_error != null) setState(() => _error = null);
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _note,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                labelText: l.noteOptional,
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
+              icon: const Icon(Icons.calendar_today_outlined, size: 18),
+              label: Text(DateFormat.MMMEd().format(_date)),
+              onPressed: _pickDate,
+            ),
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(_error!,
+                    style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context), child: Text(l.cancel)),
+        FilledButton(onPressed: _save, child: Text(l.save)),
+      ],
     );
   }
 }

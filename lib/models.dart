@@ -257,6 +257,46 @@ class Wallet {
       );
 }
 
+/// Money moved from one wallet to another. It is not income or expense, so
+/// reports and budgets do not count it; only the two wallet balances change.
+class Transfer {
+  Transfer({
+    this.id,
+    required this.from,
+    required this.to,
+    required this.amountMinor,
+    required this.date,
+    this.note = '',
+  });
+
+  final int? id;
+
+  /// Wallet names.
+  final String from;
+  final String to;
+  final int amountMinor;
+  final DateTime date;
+  final String note;
+
+  Map<String, Object?> toMap() => {
+        if (id != null) 'id': id,
+        'from_wallet': from,
+        'to_wallet': to,
+        'amount_minor': amountMinor,
+        'date': DateTime(date.year, date.month, date.day).millisecondsSinceEpoch,
+        'note': note,
+      };
+
+  static Transfer fromMap(Map<String, Object?> m) => Transfer(
+        id: m['id'] as int?,
+        from: m['from_wallet'] as String,
+        to: m['to_wallet'] as String,
+        amountMinor: m['amount_minor'] as int,
+        date: DateTime.fromMillisecondsSinceEpoch(m['date'] as int),
+        note: (m['note'] as String?) ?? '',
+      );
+}
+
 /// How many days a deleted entry stays in the Trash before it is removed.
 const int kTrashDays = 30;
 

@@ -392,6 +392,12 @@
     }
   },
   "accentColor": "Accent color",
+  "transfer": "Transfer",
+  "transfers": "Transfers",
+  "transferFrom": "From",
+  "transferTo": "To",
+  "transferSameWallet": "Choose two different wallets",
+  "transferDeleted": "Transfer deleted",
   "wallets": "Wallets",
   "wallet": "Wallet",
   "addWallet": "Add wallet",

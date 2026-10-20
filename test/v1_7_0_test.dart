@@ -25,6 +25,7 @@ BackupData backup({List<Wallet> wallets = const [], List<Entry>? entries}) =>
     );
 
 void main() {
+  transferTests();
   test('Wallet and entry wallet survive the database map', () {
     final w = Wallet(
         id: 2, name: 'Bank', colorValue: 0xFF64B5F6, openingMinor: 50000);
@@ -79,5 +80,33 @@ void main() {
         expect(s, contains('"$k"'), reason: f.path);
       }
     }
+  });
+}
+
+void transferTests() {
+  test('Transfer survives the database map and the backup', () {
+    final t = Transfer(
+        id: 3,
+        from: 'Cash',
+        to: 'Bank',
+        amountMinor: 20000,
+        date: DateTime(2026, 10, 5),
+        note: 'ATM');
+    final back = Transfer.fromMap(t.toMap());
+    expect(back.from, 'Cash');
+    expect(back.to, 'Bank');
+    expect(back.amountMinor, 20000);
+    final b = BackupData.fromJsonString(
+        BackupData(
+          userName: 'A',
+          currencyCode: 'INR',
+          weekStartsOnSunday: false,
+          monthlyBudgetMinor: 0,
+          categories: const [],
+          entries: const [],
+          transfers: [t],
+        ).toJsonString());
+    expect(b.transfers.single.to, 'Bank');
+    expect(b.transfers.single.note, 'ATM');
   });
 }

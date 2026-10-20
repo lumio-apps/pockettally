@@ -20,6 +20,7 @@ class BackupData {
     this.recurring = const [],
     this.favorites = const [],
     this.wallets = const [],
+    this.transfers = const [],
     this.numberStyle,
     this.decimals,
     this.palette,
@@ -48,6 +49,9 @@ class BackupData {
 
   /// Wallets (empty in backups made before app 1.7.0).
   final List<Wallet> wallets;
+
+  /// Money moved between wallets (empty before app 1.8.0).
+  final List<Transfer> transfers;
 
   /// Optional settings (null when the backup is older than 0.6.0).
   final String? numberStyle;
@@ -153,6 +157,17 @@ class BackupData {
               if (w.main) 'main': true,
             },
         ],
+        if (transfers.isNotEmpty)
+          'transfers': [
+            for (final t in transfers)
+              {
+                'from': t.from,
+                'to': t.to,
+                'amountMinor': t.amountMinor,
+                'date': _dateString(t.date),
+                'note': t.note,
+              },
+          ],
         'entries': [
           for (final e in entries)
             {
@@ -282,6 +297,16 @@ class BackupData {
             main: w['main'] == true,
           ),
       ];
+      final transfers = [
+        for (final t in (decoded['transfers'] as List<dynamic>? ?? []))
+          Transfer(
+            from: (t as Map<String, dynamic>)['from'] as String,
+            to: t['to'] as String,
+            amountMinor: t['amountMinor'] as int,
+            date: DateTime.parse(t['date'] as String),
+            note: (t['note'] as String?) ?? '',
+          ),
+      ];
       final photos = <String, List<int>>{};
       final rawPhotos = decoded['photos'];
       if (rawPhotos is Map<String, dynamic>) {
@@ -345,6 +370,7 @@ class BackupData {
         recurring: recurring,
         favorites: favorites,
         wallets: wallets,
+        transfers: transfers,
         debts: debts,
         goals: goals,
         userName: (settings['userName'] as String?) ?? '',

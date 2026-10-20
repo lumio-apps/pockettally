@@ -32,6 +32,9 @@ class AppState extends ChangeNotifier {
   /// The wallets, the main one first.
   List<Wallet> wallets = [];
 
+  /// Money moved between wallets, newest first.
+  List<Transfer> transfers = [];
+
   /// Deleted entries waiting in the Trash.
   List<TrashedEntry> trash = [];
   List<EntryCategory> categories = [];
@@ -128,6 +131,7 @@ class AppState extends ChangeNotifier {
     entries = await AppDatabase.instance.allEntries();
     trash = await AppDatabase.instance.trashedEntries();
     wallets = await AppDatabase.instance.allWallets();
+    transfers = await AppDatabase.instance.allTransfers();
     categories = await AppDatabase.instance.allCategories();
     debts = await AppDatabase.instance.allDebts();
     goals = await AppDatabase.instance.allGoals();
@@ -462,7 +466,32 @@ class AppState extends ChangeNotifier {
       if (walletNameOf(e) != w.name) continue;
       sum += e.isIncome ? e.amountMinor : -e.amountMinor;
     }
+    for (final t in transfers) {
+      if (t.from == w.name) sum -= t.amountMinor;
+      if (t.to == w.name) sum += t.amountMinor;
+    }
     return sum;
+  }
+
+  /// Entries of one wallet, or all of them when [wallet] is null.
+  List<Entry> entriesOfWallet(String? wallet) => wallet == null
+      ? entries
+      : entries.where((e) => walletNameOf(e) == wallet).toList();
+
+  Future<void> addTransfer(Transfer t) async {
+    await AppDatabase.instance.insertTransfer(t);
+    await load();
+  }
+
+  Future<void> deleteTransfer(Transfer t) async {
+    await AppDatabase.instance.deleteTransfer(t.id!);
+    await load();
+  }
+
+  /// Brings a deleted transfer back (Undo).
+  Future<void> restoreTransfer(Transfer t) async {
+    await AppDatabase.instance.insertTransfer(t);
+    await load();
   }
 
   Wallet walletNamed(String name) =>
@@ -697,9 +726,14 @@ class AppState extends ChangeNotifier {
   // ---- summaries ----
 
   /// Entries with date in [start, end).
-  List<Entry> entriesBetween(DateTime start, DateTime end) => entries
-      .where((e) => !e.date.isBefore(start) && e.date.isBefore(end))
-      .toList();
+  /// With [wallet], only the entries of that wallet.
+  List<Entry> entriesBetween(DateTime start, DateTime end, {String? wallet}) =>
+      entries
+          .where((e) =>
+              !e.date.isBefore(start) &&
+              e.date.isBefore(end) &&
+              (wallet == null || walletNameOf(e) == wallet))
+          .toList();
 
   Iterable<Entry> entriesInMonth(DateTime month) => entries
       .where((e) => e.date.year == month.year && e.date.month == month.month);
@@ -806,6 +840,7 @@ class AppState extends ChangeNotifier {
         recurring: recurring,
         favorites: favorites,
         wallets: wallets,
+        transfers: transfers,
       );
 
   /// File names of the bill photos that exist on the phone. Used to write a
@@ -846,7 +881,8 @@ class AppState extends ChangeNotifier {
         .replaceAll(b.categories, b.entries, b.debts, b.goals,
             recurring: b.recurring,
             favorites: b.favorites,
-            wallets: b.wallets);
+            wallets: b.wallets,
+            transfers: b.transfers);
     if (b.userName.trim().isNotEmpty) {
       await _prefs.setString('user_name', b.userName.trim());
     }

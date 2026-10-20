@@ -753,6 +753,8 @@ class _FavoritesRow extends StatelessWidget {
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
+        duration: const Duration(seconds: 3),
+        persist: false,
         content: Text(l.favoriteAdded(
             '${categoryLabel(l, f.category)} ${state.formatMoney(f.amountMinor)}')),
         action: SnackBarAction(

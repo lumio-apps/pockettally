@@ -52,7 +52,7 @@ Future<DateTime?> pickReminderTime(
   if (time == null) return null;
   final at = DateTime(day.year, day.month, day.day, time.hour, time.minute);
   if (!at.isAfter(DateTime.now())) {
-    messenger.showSnackBar(SnackBar(content: Text(l.reminderInPast)));
+    messenger.showSnackBar(SnackBar(duration: const Duration(seconds: 3), content: Text(l.reminderInPast)));
     return null;
   }
   return at;

@@ -42,7 +42,7 @@ class StartupErrorApp extends StatelessWidget {
                     await Clipboard.setData(ClipboardData(text: details));
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Copied')));
+                          const SnackBar(duration: Duration(seconds: 3), content: Text('Copied')));
                     }
                   },
                 ),

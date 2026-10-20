@@ -32,6 +32,7 @@ class _EntriesScreenState extends State<EntriesScreen> {
 
   _TypeFilter _type = _TypeFilter.all;
   String? _category; // null = all categories
+  String? _wallet; // null = all wallets
   DateTimeRange? _dates;
   bool _showFilters = false;
   late DateTime _month;
@@ -58,6 +59,7 @@ class _EntriesScreenState extends State<EntriesScreen> {
 
   bool get _hasExtraFilters =>
       _category != null ||
+      _wallet != null ||
       _dates != null ||
       _minAmount.text.isNotEmpty ||
       _maxAmount.text.isNotEmpty;
@@ -109,6 +111,7 @@ class _EntriesScreenState extends State<EntriesScreen> {
       if (_type == _TypeFilter.expense && e.isIncome) return false;
       if (e.date.isBefore(from) || !e.date.isBefore(to)) return false;
       if (_category != null && e.category != _category) return false;
+      if (_wallet != null && state.walletNameOf(e) != _wallet) return false;
       if (min != null && e.amountMinor < min) return false;
       if (max != null && e.amountMinor > max) return false;
       if (q.isNotEmpty &&
@@ -166,6 +169,24 @@ class _EntriesScreenState extends State<EntriesScreen> {
             ],
             onChanged: (c) => setState(() => _category = c),
           ),
+          if (state.wallets.length > 1) ...[
+            const SizedBox(height: 10),
+            DropdownButtonFormField<String?>(
+              key: ValueKey('wallet|$_wallet'),
+              initialValue: _wallet,
+              decoration: InputDecoration(
+                labelText: l.wallet,
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+              items: [
+                DropdownMenuItem<String?>(value: null, child: Text(l.all)),
+                for (final w in state.wallets)
+                  DropdownMenuItem<String?>(value: w.name, child: Text(w.name)),
+              ],
+              onChanged: (v) => setState(() => _wallet = v),
+            ),
+          ],
           const SizedBox(height: 10),
           OutlinedButton.icon(
             icon: const Icon(Icons.date_range, size: 18),
