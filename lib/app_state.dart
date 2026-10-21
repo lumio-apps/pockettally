@@ -1105,6 +1105,16 @@ class AppState extends ChangeNotifier {
 
   // ---- lend & borrow ----
 
+  /// What all wallets hold now.
+  int get walletsTotalMinor =>
+      wallets.fold<int>(0, (s, w) => s + walletBalance(w));
+
+  /// Money set aside in savings goals (tracked apart from the wallets).
+  int get goalsSavedMinor => goals.fold<int>(0, (s, g) => s + g.savedMinor);
+
+  /// Wallets, plus what people owe you, minus what you owe.
+  int get netWorthMinor => walletsTotalMinor + toReceiveMinor - toPayMinor;
+
   /// Total still to get back from people.
   int get toReceiveMinor => debts
       .where((d) => d.type == DebtType.lent)

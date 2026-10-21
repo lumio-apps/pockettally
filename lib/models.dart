@@ -356,10 +356,10 @@ class Subscription {
       : DateTime(nextDate.year, nextDate.month, nextDate.day - remindDays, 9);
 
   /// Whole days from [today] to the due date (negative when late).
-  int daysUntilDue(DateTime today) => DateTime(
-          nextDate.year, nextDate.month, nextDate.day)
-      .difference(DateTime(today.year, today.month, today.day))
-      .inDays;
+  int daysUntilDue(DateTime today) =>
+      DateTime.utc(nextDate.year, nextDate.month, nextDate.day)
+          .difference(DateTime.utc(today.year, today.month, today.day))
+          .inDays;
 
   /// The due date after paying [today]: one step on, and never in the past.
   DateTime nextAfterPaying(DateTime today) {

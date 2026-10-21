@@ -392,6 +392,42 @@
     }
   },
   "accentColor": "Accent color",
+  "netWorth": "Net worth",
+  "netWorthSubtitle": "Wallets plus what people owe you, minus what you owe",
+  "inWallets": "In wallets",
+  "owedToYou": "Owed to you",
+  "youOwe": "You owe",
+  "setAsideGoals": "Set aside for goals (kept apart from the wallets)",
+  "walletsOverTime": "Money in wallets, last 12 months",
+  "yearInReview": "Year in review",
+  "yearInReviewSubtitle": "Your year: earned, spent, saved, biggest expense",
+  "reviewTitle": "{year} in review",
+  "@reviewTitle": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewTotalSpent": "Total spent",
+  "reviewTotalEarned": "Total earned",
+  "reviewSaved": "Saved",
+  "reviewBiggest": "Biggest expense",
+  "reviewTopCategory": "Top category",
+  "reviewBestMonth": "Best saving month",
+  "reviewCostliestMonth": "Costliest month",
+  "reviewAvgDaily": "Average per day",
+  "reviewNoSpendDays": "No-spend days",
+  "reviewCopy": "Copy summary",
+  "reviewCopied": "Summary copied",
+  "reviewNoData": "No entries in {year} yet",
+  "@reviewNoData": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
   "subscriptions": "Subscriptions",
   "subscriptionsSubtitle": "Netflix, rent, insurance: due dates and reminders",
   "addSubscription": "Add subscription",

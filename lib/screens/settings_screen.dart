@@ -10,7 +10,9 @@ import '../backup_service.dart';
 import '../biometric.dart';
 import '../l10n/l10n.dart';
 import '../reminder.dart';
+import 'net_worth_screen.dart';
 import 'subscriptions_screen.dart';
+import 'year_review_screen.dart';
 import 'trash_screen.dart';
 import 'wallets_screen.dart';
 import '../update_checker.dart';
@@ -332,6 +334,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => SubscriptionsScreen(state: state))),
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.account_balance_outlined, Color(0xFF1565FF)),
+                    title: Text(l.netWorth),
+                    subtitle: Text(l.netWorthSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => NetWorthScreen(state: state))),
+                  ),
+                  ListTile(
+                    leading: const _SettingIcon(
+                        Icons.auto_awesome_outlined, Color(0xFF8E59D8)),
+                    title: Text(l.yearInReview),
+                    subtitle: Text(l.yearInReviewSubtitle),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (_) => YearReviewScreen(state: state))),
                   ),
                   ListTile(
                     leading: const _SettingIcon(

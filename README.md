@@ -90,6 +90,8 @@ The look is soft neumorphism: calm raised and pressed-in shapes on one surface, 
 - **Lend & Borrow:** who owes you, whom you owe, part payments, and reminders to ask for the money or pay it back
 - **Split bill:** share an expense with friends, equally or with your own amounts; your share is the expense, the rest goes to Lend & Borrow
 - **Savings goals** with progress
+- **Net worth:** wallets plus what people owe you, minus what you owe, with a 12-month chart
+- **Year in review:** earned, spent, saved, biggest expense, top category, best and costliest month, with a copyable summary
 - **Subscriptions:** the bills you pay again and again (Netflix, rent, insurance) with the next due date, the cost per month and per year, a reminder before each one, and a check button that adds the expense when you pay
 
 **Your data, your way**

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.10.0 (Net worth, Year in review)
+
+- New **Net worth** (Settings › Data): the wallets plus what people owe you, minus what you owe, in one number, with a line chart of the money in your wallets for the last 12 months. Savings goals are shown apart, because they are tracked outside the wallets
+- New **Year in review** (Settings › Data): pick a year and see what you earned, spent and saved, your biggest expense, top category, best saving month, costliest month, average spend per day and no-spend days. Copy the summary as text to share it
+- Both respect the Hide balance button
+- All 20 languages
+
 ## 1.9.0 (Subscriptions)
 
 - New **Subscriptions** (Settings › Data): list the bills you pay again and again, like Netflix, rent or insurance. Each shows when it is due next, with totals per month and per year
