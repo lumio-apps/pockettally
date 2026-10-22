@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.11.0 (Lite look)
+
+- New default look, **Lite**: flat white cards with a thin border on a softly tinted page, instead of heavy soft shadows. Lists, charts and screens paint faster, so scrolling feels lighter, especially on older phones
+- Home: balance, income and expenses now sit on one solid accent-colored card. Wallets show as chips
+- The bottom bar is a flat bar across the screen; the selected tab has a light accent pill
+- No entrance animations or counting numbers in Lite; screens change with a short fade
+- The old soft 3D (neumorphic) code is gone for good, so the whole app is lighter. The **Reduce effects** switch in Settings is removed, because there is nothing left to reduce
+- Your data and backups are untouched
+
 ## 1.10.0 (Net worth, Year in review)
 
 - New **Net worth** (Settings › Data): the wallets plus what people owe you, minus what you owe, in one number, with a line chart of the money in your wallets for the last 12 months. Savings goals are shown apart, because they are tracked outside the wallets

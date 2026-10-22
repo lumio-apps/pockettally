@@ -261,8 +261,6 @@
   "biometricUnlock": "Desbloquear con huella o rostro",
   "biometricUnlockSubtitle": "Usa la huella o el rostro del teléfono en lugar de escribir el PIN. El PIN sigue funcionando.",
   "biometricReason": "Desbloquear PocketTally",
-  "reduceEffects": "Reducir efectos",
-  "reduceEffectsSubtitle": "Paneles planos, sin sombras suaves. Puede ir más fluido en móviles antiguos.",
   "paletteForest": "Bosque",
   "paletteOcean": "Océano",
   "palettePlum": "Ciruela",

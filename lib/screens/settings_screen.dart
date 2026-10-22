@@ -140,14 +140,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
                     ),
                   ),
-                  SwitchListTile(
-                    secondary: const _SettingIcon(
-                        Icons.blur_off_outlined, Color(0xFF607D8B)),
-                    title: Text(l.reduceEffects),
-                    subtitle: Text(l.reduceEffectsSubtitle),
-                    value: state.reduceEffects,
-                    onChanged: state.setReduceEffects,
-                  ),
                   ListTile(
                     leading: const _SettingIcon(
                         Icons.calendar_view_week_outlined, Color(0xFF00A3A3)),

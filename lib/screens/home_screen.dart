@@ -5,7 +5,6 @@ import '../app_state.dart';
 import '../l10n/l10n.dart';
 import '../models.dart';
 import '../theme.dart';
-import '../widgets/appear.dart';
 import '../widgets/entry_tile.dart';
 import '../widgets/neo.dart';
 import '../widgets/pie_chart.dart';
@@ -85,13 +84,11 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          _BalanceCard(
+          _BalanceHero(
             state: state,
             month: now,
             onTap: () => onOpenTab(AppPage.insights),
           ),
-          const SizedBox(height: 12),
-          _InOutRow(state: state, month: now),
           const SizedBox(height: 12),
           if (state.wallets.length > 1) ...[
             _WalletsCard(state: state),
@@ -225,9 +222,7 @@ class HomeScreen extends StatelessWidget {
               // entry's amount.
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
               itemCount: sections.length,
-              // Sections slide in gently the first time Home is shown.
-              itemBuilder: (context, i) =>
-                  Appear(index: i, child: sections[i]),
+              itemBuilder: (context, i) => sections[i],
             ),
           ),
         );
@@ -280,10 +275,10 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-/// The big colored card: this month's balance, with an eye button to hide
-/// it (e.g. when others can see the screen).
-class _BalanceCard extends StatelessWidget {
-  const _BalanceCard({
+/// This month's balance, income and expenses on one solid accent card, with
+/// an eye button to hide the amounts (e.g. when others can see the screen).
+class _BalanceHero extends StatelessWidget {
+  const _BalanceHero({
     required this.state,
     required this.month,
     required this.onTap,
@@ -295,84 +290,109 @@ class _BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final balance = state.incomeIn(month) - state.expenseIn(month);
     final l = context.l10n;
+    final brand = BrandColors.of(context).brand;
+    final income = state.incomeIn(month);
+    final expense = state.expenseIn(month);
+    final balance = income - expense;
     final hidden = state.hideBalance;
-
-    final theme = Theme.of(context);
-
-    return NeoCard(
-      radius: 28,
-      depth: 1,
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 20, 8, 20),
-        child: Row(
-          children: [
-            NeoInset(
-              radius: 16,
-              child: SizedBox(
-                width: 48,
-                height: 48,
-                child: Icon(Icons.account_balance_wallet_outlined,
-                    color: theme.colorScheme.primary),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    String money(int v) => hidden ? '••••' : state.formatMoney(v);
+    Widget stat(String label, int amount, IconData icon) => Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Text(l.monthBalance(DateFormat.MMMM().format(month)),
-                      style: TextStyle(
-                          color: theme.colorScheme.onSurfaceVariant,
-                          fontSize: 13,
+                  Icon(icon, size: 14, color: Colors.white),
+                  const SizedBox(width: 4),
+                  Text(label,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 2),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    child: hidden
-                        ? Text('••••••',
-                            key: const ValueKey('hidden'),
-                            style: TextStyle(
-                                color: theme.colorScheme.onSurface,
-                                fontSize: 30,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 2))
-                        : CountUp(
-                            key: const ValueKey('shown'),
-                            value: balance,
-                            format: state.formatMoney,
-                            style: TextStyle(
-                              color: balance < 0
-                                  ? kExpenseColor
-                                  : theme.colorScheme.onSurface,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(money(amount),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800)),
+              ),
+            ],
+          ),
+        );
+    return Material(
+      color: brand,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 8, 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l.monthBalance(DateFormat.MMMM().format(month)),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: hidden ? l.showBalance : l.hideBalance,
+                    color: Colors.white,
+                    icon: Icon(hidden
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined),
+                    onPressed: () => state.setHideBalance(!hidden),
                   ),
                 ],
               ),
-            ),
-            IconButton(
-              tooltip: hidden ? l.showBalance : l.hideBalance,
-              color: theme.colorScheme.onSurfaceVariant,
-              icon: Icon(hidden
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined),
-              onPressed: () => state.setHideBalance(!hidden),
-            ),
-          ],
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  hidden ? '••••••' : state.formatMoney(balance),
+                  style: TextStyle(
+                    color: balance < 0
+                        ? const Color(0xFFFFD2CC)
+                        : Colors.white,
+                    fontSize: 34,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: 12),
+                child: Row(
+                  children: [
+                    stat(l.income, income, Icons.south_west),
+                    const SizedBox(width: 12),
+                    stat(l.expenses, expense, Icons.north_east),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-/// This month's income and expenses, side by side.
-/// Each wallet with what is in it (only shown when there is more than one).
+/// One chip per wallet with what is in it (only shown when there is more
+/// than one wallet).
 class _WalletsCard extends StatelessWidget {
   const _WalletsCard({required this.state});
 
@@ -380,104 +400,20 @@ class _WalletsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l = context.l10n;
-    final theme = Theme.of(context);
     final hide = state.hideBalance;
-    return NeoCard(
-      onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => WalletsScreen(state: state))),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(l.wallets,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800)),
-                ),
-                const Icon(Icons.chevron_right),
-              ],
-            ),
-            const SizedBox(height: 6),
-            for (final w in state.wallets)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5),
-                child: Row(
-                  children: [
-                    CircleAvatar(radius: 6, backgroundColor: Color(w.colorValue)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(w.name, overflow: TextOverflow.ellipsis),
-                    ),
-                    Text(
-                      hide ? '••••' : state.formatMoney(state.walletBalance(w)),
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InOutRow extends StatelessWidget {
-  const _InOutRow({required this.state, required this.month});
-
-  final AppState state;
-  final DateTime month;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    Widget tile(String label, int amount, Color color, IconData icon) =>
-        Expanded(
-          child: NeoInset(
-            radius: 22,
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(icon, size: 16, color: color),
-                    const SizedBox(width: 4),
-                    Text(label,
-                        style: TextStyle(
-                            color: color,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text(
-                    state.hideBalance ? '••••' : state.formatMoney(amount),
-                    style: TextStyle(
-                        color: color,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-    final income = dark ? const Color(0xFF7BE0B5) : kIncomeColor;
-    final expense = dark ? const Color(0xFFFFB4A8) : kExpenseColor;
-    return Row(
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: [
-        tile(l.income, state.incomeIn(month), income, Icons.south_west),
-        const SizedBox(width: 10),
-        tile(l.expenses, state.expenseIn(month), expense, Icons.north_east),
+        for (final w in state.wallets)
+          ActionChip(
+            avatar:
+                CircleAvatar(radius: 6, backgroundColor: Color(w.colorValue)),
+            label: Text(
+                '${w.name}  ${hide ? '••••' : state.formatMoney(state.walletBalance(w))}'),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) => WalletsScreen(state: state))),
+          ),
       ],
     );
   }
@@ -688,7 +624,6 @@ class _QuickAction extends StatelessWidget {
             children: [
               NeoInset(
                 radius: 20,
-                depth: 0.6,
                 child: SizedBox(
                   width: 40,
                   height: 40,

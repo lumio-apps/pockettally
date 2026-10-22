@@ -4,26 +4,24 @@ import 'package:pockettally/theme.dart';
 import 'package:pockettally/widgets/neo.dart';
 
 void main() {
-  test('Pages and cards use the soft neumorphic surface', () {
+  test('Pages use the tinted page color and cards the card color', () {
     for (final b in [Brightness.light, Brightness.dark]) {
       for (final palette in kPalettes) {
         final theme = buildTheme(b, palette);
         final neo = NeoPalette.from(palette, b);
-        expect(theme.scaffoldBackgroundColor, neo.base);
+        expect(theme.scaffoldBackgroundColor, neo.page);
         expect(theme.cardTheme.color, neo.base);
         expect(theme.appBarTheme.backgroundColor, Colors.transparent);
       }
     }
   });
 
-  test('The light edge is lighter and the dark edge darker than the surface',
-      () {
+  test('The card border is visible against the card and the page', () {
     for (final b in [Brightness.light, Brightness.dark]) {
       for (final palette in kPalettes) {
         final n = NeoPalette.from(palette, b);
-        expect(n.hi.computeLuminance(),
-            greaterThan(n.base.computeLuminance()));
-        expect(n.lo.computeLuminance(), lessThan(n.base.computeLuminance()));
+        expect(n.lo, isNot(n.base));
+        expect(n.well, isNot(n.base));
       }
     }
   });
@@ -87,32 +85,21 @@ void main() {
     expect(taps, 1);
   });
 
-  testWidgets('Reduced effects draw flat cards without shadows',
-      (tester) async {
-    for (final reduce in [false, true]) {
-      await tester.pumpWidget(MaterialApp(
-        theme: buildTheme(Brightness.light),
-        home: NeoEffects(
-          reduce: reduce,
-          child: const Scaffold(
-            body: Center(
-              child: NeoCard(
-                padding: EdgeInsets.all(16),
-                child: Text('Flat'),
-              ),
-            ),
-          ),
+  testWidgets('Cards are flat: a border and no shadow', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildTheme(Brightness.light),
+      home: const Scaffold(
+        body: Center(
+          child: NeoCard(padding: EdgeInsets.all(16), child: Text('Flat')),
         ),
-      ));
-      final box = tester.widgetList<DecoratedBox>(find.descendant(
-        of: find.byType(NeoCard),
-        matching: find.byType(DecoratedBox),
-      ));
-      final shadows = box
-          .map((b) => b.decoration)
-          .whereType<BoxDecoration>()
-          .expand((d) => d.boxShadow ?? const <BoxShadow>[]);
-      expect(shadows.isEmpty, reduce);
-    }
+      ),
+    ));
+    final decos = tester
+        .widgetList<DecoratedBox>(find.descendant(
+            of: find.byType(NeoCard), matching: find.byType(DecoratedBox)))
+        .map((b) => b.decoration)
+        .whereType<BoxDecoration>();
+    expect(decos.any((d) => d.border != null), isTrue);
+    expect(decos.expand((d) => d.boxShadow ?? const <BoxShadow>[]), isEmpty);
   });
 }

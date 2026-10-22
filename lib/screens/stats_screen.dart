@@ -231,7 +231,7 @@ class _StatsScreenState extends State<StatsScreen> {
             // Room at the bottom for the + button.
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
             itemCount: sections.length,
-            itemBuilder: (context, i) => Appear(index: i, child: sections[i]),
+            itemBuilder: (context, i) => sections[i],
           ),
         );
       },

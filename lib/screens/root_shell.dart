@@ -599,8 +599,8 @@ class _SidebarItem extends StatelessWidget {
   }
 }
 
-/// The soft raised bar of the phone layout, with the + button in the
-/// middle. The selected tab is a pressed-in pill that slides to the new tab.
+/// The flat bottom bar of the phone layout, with the + button in the
+/// middle. The selected tab has a light accent pill.
 class _NeoNavBar extends StatelessWidget {
   const _NeoNavBar({
     required this.items,
@@ -622,7 +622,6 @@ class _NeoNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final brand = BrandColors.of(context);
     final neo = NeoPalette.of(context);
-    final flat = NeoEffects.reduceOf(context);
     return SafeArea(
       top: false,
       child: SizedBox(
@@ -632,30 +631,35 @@ class _NeoNavBar extends StatelessWidget {
           alignment: Alignment.bottomCenter,
           children: [
             Positioned(
-              left: 16,
-              right: 16,
-              bottom: 12,
+              left: 0,
+              right: 0,
+              bottom: 0,
               height: 68,
               child: DecoratedBox(
-                decoration: neoDecoration(context, radius: 34),
+                // A flat bar across the screen with a thin top line.
+                decoration: BoxDecoration(
+                  color: neo.base,
+                  border: Border(top: BorderSide(color: neo.lo)),
+                ),
                 child: Stack(
                   children: [
                     Positioned.fill(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 8),
-                        child: AnimatedAlign(
-                          duration: flat
-                              ? Duration.zero
-                              : const Duration(milliseconds: 420),
-                          curve: Curves.easeOutBack,
+                        child: Align(
                           alignment: Alignment(-1 + slot * 0.5, 0),
-                          child: const FractionallySizedBox(
+                          child: FractionallySizedBox(
                             widthFactor: 0.2,
                             heightFactor: 1,
-                            child: NeoInset(
-                              radius: 26,
-                              child: SizedBox.expand(),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
                             ),
                           ),
                         ),
@@ -678,7 +682,6 @@ class _NeoNavBar extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: brand.brand,
                     border: Border.all(color: neo.base, width: 4),
-                    boxShadow: flat ? null : neo.raised(0.6),
                   ),
                   child: Material(
                     type: MaterialType.transparency,
@@ -740,12 +743,7 @@ class _NavItem extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AnimatedScale(
-                  scale: selected && !NeoEffects.reduceOf(context) ? 1.12 : 1,
-                  duration: const Duration(milliseconds: 260),
-                  curve: Curves.easeOutBack,
-                  child: Icon(selected ? selectedIcon : icon, color: color),
-                ),
+                Icon(selected ? selectedIcon : icon, color: color),
                 const SizedBox(height: 2),
                 Text(
                   label,
@@ -797,7 +795,6 @@ class _AddMenuButton extends StatelessWidget {
       width: 250,
       child: NeoCard(
         radius: 30,
-        depth: 0.9,
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(8, 8, 20, 8),
@@ -861,7 +858,7 @@ class _AddMenu extends StatelessWidget {
                 // The page fades into the soft surface while the menu is open.
                 child: ColoredBox(
                   color:
-                      NeoPalette.of(context).base.withValues(alpha: 0.9 * v),
+                      NeoPalette.of(context).page.withValues(alpha: 0.9 * v),
                 ),
               ),
             ),

@@ -261,8 +261,6 @@
   "biometricUnlock": "फ़िंगरप्रिंट या चेहरे से खोलें",
   "biometricUnlockSubtitle": "PIN डालने की जगह फ़ोन का फ़िंगरप्रिंट या चेहरा इस्तेमाल करें। PIN फिर भी काम करता है।",
   "biometricReason": "PocketTally खोलें",
-  "reduceEffects": "प्रभाव कम करें",
-  "reduceEffectsSubtitle": "सपाट पैनल, नरम छाया नहीं। पुराने फ़ोन पर ज़्यादा स्मूद चल सकता है।",
   "paletteForest": "जंगल",
   "paletteOcean": "समुद्र",
   "palettePlum": "बैंगनी",

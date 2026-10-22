@@ -544,8 +544,6 @@
   "biometricUnlock": "Unlock with fingerprint or face",
   "biometricUnlockSubtitle": "Use your phone's fingerprint or face instead of typing the PIN. The PIN still works.",
   "biometricReason": "Unlock PocketTally",
-  "reduceEffects": "Reduce effects",
-  "reduceEffectsSubtitle": "Flat panels, no soft shadows. Can feel smoother on older phones.",
   "paletteForest": "Forest",
   "paletteOcean": "Ocean",
   "palettePlum": "Plum",

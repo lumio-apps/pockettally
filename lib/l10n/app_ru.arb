@@ -261,8 +261,6 @@
   "biometricUnlock": "Разблокировка отпечатком или лицом",
   "biometricUnlockSubtitle": "Используйте отпечаток пальца или лицо вместо ввода PIN-кода. PIN-код по-прежнему работает.",
   "biometricReason": "Разблокировать PocketTally",
-  "reduceEffects": "Уменьшить эффекты",
-  "reduceEffectsSubtitle": "Плоские панели без мягких теней. На старых телефонах может работать плавнее.",
   "paletteForest": "Лес",
   "paletteOcean": "Океан",
   "palettePlum": "Слива",

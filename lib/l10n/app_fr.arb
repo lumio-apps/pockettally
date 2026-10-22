@@ -261,8 +261,6 @@
   "biometricUnlock": "Déverrouiller par empreinte ou visage",
   "biometricUnlockSubtitle": "Utilisez l'empreinte ou le visage du téléphone au lieu de saisir le code PIN. Le code PIN reste valable.",
   "biometricReason": "Déverrouiller PocketTally",
-  "reduceEffects": "Réduire les effets",
-  "reduceEffectsSubtitle": "Panneaux plats, sans ombres douces. Peut être plus fluide sur les anciens téléphones.",
   "paletteForest": "Forêt",
   "paletteOcean": "Océan",
   "palettePlum": "Prune",

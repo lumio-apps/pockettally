@@ -261,8 +261,6 @@
   "biometricUnlock": "ফিঙ্গারপ্রিন্ট বা মুখ দিয়ে খুলুন",
   "biometricUnlockSubtitle": "PIN লেখার বদলে ফোনের ফিঙ্গারপ্রিন্ট বা মুখ ব্যবহার করুন। PIN তবুও কাজ করে।",
   "biometricReason": "PocketTally খুলুন",
-  "reduceEffects": "প্রভাব কমান",
-  "reduceEffectsSubtitle": "সমতল প্যানেল, নরম ছায়া নেই। পুরোনো ফোনে আরও মসৃণ চলতে পারে।",
   "paletteForest": "বন",
   "paletteOcean": "সমুদ্র",
   "palettePlum": "বেগুনি",

@@ -261,8 +261,6 @@
   "biometricUnlock": "الفتح ببصمة الإصبع أو الوجه",
   "biometricUnlockSubtitle": "استخدم بصمة الهاتف أو الوجه بدل كتابة الرمز. يبقى الرمز يعمل.",
   "biometricReason": "فتح PocketTally",
-  "reduceEffects": "تقليل المؤثرات",
-  "reduceEffectsSubtitle": "لوحات مسطحة بدون ظلال ناعمة. قد يكون أكثر سلاسة على الهواتف القديمة.",
   "paletteForest": "غابة",
   "paletteOcean": "محيط",
   "palettePlum": "برقوقي",

@@ -58,7 +58,7 @@ The update check runs **only when you tap it**. Nothing is checked or sent in th
   </tr>
 </table>
 
-The look is soft neumorphism: calm raised and pressed-in shapes on one surface, tinted by the accent color you pick (six to choose from), in light and dark mode, with smooth little animations.
+The default look is **Lite**: flat cards with a thin border on a softly tinted page, in the accent color you pick (six to choose from, blue by default), in light and dark mode.
 
 ## Why PocketTally
 
@@ -111,7 +111,7 @@ The look is soft neumorphism: calm raised and pressed-in shapes on one surface, 
 - A **profile** with your photo and name
 - **20 languages:** English, हिन्दी, Հայերեն, 中文, Español, العربية, Français, বাংলা, Português, Русский, اردو, Bahasa Indonesia, 日本語, ગુજરાતી, தமிழ், తెలుగు, मराठी, ಕನ್ನಡ, മലയാളം, ਪੰਜਾਬੀ
 - **27 currencies** and number formats: 1,234.56 · 1.234,56 · 1 234,56 · 1'234.56 · 12,34,567.89
-- Light, dark or system theme, six accent colors and a **Reduce effects** switch (flat panels, no soft shadows) for older phones
+- Light, dark or system theme, six accent colors and a flat, light design that stays fast on older phones
 - Week starts on Monday or Sunday
 - Wide layout with a sidebar on tablets and big screens
 

@@ -142,12 +142,12 @@ ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
     secondary: kAccent,
     surface: neo.base,
   );
-  final background = neo.base;
+  final background = neo.page;
 
   return ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    // Neumorphic look: one soft surface color everywhere (see neo.dart).
+    // Lite look: tinted page, white cards with a thin border (see neo.dart).
     scaffoldBackgroundColor: background,
     canvasColor: background,
     extensions: [BrandColors(p)],
@@ -190,7 +190,7 @@ ThemeData buildTheme(Brightness brightness, [AppPalette? palette]) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
     snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-    // Smooth, light page changes on every platform.
+    // A short fade between pages on every platform.
     pageTransitionsTheme: const PageTransitionsTheme(builders: {
       TargetPlatform.android: NeoPageTransitionsBuilder(),
       TargetPlatform.windows: NeoPageTransitionsBuilder(),

@@ -2,34 +2,44 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
-/// The neumorphic look: one soft base color, with shapes that look pushed
-/// out of it (raised, a light and a dark shadow) or pressed into it (inset).
+/// The Lite look: flat cards with a thin border on a softly tinted page.
+/// No blurred shadows, so every screen paints fast.
 
-/// The three colors of the look for a theme: the surface itself, the light
-/// edge (top left) and the dark edge (bottom right).
+/// The colors of the look for a theme.
 class NeoPalette {
-  const NeoPalette({required this.base, required this.hi, required this.lo});
+  const NeoPalette({
+    required this.base,
+    required this.lo,
+    required this.page,
+    required this.well,
+  });
 
+  /// The card color (white, or a dark card in dark mode).
   final Color base;
-  final Color hi;
+
+  /// The thin card border.
   final Color lo;
 
-  /// The colors for [palette] in [brightness]: the accent color tints the
-  /// surface a little, so every accent color gets its own soft look.
+  /// The page behind the cards, lightly tinted by the accent palette.
+  final Color page;
+
+  /// A slightly darker patch for progress tracks and fields.
+  final Color well;
+
   factory NeoPalette.from(AppPalette palette, Brightness brightness) {
     if (brightness == Brightness.dark) {
-      final base = Color.lerp(palette.surfaceDark, Colors.white, 0.05)!;
       return NeoPalette(
-        base: base,
-        hi: Color.lerp(base, Colors.white, 0.08)!,
-        lo: Color.lerp(base, Colors.black, 0.50)!,
+        base: palette.surfaceDark,
+        lo: Color.lerp(palette.surfaceDark, Colors.white, 0.12)!,
+        page: palette.pageDark,
+        well: Color.lerp(palette.surfaceDark, Colors.black, 0.30)!,
       );
     }
-    final base = Color.lerp(palette.pageLight, const Color(0xFFC9D2E0), 0.55)!;
     return NeoPalette(
-      base: base,
-      hi: Colors.white,
-      lo: Color.lerp(base, const Color(0xFF7F8EA8), 0.55)!,
+      base: Colors.white,
+      lo: Color.lerp(palette.pageLight, const Color(0xFF9AA9C4), 0.30)!,
+      page: palette.pageLight,
+      well: Color.lerp(palette.pageLight, const Color(0xFF9AA9C4), 0.22)!,
     );
   }
 
@@ -37,83 +47,17 @@ class NeoPalette {
         BrandColors.of(context).palette,
         Theme.of(context).brightness,
       );
-
-  /// A shape pushed out of the surface. [depth] 1 is the normal size.
-  List<BoxShadow> raised([double depth = 1]) => [
-        BoxShadow(
-          color: lo.withValues(alpha: 0.85),
-          blurRadius: 18 * depth,
-          offset: Offset(8 * depth, 8 * depth),
-        ),
-        BoxShadow(
-          color: hi.withValues(alpha: 0.9),
-          blurRadius: 18 * depth,
-          offset: Offset(-8 * depth, -8 * depth),
-        ),
-      ];
 }
 
-/// Tells the Neo widgets to draw flat, without soft shadows, blur and
-/// movement ("Reduce effects" in Settings, or Android's "remove
-/// animations"). It sits above the whole app, see main.dart.
-class NeoEffects extends InheritedWidget {
-  const NeoEffects({super.key, required this.reduce, required super.child});
-
-  final bool reduce;
-
-  static bool reduceOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<NeoEffects>()?.reduce ??
-      false;
-
-  @override
-  bool updateShouldNotify(NeoEffects old) => old.reduce != reduce;
-}
-
-/// Flat look used when effects are reduced: the same surface color with a
-/// thin edge instead of shadows, so a card is still easy to see.
-BoxDecoration _flatDecoration(
-  NeoPalette n, {
-  double radius = 24,
-  BoxShape shape = BoxShape.rectangle,
-}) =>
-    BoxDecoration(
-      color: n.base,
-      shape: shape,
-      borderRadius:
-          shape == BoxShape.circle ? null : BorderRadius.circular(radius),
-      border: Border.all(color: n.lo.withValues(alpha: 0.40)),
-    );
-
-/// Fill and shadows of a raised shape, for a [DecoratedBox] or a [Container].
-BoxDecoration neoDecoration(
-  BuildContext context, {
-  double radius = 24,
-  double depth = 1,
-  BoxShape shape = BoxShape.rectangle,
-}) {
-  final n = NeoPalette.of(context);
-  if (NeoEffects.reduceOf(context)) {
-    return _flatDecoration(n, radius: radius, shape: shape);
-  }
-  return BoxDecoration(
-    color: n.base,
-    shape: shape,
-    borderRadius:
-        shape == BoxShape.circle ? null : BorderRadius.circular(radius),
-    boxShadow: n.raised(depth),
-  );
-}
-
-/// A raised card. With [onTap] it sinks in while it is pressed.
-/// A drop-in for [Card]: it clips its child to the rounded shape.
-class NeoCard extends StatefulWidget {
+/// A card: the card color with a thin border. With [onTap] it shows a
+/// ripple. A drop-in for [Card]: it clips its child to the rounded shape.
+class NeoCard extends StatelessWidget {
   const NeoCard({
     super.key,
     required this.child,
-    this.radius = 22,
+    this.radius = 20,
     this.padding,
     this.onTap,
-    this.depth = 0.8,
     this.clipBehavior = Clip.antiAlias,
   });
 
@@ -121,168 +65,67 @@ class NeoCard extends StatefulWidget {
   final double radius;
   final EdgeInsetsGeometry? padding;
   final VoidCallback? onTap;
-  final double depth;
   final Clip clipBehavior;
-
-  @override
-  State<NeoCard> createState() => _NeoCardState();
-}
-
-class _NeoCardState extends State<NeoCard> {
-  bool _down = false;
 
   @override
   Widget build(BuildContext context) {
     final n = NeoPalette.of(context);
-    final flat = NeoEffects.reduceOf(context);
-    final radius = BorderRadius.circular(widget.radius);
-    Widget content = widget.padding == null
-        ? widget.child
-        : Padding(padding: widget.padding!, child: widget.child);
-    if (widget.onTap != null) {
+    final shape = BorderRadius.circular(radius);
+    Widget content =
+        padding == null ? child : Padding(padding: padding!, child: child);
+    if (onTap != null) {
       content = InkWell(
-        onTap: widget.onTap,
-        borderRadius: radius,
-        splashColor: n.lo.withValues(alpha: 0.12),
+        onTap: onTap,
+        borderRadius: shape,
+        splashColor: n.lo.withValues(alpha: 0.25),
         highlightColor: Colors.transparent,
-        onHighlightChanged: (v) {
-          if (mounted) setState(() => _down = v);
-        },
         child: content,
       );
     }
-    if (flat) {
-      return DecoratedBox(
-        decoration: _flatDecoration(n, radius: widget.radius),
-        child: Material(
-          type: MaterialType.transparency,
-          borderRadius: radius,
-          clipBehavior: widget.clipBehavior,
-          child: content,
-        ),
-      );
-    }
-    return AnimatedScale(
-      scale: _down ? 0.985 : 1,
-      duration: const Duration(milliseconds: 140),
-      curve: Curves.easeOut,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOut,
-        decoration: BoxDecoration(
-          color: n.base,
-          borderRadius: radius,
-          boxShadow: n.raised(_down ? widget.depth * 0.3 : widget.depth),
-        ),
-        child: Material(
-          type: MaterialType.transparency,
-          borderRadius: radius,
-          clipBehavior: widget.clipBehavior,
-          child: content,
-        ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: n.base,
+        borderRadius: shape,
+        border: Border.all(color: n.lo),
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: shape,
+        clipBehavior: clipBehavior,
+        child: content,
       ),
     );
   }
 }
 
-/// A shape pressed into the surface (progress tracks, amount fields,
-/// the selected tab).
+/// A slightly darker patch (progress tracks, amount fields, icon wells).
 class NeoInset extends StatelessWidget {
   const NeoInset({
     super.key,
     this.child,
-    this.radius = 20,
+    this.radius = 16,
     this.padding,
-    this.depth = 0.8,
   });
 
   final Widget? child;
   final double radius;
   final EdgeInsetsGeometry? padding;
-  final double depth;
 
   @override
   Widget build(BuildContext context) {
     final n = NeoPalette.of(context);
-    if (NeoEffects.reduceOf(context)) {
-      // Flat: a slightly darker patch, no blur.
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          color: Color.lerp(n.base, n.lo, 0.22),
-          borderRadius: BorderRadius.circular(radius),
-        ),
-        child: padding == null
-            ? child
-            : Padding(padding: padding!, child: child),
-      );
-    }
-    return CustomPaint(
-      painter: _InsetPainter(
-        base: n.base,
-        hi: n.hi,
-        lo: n.lo,
-        radius: radius,
-        depth: depth,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: n.well,
+        borderRadius: BorderRadius.circular(radius),
       ),
-      child: padding == null
-          ? child
-          : Padding(padding: padding!, child: child),
+      child:
+          padding == null ? child : Padding(padding: padding!, child: child),
     );
   }
 }
 
-class _InsetPainter extends CustomPainter {
-  const _InsetPainter({
-    required this.base,
-    required this.hi,
-    required this.lo,
-    required this.radius,
-    required this.depth,
-  });
-
-  final Color base;
-  final Color hi;
-  final Color lo;
-  final double radius;
-  final double depth;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rrect = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.circular(radius),
-    );
-    canvas.save();
-    canvas.clipRRect(rrect);
-    canvas.drawRRect(rrect, Paint()..color = base);
-    final sigma = 5.0 * depth;
-    final outer = Path()..addRect(rrect.outerRect.inflate(80));
-    void shade(Offset shift, Color color) {
-      final hole = Path()..addRRect(rrect.shift(shift));
-      canvas.drawPath(
-        Path.combine(PathOperation.difference, outer, hole),
-        Paint()
-          ..color = color
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, sigma),
-      );
-    }
-
-    // Dark edge inside the top left, light edge inside the bottom right.
-    shade(Offset(5 * depth, 5 * depth), lo.withValues(alpha: 0.85));
-    shade(Offset(-5 * depth, -5 * depth), hi.withValues(alpha: 0.9));
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(_InsetPainter old) =>
-      old.base != base ||
-      old.hi != hi ||
-      old.lo != lo ||
-      old.radius != radius ||
-      old.depth != depth;
-}
-
-/// Page change: a short fade with a small slide up.
+/// Page change: a short fade.
 class NeoPageTransitionsBuilder extends PageTransitionsBuilder {
   const NeoPageTransitionsBuilder();
 
@@ -293,19 +136,6 @@ class NeoPageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
     Widget child,
-  ) {
-    if (NeoEffects.reduceOf(context)) {
-      return FadeTransition(opacity: animation, child: child);
-    }
-    final eased = animation.drive(CurveTween(curve: Curves.easeOutCubic));
-    return FadeTransition(
-      opacity: eased,
-      child: SlideTransition(
-        position: eased.drive(
-          Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero),
-        ),
-        child: child,
-      ),
-    );
-  }
+  ) =>
+      FadeTransition(opacity: animation, child: child);
 }
