@@ -58,12 +58,12 @@ The update check runs **only when you tap it**. Nothing is checked or sent in th
   </tr>
 </table>
 
-The default look is **Lite**: flat cards with a thin border on a softly tinted page, in the accent color you pick (six to choose from, blue by default), in light and dark mode.
+The look is **Lite**: flat cards with a thin border on a softly tinted page and one solid balance card on Home, in the accent color you pick (six to choose from, blue by default), in light and dark mode. No heavy shadows or animations, so it stays quick even on older phones.
 
 ## Why PocketTally
 
 - **Private by design.** No sign-up, no cloud, no ads, no analytics. The only time it goes online is when you tap "Check for updates" (it asks GitHub for the newest release, and sends none of your data). Your data sits in a database on your phone.
-- **Quick.** Add an expense in a few seconds, split a bill with friends, keep track of money you lent, and see where your money went this month.
+- **Quick and light.** A flat design with no heavy effects. Add an expense in a few seconds, split a bill with friends, keep track of money you lent, and see where your money went this month.
 - **For everyone.** 20 languages (10 of them Indian), 27 currencies and local number formats like 12,34,567.89.
 - **Free forever.** Open source under GPL-3.0. No premium version, no locked features.
 
@@ -78,7 +78,7 @@ The default look is **Lite**: flat cards with a thin border on a softly tinted p
 - **Trash and Undo:** a deleted entry waits 30 days in the Trash and can be put back; the Undo bar after a delete closes by itself after 3 seconds
 
 **Understand**
-- Monthly balance, income and expenses on Home
+- Monthly balance, income and expenses on one card on Home, and your wallets as chips
 - **Reports** for any week, month or year (all wallets or just one): net savings, the change from the period before, a donut by category and income vs expenses over time
 - **Highlights** like "You spent 12% less than last month"
 - **Calendar** view and **upcoming bills**
@@ -111,7 +111,7 @@ The default look is **Lite**: flat cards with a thin border on a softly tinted p
 - A **profile** with your photo and name
 - **20 languages:** English, हिन्दी, Հայերեն, 中文, Español, العربية, Français, বাংলা, Português, Русский, اردو, Bahasa Indonesia, 日本語, ગુજરાતી, தமிழ், తెలుగు, मराठी, ಕನ್ನಡ, മലയാളം, ਪੰਜਾਬੀ
 - **27 currencies** and number formats: 1,234.56 · 1.234,56 · 1 234,56 · 1'234.56 · 12,34,567.89
-- Light, dark or system theme, six accent colors and a flat, light design that stays fast on older phones
+- Light, dark or system theme, six accent colors and a flat, light design with no heavy effects
 - Week starts on Monday or Sunday
 - Wide layout with a sidebar on tablets and big screens
 
